@@ -1,0 +1,22 @@
+
+konferencje:
+https://www.blackhat.com
+https://hacktivity.com/en/
+https://deepsec.net/
+http://grrcon.org/
+http://hackademic.info/
+http://conference.hitb.org/
+http://www.thehackersconference.com/
+https://www.owasp.org/index.php/AppSecEU2013
+
+bazy exploitów:
+http://www.exploit-db.com
+http://packetstormsecurity.org/
+
+slabe:
+http://www.expbase.com/
+http://1337day.com/
+
+http://packetstormsecurity.com/files/author/8713/ # Linux Exploit Development 4 czesci
+
+http://forum.xda-developers.com/forumdisplay.php?f=565

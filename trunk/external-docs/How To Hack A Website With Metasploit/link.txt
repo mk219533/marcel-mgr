@@ -1,0 +1,2 @@
+http://dl.packetstormsecurity.net/papers/attack/hack-websites-with-metasploit.pdf
+http://packetstormsecurity.com/files/120406/How-To-Hack-A-Website-With-Metasploit.html
