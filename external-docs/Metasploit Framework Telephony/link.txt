@@ -1,0 +1,2 @@
+http://dl.packetstormsecurity.net/papers/general/metasploit-telephony.pdf
+http://packetstormsecurity.com/files/97403/Metasploit-Framework-Telephony.html

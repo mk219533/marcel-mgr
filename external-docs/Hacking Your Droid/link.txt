@@ -1,0 +1,3 @@
+http://dl.packetstormsecurity.net/papers/presentations/HackingyourDroid-Slides.pdf
+http://packetstormsecurity.com/files/105477/Hacking-Your-Droid.html
+http://www.exploit-db.com/wp-content/themes/exploit/docs/17899.pdf
