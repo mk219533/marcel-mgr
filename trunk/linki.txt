@@ -1,0 +1,41 @@
+
+konferencje:
+https://www.blackhat.com
+https://hacktivity.com/en/
+https://deepsec.net/
+http://grrcon.org/
+http://hackademic.info/
+http://conference.hitb.org/
+http://www.thehackersconference.com/
+https://www.owasp.org/index.php/AppSecEU2013
+
+bazy exploitów:
+http://www.exploit-db.com
+http://packetstormsecurity.org/
+
+http://exploitsdownload.com
+http://www.cvedetails.com/vulnerability-list/vendor_id-1224/product_id-19997/Google-Android.html
+
+slabe:
+http://www.expbase.com/
+http://1337day.com/
+
+
+do przeczytania:
+http://packetstormsecurity.com/files/author/8713/ # Linux Exploit Development 4 czesci
+http://forum.xda-developers.com/forumdisplay.php?f=565
+http://imthezuk.blogspot.com // bardzo dobry blog czlowieka ktory m.in mial prezentacja na blackhat. instrukcje jak postawic srodowisko deweloperskie dla webkita
+
+
+
+
+
+bazy zagrozen:
+http://web.nvd.nist.gov
+http://cve.mitre.org
+
+
+
+framework do testów security androida: 
+https://github.com/mwrlabs/mercury
+
