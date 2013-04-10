@@ -1,0 +1,131 @@
+\documentclass{pracamgr}
+
+\usepackage{polski}
+\usepackage{graphicx}
+\usepackage{todonotes}
+\usepackage{hyperref}
+
+\usepackage[utf8]{inputenc}
+
+% Dane magistranta:
+
+\author{Marcel Kołodziejczyk}
+
+\nralbumu{219533}
+
+\title{Luki w bezpieczeństwie systemu operacyjnego Android}
+
+\tytulang{Vulnerabilities in Android operating system}
+
+%kierunek: Matematyka, Informatyka, ...
+\kierunek{Informatyka}
+
+% informatyka - nie okreslamy zakresu (opcja zakomentowana)
+% matematyka - zakres moze pozostac nieokreslony,
+% a jesli ma byc okreslony dla pracy mgr,
+% to przyjmuje jedna z wartosci:
+% {metod matematycznych w finansach}
+% {metod matematycznych w ubezpieczeniach}
+% {matematyki stosowanej}
+% {nauczania matematyki}
+% Dla pracy licencjackiej mamy natomiast
+% mozliwosc wpisania takiej wartosci zakresu:
+% {Jednoczesnych Studiow Ekonomiczno--Matematycznych}
+
+% \zakres{Tu wpisac, jesli trzeba, jedna z opcji podanych wyzej}
+
+% Praca wykonana pod kierunkiem:
+% (podać tytuł/stopień imię i nazwisko opiekuna
+% Instytut
+% ew. Wydział ew. Uczelnia (jeżeli nie MIM UW))
+\opiekun{dra Marcina Peczarskiego\\
+  Instytut Informatyki\\
+  }
+
+% miesiąc i~rok:
+\date{Czerwiec 2013}
+
+%Podać dziedzinę wg klasyfikacji Socrates-Erasmus:
+\dziedzina{
+%11.0 Matematyka, Informatyka:\\
+%11.1 Matematyka\\
+%11.2 Statystyka\\
+11.3 Informatyka\\
+%11.4 Sztuczna inteligencja\\
+%11.5 Nauki aktuarialne\\
+%11.9 Inne nauki matematyczne i informatyczne
+}
+
+%Klasyfikacja tematyczna wedlug AMS (matematyka) lub ACM (informatyka)
+\klasyfikacja{D. Software\\
+  D.4. Operating Systems\\
+  D.4.6. Security and Privacy Protection}
+
+% Słowa kluczowe:
+\keywords{android, arm, atak, bezpieczeństwo, przepełnienie bufora, metasploit, exploit, shellcode}
+
+% Tu jest dobre miejsce na Twoje własne makra i~środowiska:
+\newtheorem{defi}{Definicja}[section]
+
+% koniec definicji
+
+\begin{document}
+\maketitle
+
+
+%tu idzie streszczenie na strone poczatkowa
+\begin{abstract}
+krótnie streszczenie pracy
+\end{abstract}
+
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+\listoftodos
+
+\chapter*{Wprowadzenie}
+
+\todo[noline]{Sprawdzić klasyfikację ACM}
+Jakiś przydlugi niewiele mówiący opis.
+
+\chapter{Omówienie problemu}
+
+\chapter{Podsumowanie}
+
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliografia}
+
+% troche nie na temat
+\bibitem[1]{decomp} Anthony Desnos, Geoffroy Gueguen \textit{Android: From Reversing to Decompilation}, Black Hat, Abu Dhabi, 2011 \
+
+\bibitem[2]{privescal} S. Höbarth, R. Mayrhofer, \textit{A framework for on-device privilege escalation exploit execution on android}, IWSSI/SPMU 2011: 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive 2011, czerwiec 2011. dostępne na \url{http://www.medien.ifi.lmu.de/iwssi2011/} \
+
+\bibitem[3]{armguide} Gaurav Kumar, Aditya Gupta, \textit{A Short Guide on ARM Exploitation}, \url{http://www.exploit-db.com/wp-content/themes/exploit/docs/24493.pdf} \
+
+\bibitem[4]{alphanum} Yves Younan, Pieter Philippaerts, \textit{Alphanumeric RISC ARM shellcode}, Phrack, 66, czerwiec 2009 \
+
+\bibitem[5]{anatomy} Joshua Hulse, \textit{Buffer Overflows: Anatomy of an Exploit}, \url{http://packetstormsecurity.com/files/108549/Buffer-Overflows-Anatomy-Of-An-Exploit.html} \
+
+\bibitem[6]{explarm} Emanuele Acri, \textit{Exploiting Arm Linux Systems}, \url{http://packetstormsecurity.com/files/98376/Exploiting-ARM-Linux-Systems.html} \
+
+\bibitem[7]{fuzzphone} Collin Mulliner, Charlie Miller, \textit{Fuzzing the Phone in your Phone}, Black Hat USA, 2009 \
+
+\bibitem[8]{howtoshell} Jonathan Salwan, \textit{How to Create a Shellcode on ARM Architecture}, \url{http://www.exploit-db.com/papers/15652/} \
+
+\bibitem[9]{telephony} Dustin ,,I)ruid'' Trammel, \textit{Metasploit Framework Telephony}, Black Hat USA, 2009 \
+
+\bibitem[10]{nonexec} Itzhak Avraham, \textit{Non-Executable Stack ARM Exploitation}, Black Hat DC, 2011 \
+
+\bibitem[11]{smashing} jip@soldierx.com, \textit{Stack Smashing On A Modern Linux System}, \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \
+
+\bibitem[12]{metasploit} Metasploit framework, \url{http://www.metasploit.com} \
+
+\bibitem[13]{android} Android project, \url{http://developer.android.com} \
+
+\bibitem[14]{webkit} The WebKit Open Source Project, \url{http://www.webkit.org} \
+
+\end{thebibliography}
+
+\end{document}
+
