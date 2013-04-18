@@ -75,7 +75,7 @@
 
 %tu idzie streszczenie na strone poczatkowa
 \begin{abstract}
-krótnie streszczenie pracy
+krótkie streszczenie pracy
 \end{abstract}
 
 
@@ -86,25 +86,79 @@ krótnie streszczenie pracy
 
 \chapter*{Wprowadzenie}
 
-\todo[noline]{Sprawdzić klasyfikację ACM}
+\chapter{Platforma sprzętowa i programowa}
 
-\chapter{Omówienie problemu}
-
-Android jest systemem operacyjnym i zestawem aplikacji dodykowanym przede wszystkim dla urządzeń przenośnych z ekranami dotykowymi, takimi jak np. smartphone, tablet. 
-Jądro systemu, zpstało oparte na jądrze Linuksa. System ten został zaprojektowany i stworzony głównie z myślą o urządzeniach
+Android jest systemem operacyjnym i zestawem aplikacji dedykowanym przede wszystkim dla urządzeń przenośnych z ekranami dotykowymi, takimi jak np. smartphone, tablet. 
+Jądro systemu, zostało oparte na jądrze Linuksa. System ten został zaprojektowany i stworzony głównie z myślą o urządzeniach
 wyposażonych w procesor w architekturze ARM, aczkolwiek podejmowane są prace nad dostosowaniem Androida do innych architektur, np. x86.
 
-W rozdziale tym zostaną opiane podstawy architektury procesorów ARM. Następnie zostanie omówiona architektura oraz model bezpieczeństwa systemu Android.
+W rozdziale tym zostaną opisane podstawy architektury procesorów ARM. Następnie zostanie omówiona architektura oraz model bezpieczeństwa systemu Android.
 
-\section{Opis architektury ARM}
+\section{Architektura procesorów ARM}
 
-\subsection{Rejestry}
+ARM jest 32-bitową architekturą procesorów typu RISC. Główne jej cechy to:
+\begin{itemize}
+\item proste tryby adresowania
+\item instrukcje stałej długości co ułatwia adresowanie
+\item architektura typu \emph{load/store} - operacje wykonywane są na rejestrach a nie bezpośrednio na pamięci 
+\item duża liczba 32-bitowych rejestrów
+\item zredukowana liczba instrukcji
+\end{itemize}
 
-\subsection{Instrukcje}
+
+Z biegiem czasu ukazywały się kolejne wersje architektury ARM. Niniejsza praca bazuje na wersji 7 (ARMv7), które jest obecnie najbardziej 
+powszechnie wykorzystywana w urządzeniach przenośnych.
 
 \subsection{Thumb-2}
 
+Instrukcje ARM są stałej, 32-bitowej długości. W celu zwiększenia gęstości kodu został wprowadzony drugi, uproszczony zestaw 16-bitowych instrukcji Thumb-2. 
+Ponieważ w obydwu trybach adresy instrukcji muszą być odpowiednio wyrównane, ostatni bit adresu może być wykorzystany w celu zmiany trybu pracy procesora.
+Instrukcja skoku do adresu, którego ostatni bit jest zapalony, wymusza zmianę trybu na Thumb-2 i dalsze wykonywanie instrukcji spod adresu odpowiednio wyrównanego.
+Analogicznie instrukcja skoku do parzystego adresu powoduje przejście w 32-bitowy zestaw instrukcji ARM.
+
+\subsection{Rejestry}
+
+Z punktu widzenia programisty dostępnych jest szesnaście 32-bitowych rejestrów R0-R15. Trzy z nich mają dedykowane przeznaczenie:
+
+\begin{itemize}
+\item SP (Stack Pointer) - R13 - wskaźnik stosu
+\item LR (Link Register) - R14 - zawiera adres następnej instrukcji przy instrukcjach skoku wywołania podprogramu
+\item PC (Program Counter) - R15 - przechowuje adres następnej instrukcji
+\end{itemize}
+
+Dodatkowo występuje rejestr statusowy procesora CPSR (ang. Current Porcessor Status Register). Przechowuje on m. in. flagi Negative, Zero, Carry, oVerflow.
+Większość instrukcji może być wykonywanych warunkowo, w zależności od stanu tych flag.
+
+Szczegółowe informacje na ten temat można znaleźć w \cite{armman}.
+
+\subsection{Standard wywołania procedur}
+
+Do wykonywania procedur służą następujące instrukcje:
+\begin{itemize}
+\item \textbf{B} - Branch
+\item \textbf{BL} - Branch with Link
+\item \textbf{BX} - Branch and Exchange
+\item \textbf{BLX} - Branch with Link and Exchange
+\end{itemize}
+
+Instrukcja \textit{Branch} umożliwia wykonanie skoku o maksymalnie 32 MB w przód lub w tył od bieżącej instrukcji. \textit{Branch with link} dodatkowo
+zachowuje adres powrotu w rejestrze LR (R14). Pozostałe dwie instrukcje jako argument przyjmują rejestr - skok jest wykonywany do adresu, jaki znajduje się
+w przekazanym rejestrze.
+
+Architektura ARM określa następujące zasady wywoływania procedur:
+\begin{itemize}
+\item Do przekazywania argumentów i zwracania wyniku procedury używane są rejestry R0-R3. Kolejne parametry mogą być przekazywane na stosie.
+\item rejestry R4-R11 mogą być wykorzystywana do przechowywania zmiennych lokalnych
+\item Zawartość rejestrów R4-R12 powinna być zachowana w trakcie wykonania procedury. Zazwyczaj w prologu procedury rejestry te są odkładana na stos, 
+aby przywrócić ich wartości w epilogu.
+\item Stos rośnie w kierunku mniejszych adresów pamięci.
+\end{itemize}
+
+Kompletną dokumentację standardu wołania procedur można znaleźć w \cite{armcall}.
+
 \section{Architektura systemu Android}
+
+
 
 
 
@@ -121,6 +175,20 @@ W rozdziale tym zostaną opiane podstawy architektury procesorów ARM. Następni
 \section{Technika ,,heap spray''}
 
 %przeciwdziałanie: DEP, NX bit, Executable space protection
+
+\subsection{NX bit}
+
+W celu ochrony przed tego typu takimi w wersji 6 architektury ARM wprowadzona została technologia NX bit (No Execute). Umożliwia ona systemowi operacyjnemu 
+oznaczyć wybrane strony pamięci jako niewykonywalne. Gdy bit NX dla danej strony jest ustawiony, próba wykonania zawartości tej strony jako kodu kończy się 
+wygenerowaniem wyjątku, zgłaszanego systemowi operacyjnemu, co powoduje przerwanie wykonywania programu. Bit NX powinien być ustawiony dla wszystkich stron procesu, 
+z wyjątkiem programu i bibliotek oraz świadomie dozwolonych przez program wyjątków.
+
+Technologia ,,NX bit'' jest wspierana przez Androida od wersji 2.3. 
+
+
+
+
+ wyko dzięki któremu system operacyjny 
 
 \section{Technika ,,return to library'' (Ret2Libc)}
 
@@ -168,11 +236,15 @@ W rozdziale tym zostaną opiane podstawy architektury procesorów ARM. Następni
 
 \bibitem[11]{smashing} jip@soldierx.com, \textit{Stack Smashing On A Modern Linux System}, \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \
 
-\bibitem[12]{metasploit} Metasploit framework, \url{http://www.metasploit.com} \
+\bibitem[12]{armman} ARM Ltd. \textit{Arm architecture reference manual.} \
 
-\bibitem[13]{android} Android project, \url{http://developer.android.com} \
+\bibitem[13]{armcall} ARM Ltd. \textit{Procedure call standard for the arm architecture.} \
 
-\bibitem[14]{webkit} The WebKit Open Source Project, \url{http://www.webkit.org} \
+\bibitem[14]{metasploit} Metasploit framework, \url{http://www.metasploit.com} \
+
+\bibitem[15]{android} Android project, \url{http://developer.android.com} \
+
+\bibitem[16]{webkit} The WebKit Open Source Project, \url{http://www.webkit.org} \
 
 \end{thebibliography}
 
