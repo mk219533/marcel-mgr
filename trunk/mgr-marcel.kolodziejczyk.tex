@@ -126,7 +126,7 @@ Z punktu widzenia programisty dostępnych jest szesnaście 32-bitowych rejestró
 \item PC (Program Counter) - R15 - przechowuje adres następnej instrukcji
 \end{itemize}
 
-Dodatkowo występuje rejestr statusowy procesora CPSR (ang. Current Porcessor Status Register). Przechowuje on m. in. flagi Negative, Zero, Carry, oVerflow.
+Dodatkowo występuje rejestr statusowy procesora CPSR (ang. Current Processor Status Register). Przechowuje on m. in. flagi Negative, Zero, Carry, oVerflow.
 Większość instrukcji może być wykonywanych warunkowo, w zależności od stanu tych flag.
 
 Szczegółowe informacje na ten temat można znaleźć w \cite{armman}.
@@ -158,14 +158,212 @@ Kompletną dokumentację standardu wołania procedur można znaleźć w \cite{ar
 
 \section{Architektura systemu Android}
 
+% http://www.android-app-market.com/android-architecture.html
 
+Diagram \ref{figure:architektura} przedstawia najważniejsze komponenty systemu Android. Zostaną one w skrócie omówione w kolejnych paragrafach.
 
+\begin{figure}[htb]
+\begin{minipage}{\textwidth}
+\begin{center}
+\includegraphics[width=\textwidth]{system-architecture.jpg} 
+\end{center}
+\caption[Główne komponenty systemu Android]{Główne komponenty systemu Android \footnotemark }
+\label{figure:architektura}
+\footnotetext{źródło: \url{http://developer.android.com/about/versions/index.html}}
+\end{minipage}
+\end{figure}
+
+\subsection{Jądro systemu}
+
+Podstawową warstwą zapewniającą interakcje ze sprzętem jest jądro systemu. Jądro systemu Android od wersji 4.0 (\textit{Ice Cream Sandwich}), stanowi nieznacznie 
+zmodyfikowane jądro Linuxa w wersji 3.0.x. Wcześniejsze wydania systemu opierały się na jądrach z linii 2.6.x. Najważniejsze zmiany w stosunku do głównej wersji to:
+\begin{itemize}
+\item dodatkowe mechanizmy komunikacji międzyprocesowej i zdalnego wołania metod (\textit{Android Binder}),
+\item nowy podsystemem pamięci dzielonej \verb+ashmem+ i alokator pamięci \verb+pmem+,
+\item \verb+logger+ - wsparcie jądra dla narzędzia \verb+logcat+,
+\item dodatkowe mechanizmy ograniczające dostęp do wybranych funkcjonalności sieciowych (\textit{paranoid network security}).
+\end{itemize}
+
+Sytuacja, w której jądro Androida jest rozgałęzieniem w stosunku do głównej linii Linuxa jest bardzo istotna z punktu widzenia bezpieczeństwa systemu. Wszelkie zmiany
+wprowadzane w jądrze Linuxa, w tym niektóre poprawki bezpieczeństwa, pojawiają się w zmodyfikowanej wersji dla Androida ze sporym opóźnieniem. Dodatkowo opóźnienie to 
+jest powiększone przez system aktualizacji systemu, co zostanie opisane w paragrafie \ref{section:aktualizacje}.
+Z tego powodu istnieje bardzo wiele powszechnie znanych luk w jądrze Androida, pozwalających m. in. na eskalację uprawnień procesu. Pozwala to na tymczasowe lub permanentne 
+uzyskanie uprawnień administratora systemu (tzn. ,,rootowanie'' systemu). Jest to bardzo często wykorzystywane przez zwykłych użytkowników do wykonania niektórych czynności 
+administracyjnych, np. zmiany konfiguracji systemu, odinstalowanie wybranych aplikacji systemowych, a nawet wgranie zupełnie nowego obrazu systemu. Istnieje wiele narzędzi 
+umożliwiających wykonanie tego procesu zwykłemu, niezaawansowanemu użytkownikowi.
+
+\subsection{Biblioteki}
+
+System Android posiada szereg popularnych bibliotek napisanych w C/C++, używanych przez różne komponenty poprzez ,,framework'' aplikacji. Możliwe jest także 
+skorzystanie z tych bibliotek w kodzie natywnym napisanym w C/C++. Przykładowe biblioteki to:
+
+\begin{itemize}
+\item \verb+libc+ - standardowa biblioteka C, zoptymalizowana dla urządzeń wbudowanych,
+\item \verb+webcore+ - silnik przeglądarki internetowej. Może być wykorzystany w innych aplikacjach, które potrzebują wyświetlić stronę HTML, mp. w kliencie poczty e-mail,
+\item \verb+sqllite+ - lekka relacyjna baza danych,
+\item \verb+OpenGL+ - używana podczas renderowania grafiki dwu- i trójwymiarowej,
+\item zestaw bibliotek multimedialnych dostarczających kodeki wybranych formatów plików.
+\end{itemize}
+
+\subsection{Środowisko czasu wykonania}
+
+Środowisko czasu wykonania systemu Android składa się z maszyny wirtualnej Dalvik oraz podstawowych bibliotek Javy.
+
+Dalvik jest maszyną wirtualną, która została stworzona specjalnie dla systemu Android, w celu zapewnienia odpowiedniej wydajności na urządzeniach z mniejszymi
+zasobami, jak np. telefony komórkowe. Nie jest maszyną wirtualną Javy i używa własnego kodu bajtowego w formacie \verb+.dex+ (Dalvik executable). Możliwa jest 
+jednak konwersja kodu bajtowego Javy do kodu Dalvika. W przeciwieństwie do wirtualnej maszyny Javy, która jest maszyną stosową, Dalvik jest maszyną rejetrową.
+Dalvik umożliwia uruchomienie wielu aplikacji jednocześnie tworząc klika instancji maszyny wirtualnej. Zapewnia izolację, zarządzanie pamięcią oraz wielowątkowość. 
+
+\subsection{Aplikacje}
+
+System Android posiada kilka podstawowych aplikacji zapewniających podstawowe funkcjonalności nowoczesnego telefonu komórkowego, np. klient SMS, aplikacja 
+do wykonywania połączeń głosowych, klient poczty, przeglądarka internetowa, zarządca aplikacji. Bardzo wiele funkcjonalności jest wydzielonych do osobnych komponentów tworząc
+tzn. ,,framework''. Jest on zaprojektowany w sposób, który umożliwia zastąpienie jego dowolnego komponentu na inny zapewniający taką samą funkcjonalność.
 
 
 \section{Model bezpieczeństwa Androida}
 
+Platforma Android została zaprojektowana w taki sposób, aby możliwe było także zainstalowanie aplikacji z potencjalnie niezaufanych źródeł.
+Jest to odmienny model niż w przypadku telefonów iPhone (z systemem operacyjnym iOS), gdzie wszystkie aplikacje mogą być jedynie zainstalowane
+z jednego źródła (\textit{Apple store}) i mogą być zweryfikowane przed upublicznieniem. Z tego powodu system Android posiada mechanizmy bezpieczeństwa 
+działające na wielu poziomach. Izolowanie aplikacji wykorzystuje mechanizmy kontroli dostępu do systemu plików, jakie udostępnia jądro Linuxa oraz 
+mechanizm nadawania wybranych uprawnień zatwierdzanych przez użytkownika w trakcie instalacji aplikacji. Aplikacje muszą być także podpisane przy użyciu 
+kryptografii klucza publicznego, jednak ten mechanizm umożliwia jedynie wiarygodne zidentyfikowanie autora aplikacji.
 
-\chapter{Przykłady ataków}
+System Android zbudowany jest na bazie standardowego jądra Linuxa z nieznacznymi modyfikacjami, dlatego też 
+posiada uznaniową kontrolę dostępu (\textit{Discretionary Access Control - DAC}) na poziomie systemu plików, która opiera się na identyfikatorach 
+użytkowników (\textit{uid}) i grup (\textit{gid}). Nad jądrem Android używa własnego zbioru bibliotek i usług. Aplikacje mogą być tworzone w Javie
+i są kompilowane do kodu bajtowego maszyny wirtualnej Dalvik. Aplikacje lub fragmenty mogą być również tworzone w C/C++ a następnie wywoływane z Javy
+poprzez interfejs JNI (\textit{Java Native Interface}).
+
+\subsection{Uruchamianie aplikacji w \textit{,,piaskownicy''}}\label{subsection:piaskownica}
+
+Aplikacje zainstalowane w systemie są ograniczone w \textit{,,piaskownicy''}, która jest zdefiniowana poprzez unikalny \textit{uid} i odpowiadający \textit{gid}.
+Identyfikatory te są tworzone dynamicznie podczas instalowania aplikacji. Nazwy użytkownika i grupy są identyczne i składają się z prefiksu \verb+app_+ oraz identyfikatora.
+Każda aplikacja używa innego identyfikatora użytkownika i grupy, co gwarantuje pełną izolację na poziomie systemu plików. Dostęp do plików i usług systemowych jest 
+także znacząco ograniczony, zazwyczaj tylko do odczytu. Wywołanie funkcji lub usługi spoza \textit{,,piaskownicy''} jest możliwe poprzez odpowiednie API, które 
+wymaga odpowiednich uprawnień aplikacji, co zostanie opisanie w punkcie \ref{subsection:uprawnienia}.
+
+Ograniczenia \textit{,,piaskownicy''} są wymuszane przed jądro systemu i poprzez odpowiednie usługi przestrzeni użytkownika, dlatego też dotyczą wszystkich aplikacji, 
+włącznie z kodem natywnym wywoływanym bezpośrednio poprzez interfejs JNI lub przy użyciu wywołania systemowego \verb+exec+. Jeżeli aplikacje potrzebują współdzielić dane, 
+na przykład na poziomie systemu plików, powinny zadeklarować wspólny identyfikator użytkownika (\textit{uid}) w manifeście. Jest to możliwe tylko wtedy, gdy aplikację 
+są podpisane przy użyciu tego samego klucza prywatnego. Identyfikatory użytkowników i odpowiadające im uprawnienia są przechowywane w pliku \verb+data/system/packages.xml+
+i są do odczytu przez wszystkie aplikacje zainstalowane na urządzeniu.
+
+\subsection{Kontrola dostępu do systemu plików}
+
+Uznaniowa kontrola dostępu do systemu plików w Androidzie jest zrealizowana przy użyciu tradycyjnych Unixowych uprawnień. Pliki tworzone przez aplikacje domyślnie mają
+ustawione uprawnienia na \verb+rw-rw----+ (0660 w notacji ósemkowej). Z tego powodu aplikacje zainstalowane z różnymi identyfikatorami użytkownika i grupy nie mogą czytać,
+modyfikować ani wykonywać wzajemnie swoich plików. Pliki mogą być jednak jawnie udostępniane poprzez użycie flag \verb+MODE_WORLD_READABLE+ i \verb+MODE_WORLD_WRITABLE+
+podczas tworzenia ich w API Javowym lub poprzez wywołanie systemowe \verb+chmod+ w natywnym kodzie C/C++. Tworzenie plików z odpowiednimi uprawnieniami leży w gestii
+aplikacji.
+
+Katalog z danymi aplikacji domyślnie znajduje się w \verb+/data/data/<nazwa pakietu>/+ i posiada następującą strukturę:
+\begin{itemize}
+\item \verb+databases+ - domyślny katalog do przechowywania baz danych sqlite
+\item \verb+lib+ - zawiera wszystkie natywne biblioteki używane przez aplikacje, skopiowane podczas instalacji
+\item \verb+files+ - jest to katalog, gdzie domyślnie są tworzone pliki przez aplikację
+\item \verb+shared_prefs+ - zawiera XML-owe pliki konfiguracyjne aplikacji
+\end{itemize}
+
+Standardowe, pre-instalowane aplikacje (np. \verb+com.android.camera+) zazwyczaj także używają powyższej struktury katalogów, jednak ich lokalizacja może być odmienna
+na niektórych urządzeniach, np. telefony marki \textit{Samsung} używają ścieżki \verb+/dbdata/databases/<nazwa pakietu>/+ dla pre-instalowanych aplikacji. Jest to istotnie 
+z punktu widzenia twórcy exploitów, aby złośliwy kod potrafił się dostosować do struktury katalogów używanej przez dane urządzenie.
+
+W trakcie rozruchu systemu różne części systemu plików są montowane z odmiennymi opcjami. Katalog \verb+/data+ używa opcji \verb+'rw,nosuid,nodev,relatime'+, co m. in. 
+oznacza, że flaga plików \verb+setuid+ nie będzie respektowana. Pliki wykonywalne będą zawsze uruchamiane z uprawnieniami użytkownika wykonującego program, a nie właściciela pliku.
+
+
+Katalog \verb+/system+ jest montowany z opcjami \verb+ro,relatime+, co powoduje, że cała partycja jest jedynie do odczytu. Warto zwrócić uwagę, że w tym przypadku opcja \verb+nosuid+
+nie jest używana, ponieważ system Android korzysta z plików z flagą \verb+setuid+ w tej lokalizacji.
+
+\subsection{Uprawnienia aplikacji}\label{subsection:uprawnienia}
+
+Aplikacje w celu wyjścia z \textit{,,piaskownicy''} (zarówno na poziomie systemu pików, jak i wywoływania chronionych funkcji API systemu), muszą mieć wcześniej nadane 
+odpowiednie uprawnienia. Wymagane przez aplikację funkcjonalności są wyświetlane w trakcie instalacji i muszą być zatwierdzone przez użytkownika. Nie jest jednak możliwe 
+selektywne wybranie uprawnień. 
+
+Aplikacja, aby uzyskać dostęp do chronionych funkcji API, musi zawierać uprawnienia, takie jak na przykład:
+
+\begin{verbatim}
+<uses-permission android:name="android.permission.CALL_PHONE" />
+\end{verbatim}
+
+w pliku \verb+AndroidManifest.xml+. Każda próba wykonania chronionej funkcji API bez odpowiednich uprawnień spowoduje podniesienie wyjątku \verb+SecurityException+.
+
+\subsection{Podpisywanie aplikacji}
+
+Każda instalowana aplikacja w systemie Android musi być podpisana przez twórcę przy użyciu klucza prywatnego wraz z odpowiadającym certyfikatem. Możliwe jest jednak używanie
+kluczy prywatnych potwierdzonych przez dowolne centrum certyfikacji, a także certyfikatów samopodpisanych. Mechanizm podpisywania aplikacji nie ma większego znaczenia
+z punktu widzenia bezpieczeństwa systemu. Jedyną korzyścią jaką wnosi jest potwierdzenie tożsamości autora instalowanej aplikacji. W przyszłości system podpisywania
+może zostać wykorzystany w celu ograniczenia dostawców aplikacji do jedynie uprzednio zweryfikowanych, podobnie jak to jest w przypadku konkurencyjnego iPhone'a firmy Apple.
+W obecnych wydaniach systemu Android funkcjonalność taka nie jest zaimplementowana.
+
+Mechanizm podpisywanie aplikacji umożliwia programom współdzielenie zasobów, co zostało opisane w \ref{subsection:piaskownica}
+
+\section{Narzędzia programistyczne}
+
+Twórcy systemu Android udostępnili bardzo dobre narzędzia niezbędne do rozwijania i testowania aplikacji na ten system: SDK (Software Development Kit)
+i NDK (Native Development Kit).
+
+Android SDK jest podstawowym zestawem narzędzi przydatnym dla bardziej zaawansowanych użytkowników systemu oraz programistów . Najważniejsze komponenty tego pakietu to:
+\begin{itemize}
+\item emulator wraz z zestawem obrazów kolejnych wersji systemu pozwala uruchomić wirtualny obraz systemu. Możliwe jest zdefiniowanie 
+sprzętowych parametrów emulowanego obrazu, m. in. rozmiar pamięci RAM, rozdzielczość i typ ekranu. Dzięki temu można wykonywać testy na wielu 
+konfiguracjach. Wirtualizacja opiera się na emulatorze QEMU.
+\item \verb+adb+ (Android Debug Bridge) - narzędzie umożliwiające komunikację z urządzeniem i debugowanie aplikacji. Pozwala wykonywać szereg czynności 
+diagnostycznych, np. przesłanie pliku z/do urządzenia, wypisanie logów systemowych, uruchomienie konsoli, zainstalowanie/odinstalowanie aplikacji.
+Narzędzie to może być także wykorzystywane do pracy z uruchomionym wirtualnym obrazem.
+\item biblioteki dla kolejnych wydań systemu umożliwiają tworzenie aplikacji na daną platformę
+\end{itemize}
+
+Android NDK jest zestawem narzędzi dedykowanych dla systemu Android, który  został stworzony, aby umożliwić tworzenie aplikacji lub ich części w C/C++. 
+W jego skład wchodzą między innymi:
+\begin{itemize}
+\item różne wersje kompilatora gcc dla wybranych architektur procesora (ARM, x86, ...).
+\item standardowe narzędzia do debugowania i optymalizacji kodu, np. \verb+gdb+, \verb+gdbserver+, \verb+gcov+, \verb+ar+, \verb+ld+, \verb+objdump+.
+\item pliki nagłówkowe i skompilowane statyczne i dynamiczne biblioteki, np. libc, libstdc++, libz, libm.
+\end{itemize}
+
+Obydwa pakiety posiadają bogatą dokumentację oraz zawierają liczne przykłady użycia. Przykłady w dalszej części pracy będą używały powyższych narzędzi.
+
+
+\section{Aktualizacje systemu}\label{section:aktualizacje}
+
+System Android posiada wbudowany mechanizm aktualizacji całego systemu. Jednak nowe wersje systemu są dostarczane przez producenta zazwyczaj ze sporym opóźnieniem. 
+Wielu producentów urządzeń wraz ze standardową dystrybucją systemu załącza dodatkowe oprogramowanie, np. \textit{HTC Sense} firmy HTC, nakładka graficzna 
+\textit{TouchWiz} firmy Samsung. Źródła systemu zazwyczaj są nieznacznie modyfikowane przez producenta dla każdego modelu telefonu, gdyż wymagają, np. dodatkowych 
+sterowników urządzeń. Niektóre telefony posiadają także dodatkowe oprogramowanie operatora telefonii komórkowej.
+Nowe wersje systemu w pierwszej kolejności pojawiają się na urządzeniach z linii \textit{Google Nexus}, ponieważ nie zawierają one żadnych dodatkowych rozszerzeń
+producenta, ani firm telekomunikacyjnych. Bardzo wiele modeli nie otrzymuje dalszego wsparcia ze strony producenta. Jest to głównie spowodowane niewystarczającą 
+platformą sprzętową danego modelu. Bywa także, że decyzja o zaprzestaniu wydawania aktualizacji ma przyczyny biznesowe i producent nie ponosi nakładów, na mało 
+popularne urządzenia.
+
+Tabela \ref{table:zasieg} przedstawia udział najpopularniejszych wersji systemu. Zauważyć można, że największy udział mają wersje, których data premiery miała miejsce 
+ponad dwa lata temu.
+
+\begin{table}
+\begin{minipage}{\textwidth}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline\hline
+Wersja	& Nazwa kodowa	& Udział	\\ 
+\hline
+2.1	& Eclair	& 1.7\%	\\
+2.2	& Froyo	& 4.0\%	\\
+2.3.3 - 2.3.7	& Gingerbread	& 39.7\%	\\
+4.0.3 - 4.0.4	& Ice Cream Sandwich	& 29.3\%	\\
+4.1.x	& Jelly Bean	& 23.0\%	\\
+4.2.x	& Jelly Bean	& 2.0\%	\\
+\hline
+\end{tabular}
+\caption[Udział wersji systemu Android]{Udział wersji systemu Android\protect\footnotemark (stan na 02-04-2013)}
+\label{table:zasieg}
+\footnotetext{źródło: \url{http://developer.android.com/about/dashboards/index.html}}
+\end{minipage}
+\end{table}
+
+\chapter{Techniki ataków i sposoby na przeciwdziałanie}
  % protokól wywołanie funkcji
 
 \section{Klasyczny błąd przepełnienie bufora}
@@ -197,7 +395,7 @@ Technologia ,,NX bit'' jest wspierana przez Androida od wersji 2.3.
 \chapter{Tworzenie payloadów}
 
 
-\chapter{Rozszerzenie Matesploita}
+\chapter{Przykłady ataków i ich implementacja w narzędziu Metasploit}
 
 % ogolnie opisać matesploita, 
 % materiały: 
