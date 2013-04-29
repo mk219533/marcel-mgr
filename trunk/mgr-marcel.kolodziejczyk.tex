@@ -4,8 +4,29 @@
 \usepackage{graphicx}
 \usepackage{todonotes}
 \usepackage{hyperref}
+\usepackage{tikz}
 
 \usepackage[utf8]{inputenc}
+
+\usetikzlibrary{arrows,positioning} 
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    punkt/.style={
+           rectangle,
+           rounded corners,
+           draw=black, very thick,
+           text width=6.5em,
+           minimum height=2em,
+           text centered},
+    % Define arrow style
+    pil/.style={
+           ->,
+           thick,
+           shorten <=2pt,
+           shorten >=2pt,}
+}
 
 % Dane magistranta:
 
@@ -355,15 +376,175 @@ Wersja	& Nazwa kodowa	& Udział	\\
 \end{table}
 
 \chapter{Techniki ataków i sposoby na przeciwdziałanie}
- % protokól wywołanie funkcji
 
-\section{Klasyczny błąd przepełnienie bufora}
+\todo{dodać krótkie wprowadzenie}
 
-% przeciwdziałanie: Stack smashing protection
+\section{Błąd przepełnienie bufora na stosie}
 
-\section{Technika ,,heap spray''}
+Przepełnienie bufora to błąd w kodzie programu umożliwiający wczytanie do wyznaczonego obszaru pamięci większej ilości danych, niż zarezerwował na ten cel programista. 
+Dane wykraczające poza rozmiar bufora nadpisują obszar pamięci bezpośrednio z nim sąsiadujący, który może zawierać inne dane lub informacje decydujące o przepływie 
+sterowania w wykonywanym programie.
 
-%przeciwdziałanie: DEP, NX bit, Executable space protection
+Na przykładnie poniższego programu, w którym występuję błąd umożliwiający przepełnienie bufora na stosie, zastanie omówiona technika ataku umożliwiająca zmianę zachowania programu.
+
+\begin{verbatim}
+ 1: #include <stdio.h>
+ 2: #include <stdlib.h>
+ 3: 
+ 4: void exploit() {
+ 5:     printf("Exploited!\n");
+ 6:     exit(0);
+ 7: }
+ 8:
+ 9: void vulnerable(char *arg) {
+10:     char buffer[100];
+11:     strcpy(buffer, arg);
+12: }
+13: 
+14: int main(int argc, char *argv[]) {
+15:     if (argc < 0) exploit();
+16:     vulnerable(argv[1]);
+19: }
+\end{verbatim}
+
+Powyższy przykład został skompilowany z optymalizacjami oraz do kodu maszynowego w trybie \verb+thumb+. Procedura \verb+exploit+ z linii 17 
+w trakcie normalnego wykonania programu nigdy nie powinna zostać wykonana. Użycie tej procedury powoduje, że nie zostanie ona usunięta w trakcie 
+optymalizacji kodu przez kompilator jako martwy kod.
+
+\subsection{Nadpisanie adresu powrotu}
+
+W punkcie tym zostanie zaprezentowana atak, w wyniku którego sterowanie programu przejdzie do wykonywania funkcji \verb+exploit+.
+W funkcji \verb+vulnerable+ wykonywane jest kopiowanie napisu, przekazanego jako argument \verb+arg+, do lokalnie zadeklarowanego bufora \verb+buffer+ 
+o rozmiarze 100 bajtów. Błędem jest niesprawdzenie długości przekazywanego napisu. Uruchomienie programu z dostatecznie długim argumentem, kończy się 
+naruszeniem ochrony pamięci:
+
+\begin{verbatim}
+sh-3.2# ./stack-buffer-overflow `printf 'A%.0s' {1..108}`
+Segmentation fault
+\end{verbatim}
+
+Aby zrozumieć dokładnie genezą błędu, należy zapoznać się z kodem assemblerowym procedury \verb+vulnerable+: 
+\begin{verbatim}
+(gdb) disassemble vulnerable 
+Dump of assembler code for function vulnerable:
+1:   push	{lr}
+2:   sub	sp, #108	; 0x6c
+3:   adds	r1, r0, #0
+4:   mov	r0, sp
+5:   blx	0x83d0
+6:   add	sp, #108	; 0x6c
+7:   pop	{pc}
+End of assembler dump.
+\end{verbatim}
+
+Procedura ta kolejno wykonuje:
+\begin{itemize}
+\item Odkłada na stos adres powrotu, który jest przechowywany w rejestrze LR.
+\item Powiększa stos, aby utworzyć miejsce na lokalny bufor \verb+buffer+. Alokowane jest nadmiarowo 108 bajtów.
+\item Przygotowuje argumenty wywołania procedury \verb+strcpy+. Ustawiane są wartości rejestrów R0 i R1 na wskaźniki do odpowiednich obszarów pamięci.
+\item Wykonuje procedurę \verb+strcpy+.
+\item Przywraca poprzednią wartość wierzchołka stosu, tak aby wskazywał na wcześniej odłożony adres powrotu.
+\item Wczytuje adres powrotu do rejestru PC. Powoduje to dalsze wykonywanie przez program kodu od tego adresu.
+\end{itemize}
+
+Procedura \verb+strcpy+ kopiuje łańcuch znaków zakończony przez wartość \verb+\0+ do obszaru pamięci wskazywanego przez pierwszy argument. Ponieważ 
+przekazano napis znacznie dłuższy, od zaalokowanej pamięci, nadpisany został obszar pamięci, który znajduje się bezpośrednio za docelowym buforem, w tym
+zapisany tam wcześniej adres powrotu. Ostatnia instrukcja procedury \verb+vulnerable+ wczytuje do rejestru PC wartość wprowadzoną przez użytkownika,
+która nie jest poprawnym adresem kodu programu.
+
+Jeżeli adres powrotu zostanie nadpisany przez inny, poprawny adres kodu, możliwa będzie zmiena przepływu sterowania w programie. Umieszczenie
+w tym miejscu adresu początku kodu funkcji \verb+exploit+ spowoduje, że zostanie wykonana po zakończeniu procedury \verb+vulnerable+.
+
+Adres początku kodu funkcji \verb+exploit+ można uzyskać przy pomocy narzędzia \verb+gdb+:
+\begin{verbatim}
+(gdb) x/x exploit 
+0x84d0 <exploit>:	0x4803b508
+\end{verbatim}
+
+Ponieważ na bufor \verb+buffer+ zostało zaalokowanych na stosie 108 bajtów, wartość, która ma zostać wczytana do rejestru licznika instrukcji, należy umieścić
+na 109. i 110. pozycji. Kod maszynowy funkcji exploit jest skompilowany w trybie \verb+thumb+, więc aby został poprawnie zinterpretowany przez
+procesor, adres funkcji \verb+exploit+, tj. \verb+0x84d0+, trzeba zwiększyć o 1. Wartość ta musi też być zapisana w takiej kolejności bajtowej, w jakiej
+został skompilowany program. Domyślnie jest to little-endian. Poniżej uzyskujemy spodziewany efekt, czyli wykonanie procedury \verb+exploit+, która
+wypisuje napis na standardowe wyjście:
+
+\begin{verbatim}
+sh-3.2# ./stack-buffer-overflow `printf 'A%.0s' {1..108}; printf '\xd1\x84'`
+Exploited!
+\end{verbatim}
+
+\subsection{Zabezpieczenie ProPolice}
+
+W nowoczesnych kompilatorach zostało dodane zabezpieczenie, które znacząco utrudnia wykonywanie ataków polegających na nadpisywaniu niektórych danych 
+znajdujących się na stosie. Kod maszynowy funkcji, które alokują bufor na stosie, jest wzbogacony o dodatkowe sprawdzenie, czy nie wystąpiło przepełnienie
+bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'', ,,ciasteczka'' (ang. \textit{canaries}, \textit{cookie}).
+Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury, a danymi kontrolnymi programu odkładanymi na stosie, 
+np. adresem powrotu z funkcji, wskaźnikiem ramki, itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. Dzięki temu, że jego wartość
+jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane jest sprawdzenie, czy wcześniej 
+zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończone jest błędem.
+
+W kompilatorze \verb+gcc+ zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego włączenia lub wyłączenia służą flagi kompilatora: \verb+--stack-protector+
+i \verb+--no-stack-protector+. W zestawie narzędzi Android NDK zostało dodane w wersji 1.5 i domyślnie jest włączone. Począwszy od tej wersji, także wszystkie 
+źródła bibliotek systemowych są skompilowane z włączoną ochroną. 
+
+Kod assemblera funkcji \verb+vulnerable+ z powyższego przykładu z włączonym zabezpieczeniem \verb+ProPolice+ wygląda następująco:
+\begin{verbatim}
+ 1:  push	{r4, lr}
+ 2:  ldr	r4, [pc, #36]	; (0x8570 <vulnerable+40>)
+ 3:  sub	sp, #104	; 0x68
+ 4:  adds	r1, r0, #0
+ 5:  add	r4, pc
+ 6:  ldr	r4, [r4, #0]
+ 7:  mov	r0, sp
+ 8:  ldr	r3, [r4, #0]
+ 9:  str	r3, [sp, #100]	; 0x64
+10:  blx	0x8450
+11:  ldr	r2, [sp, #100]	; 0x64
+12:  ldr	r3, [r4, #0]
+13:  cmp	r2, r3
+14:  beq.n	0x856a <vulnerable+34>
+15:  blx	0x845c
+16:  add	sp, #104	; 0x68
+17:  pop	{r4, pc}
+\end{verbatim}
+
+W instrukcjach 2 -- 6 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na stosie. Natomiast instrukcje 11 -- 15 sprawdzają czy wartość ta 
+nie została zmieniona.
+
+Należy zauważyć, że powyższa metoda wykrywania przepełnienia buforów chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest zmodyfikowanie innych 
+zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
+
+\section{Wstrzyknięcie kodu}\todo{niedokończone}
+
+W przykładzie w poprzednim punkcie, został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
+Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
+aby atakujący mógł osiągnąć zamierzone cele. Możliwe jest dalsze zmodyfikowanie przekazywanego przez argument napisu tak, aby spowodować wykonanie dowolnego
+dostarczonego przez atakującego kodu.
+
+Bufor przekazywany przez argument może zostać wypełniony kodem maszynowym zgodnym z architekturą procesora danego urządzenia. Takie fragmenty kodu
+maszynowego, przekazywana w trakcie wykonywania ataku, nazywane są \textit{shellcodem}. Tworzenie tego typu wstawek zosatnie omówione w rozdziale \ref{chapter:shellcode}.
+W przypadku omawianego przykładu istnieje dodatkowe wymaganie, aby przekazany kod nie zawierał znaku \verb+\x00+, ponieważ jest on interpretowany jako napis.
+
+Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w którym zostanie umieszczony shellcode.
+
+
+\begin{tikzpicture}[node distance=0mm ]
+\centering
+\node[punkt] (nop) {NOP};
+\node[punkt, right=of nop] (shell) {shellcode};
+\node[punkt, right=of shell] (ret) {adres powrotu}
+  edge[pil, bend right=30] (nop.north);
+
+\node[below=of nop] (stackdummy) {\phantom{adresa}};
+\node[below=of ret] (stack) {stos}
+  edge[pil] (stackdummy.west);
+\node[below=of stack] (adresydummy) {\phantom{adry}};
+\node[below=of stackdummy] (adresy) {adresy}
+  edge[pil] (adresydummy.east);
+\end{tikzpicture}
+
+
+%\subsection{}
+% noexecutestack
 
 \subsection{NX bit}
 
@@ -376,6 +557,13 @@ Technologia ,,NX bit'' jest wspierana przez Androida od wersji 2.3.
 
 
 
+\section{Technika ,,heap spray''}
+
+%przeciwdziałanie: DEP, NX bit, Executable space protection
+
+
+
+
 
  wyko dzięki któremu system operacyjny 
 
@@ -383,7 +571,7 @@ Technologia ,,NX bit'' jest wspierana przez Androida od wersji 2.3.
 
 % przeciwdziałanie: ASLR
 
-\chapter{Tworzenie payloadów}
+\chapter{Tworzenie shellcode'u}\label{chapter:shellcode}
 
 
 \chapter{Przykłady ataków i ich implementacja w narzędziu Metasploit}
