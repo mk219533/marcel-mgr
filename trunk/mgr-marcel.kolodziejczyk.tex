@@ -638,7 +638,7 @@ Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania 
 punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
 
 Program z przykładu \ref{print:overflow} można uruchomić z argumentem, w którym pierwsze 108 bajtów jest kodem maszynowym, który zostanie wykonany w 
-trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamiąci na stosie zaalokowanego na bufor 
+trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamięci na stosie zaalokowanego na bufor 
 \verb+buffer+. Ponieważ wstrzykiwany kod maszynowy ma mniejszy rozmiar, należy go poprzedzić odpowiednią liczbą instrukcji NOP (ang. 
 \textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
 
@@ -740,7 +740,7 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 21:   execl("./buffer-overflow", "./buffer-overflow", payload, NULL);
 21: }
 \end{verbatim}
-\caption{Program przeprowadzający atak z wykorzystaniem \textit{return-oritented programming}}
+\caption{Program przeprowadzający atak z wykorzystaniem \textit{return-oriented programming}}
 \end{print}
 
 \subsection{Address space layout randomization (ASLR)}\label{section:aslr}
