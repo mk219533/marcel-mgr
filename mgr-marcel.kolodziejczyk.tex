@@ -11,7 +11,7 @@
 \usepackage{float}
 
 \floatstyle{ruled}
-\newfloat{print}{tb}{lop}[section]
+\newfloat{print}{tbh}{lop}[section]
 \floatname{print}{Wydruk}
 
 \usetikzlibrary{arrows,positioning} 
@@ -391,8 +391,6 @@ Wersja	& Nazwa kodowa	& Udział	\\
 
 \chapter{Techniki ataków i sposoby przeciwdziałania}
 
-\todo{dodać krótkie wprowadzenie}
-
 \section{Błąd przepełnienie bufora na stosie}
 
 Przepełnienie bufora to błąd w kodzie programu umożliwiający wczytanie do wyznaczonego obszaru pamięci większej ilości danych, niż zarezerwował na ten 
@@ -500,28 +498,8 @@ Exploited!
 
 \subsection{Zabezpieczenie ProPolice}
 
-W nowoczesnych kompilatorach zostało dodane zabezpieczenie, które znacząco utrudnia wykonywanie ataków polegających na nadpisywaniu niektórych danych 
-znajdujących się na stosie. Kod maszynowy funkcji, która alokuje bufor na stosie, jest wzbogacany o dodatkowe sprawdzenie, czy nie wystąpiło 
-przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'' lub ,,ciasteczka'' (ang. \textit{canaries}, 
-\textit{cookie}). Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury a danymi kontrolnymi programu 
-odkładanymi na stosie, np. adresem powrotu z funkcji, wskaźnikiem ramki itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. 
-Dzięki temu, że jego wartość jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane 
-jest sprawdzenie, czy wcześniej zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończy się 
-błędem.
-
-W kompilatorze GCC zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego włączenia lub wyłączenia służą flagi kompilatora: \verb+--stack-protector+
-i \verb+--no-stack-protector+. W zestawie narzędzi Android NDK zostało dodane w wersji 1.5 i domyślnie jest włączone. Począwszy od tej wersji, także 
-wszystkie źródła bibliotek systemowych są skompilowane z włączoną ochroną. 
-
-Kod assemblera funkcji \verb+vulnerable+ z przykładu \ref{print:overflow} z włączonym zabezpieczeniem \verb+ProPolice+ wygląda został umieszczony
-na wydruku \ref{print:vulnerable-propolice}. W instrukcjach 2 -- 6 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na stosie. 
-Natomiast instrukcje 11 -- 15 sprawdzają czy wartość ta nie została zmieniona.
-
-Należy zauważyć, że powyższa metoda wykrywania przepełnienia buforów chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest 
-zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
-
 \SaveVerb{propolice}|ProPolice|
-\begin{print}
+\begin{print}[tbh]
 \begin{verbatim}
  1:  push	{r4, lr}
  2:  ldr	r4, [pc, #36]	; (<vulnerable+40>)
@@ -545,9 +523,29 @@ zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do ni
 \label{print:vulnerable-propolice}
 \end{print}
 
-\section{Wstrzyknięcie kodu}
+W nowoczesnych kompilatorach zostało dodane zabezpieczenie, które znacząco utrudnia wykonywanie ataków polegających na nadpisywaniu niektórych danych 
+znajdujących się na stosie. Kod maszynowy funkcji, która alokuje bufor na stosie, jest wzbogacany o dodatkowe sprawdzenie, czy nie wystąpiło 
+przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'' lub ,,ciasteczka'' (ang. \textit{canaries}, 
+\textit{cookie}). Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury a danymi kontrolnymi programu 
+odkładanymi na stosie, np. adresem powrotu z funkcji, wskaźnikiem ramki itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. 
+Dzięki temu, że jego wartość jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane 
+jest sprawdzenie, czy wcześniej zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończy się 
+błędem.
 
-\begin{figure}
+W kompilatorze GCC zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego włączenia lub wyłączenia służą flagi kompilatora: \verb+--stack-protector+
+i \verb+--no-stack-protector+. W zestawie narzędzi Android NDK zostało dodane w wersji 1.5 i domyślnie jest włączone. Począwszy od tej wersji, także 
+wszystkie źródła bibliotek systemowych są skompilowane z włączoną ochroną. 
+
+Kod assemblera funkcji \verb+vulnerable+ z przykładu \ref{print:overflow} z włączonym zabezpieczeniem \verb+ProPolice+ wygląda został umieszczony
+na wydruku \ref{print:vulnerable-propolice}. W instrukcjach 2 -- 6 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na stosie. 
+Natomiast instrukcje 11 -- 15 sprawdzają czy wartość ta nie została zmieniona.
+
+Należy zauważyć, że powyższa metoda wykrywania przepełnienia buforów chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest 
+zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
+
+\section{Wstrzyknięcie kodu}\label{section:injection}
+
+\begin{figure}[b]
 \centering
 \begin{tikzpicture}[node distance=0mm ]
 \node[punkt] (nop) {NOP};
@@ -566,7 +564,17 @@ zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do ni
 \label{figure:stackoverflow}
 \end{figure}
 
-\begin{print}
+
+W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
+Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
+aby atakujący mógł osiągnąć zamierzone cele. W punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
+z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcodem}. Tworzenie tego typu wstawek zostanie 
+omówione w rozdziale \ref{chapter:shellcode}. Aby przekazany kod został wykonany przez program potrzebne jest odpowiednie ustawienie wartości
+licznika instrukcji na adres pamięci, w którym umieszczony jest shellcode. Sposób, w jaki zostanie to zrobione, jest zależny od błędu w programie.
+Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z podprogramu, co zostało opisane w poprzednim
+punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
+
+\begin{print}[t]
 \begin{verbatim}
  1:  char *sh[2] = { "/system/bin/ls", NULL };
  2:  execve(sh[0], sh, NULL);
@@ -575,7 +583,46 @@ zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do ni
 \label{print:c-shellcode}
 \end{print}
 
+
+Program z przykładu \ref{print:overflow} można uruchomić z argumentem, w którym pierwsze 108 bajtów jest kodem maszynowym, który zostanie wykonany w 
+trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamięci na stosie zaalokowanego na bufor 
+\verb+buffer+. Ponieważ wstrzykiwany kod maszynowy ma mniejszy rozmiar, należy go poprzedzić odpowiednią liczbą instrukcji NOP (ang. 
+\textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
+
+Na wydruku \ref{print:asm-shellcode} został przedstawiony kod maszynowy (\textit{shellcode} wraz z odpowiednimi instrukcjami assemblera. Realizuje on 
+instrukcje w języku C z wydruku \ref{print:c-shellcode}. Kod maszynowy został stworzony w taki sposób, aby żaden jego bajt nie był równy zero.
+Dzięki temu może być przekazany jako napis poprzez argument programu. 
+
+Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w 
+którym zostanie umieszczony shellcode. Adres ten można uzyskać uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ jest on przekazywany 
+jako pierwszy argument procedury \verb+strcpy+ w linii 11 programu \ref{print:overflow}, należy odczytać wartość rejestru R0 w trakcie wykonania 
+procedury \verb+vulnerable+. Zostało to zaprezentowane na wydruku \ref{print:getsp}. Położenie stosu w kolejnych uruchomieniach programu jest takie 
+samo, ponieważ została wyłączona randomizacja przestrzeni adresowej procesu. Zostanie to opisane w punkcie \ref{section:aslr}.
+
+\SaveVerb{buffer}|buffer|
 \begin{print}
+\begin{verbatim}
+(gdb) disassemble 
+Dump of assembler code for function vulnerable:
+   0x000084c4 <+0>:	push	{lr}
+   0x000084c6 <+2>:	sub	sp, #108	; 0x6c
+   0x000084c8 <+4>:	adds	r1, r0, #0
+   0x000084ca <+6>:	add	r0, sp, #4
+=> 0x000084cc <+8>:	blx	0x83d8
+   0x000084d0 <+12>:	add	sp, #108	; 0x6c
+   0x000084d2 <+14>:	pop	{pc}
+(gdb) print/x $sp
+$3 = 0xbefffa78
+(gdb) print/x $r0
+$4 = 0xbefffa7c
+\end{verbatim}
+\caption{Odczytanie adresu bufora \protect\UseVerb{buffer}.}
+\label{print:getsp}
+\end{print}
+
+
+
+\begin{print}[H]
 \begin{verbatim}
  1: #include <unistd.h>
  2: #include <stdlib.h>
@@ -628,52 +675,6 @@ zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do ni
 \label{print:asm-shellcode}
 \end{print}
 
-W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
-Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
-aby atakujący mógł osiągnąć zamierzone cele. W punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
-z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcodem}. Tworzenie tego typu wstawek zostanie 
-omówione w rozdziale \ref{chapter:shellcode}. Aby przekazany kod został wykonany przez program potrzebne jest odpowiednie ustawienie wartości
-licznika instrukcji na adres pamięci, w którym umieszczony jest shellcode. Sposób, w jaki zostanie to zrobione, jest zależny od błędu w programie.
-Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z podprogramu, co zostało opisane w poprzednim
-punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
-
-Program z przykładu \ref{print:overflow} można uruchomić z argumentem, w którym pierwsze 108 bajtów jest kodem maszynowym, który zostanie wykonany w 
-trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamięci na stosie zaalokowanego na bufor 
-\verb+buffer+. Ponieważ wstrzykiwany kod maszynowy ma mniejszy rozmiar, należy go poprzedzić odpowiednią liczbą instrukcji NOP (ang. 
-\textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
-
-Na wydruku \ref{print:asm-shellcode} został przedstawiony kod maszynowy (\textit{shellcode} wraz z odpowiednimi instrukcjami assemblera. Realizuje on 
-instrukcje w języku C z wydruku \ref{print:c-shellcode}. Kod maszynowy został stworzony w taki sposób, aby żaden jego bajt nie był równy zero.
-Dzięki temu może być przekazany jako napis poprzez argument programu. 
-
-Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w 
-którym zostanie umieszczony shellcode. Adres ten można uzyskać uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ jest on przekazywany 
-jako pierwszy argument procedury \verb+strcpy+ w linii 11 programu \ref{print:overflow}, należy odczytać wartość rejestru R0 w trakcie wykonania 
-procedury \verb+vulnerable+. Zostało to zaprezentowane na wydruku \ref{print:getsp}. Położenie stosu w kolejnych uruchomieniach programu jest takie 
-samo, ponieważ została wyłączona randomizacja przestrzeni adresowej procesu. Zostanie to opisane w punkcie \ref{section:aslr}.
-
-\SaveVerb{buffer}|buffer|
-\begin{print}
-\begin{verbatim}
-(gdb) disassemble 
-Dump of assembler code for function vulnerable:
-   0x000084c4 <+0>:	push	{lr}
-   0x000084c6 <+2>:	sub	sp, #108	; 0x6c
-   0x000084c8 <+4>:	adds	r1, r0, #0
-   0x000084ca <+6>:	add	r0, sp, #4
-=> 0x000084cc <+8>:	blx	0x83d8
-   0x000084d0 <+12>:	add	sp, #108	; 0x6c
-   0x000084d2 <+14>:	pop	{pc}
-(gdb) print/x $sp
-$3 = 0xbefffa78
-(gdb) print/x $r0
-$4 = 0xbefffa7c
-\end{verbatim}
-\caption{Odczytanie adresu bufora \protect\UseVerb{buffer}.}
-\label{print:getsp}
-\end{print}
-
-
 
 \subsection{Bit NX}
 
@@ -686,8 +687,32 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 
 \section{Return-oriented programming}
 
+\textit{Return-oriented programming} (ROP) jest to technika ataku, która pozwala na zmianę zachowania programu na dowolną, zamierzoną przez atakującego.
+W trakcie ataku z wykorzystaniem tej techniki, program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
+\textit{chunk}), dostępnych w przestrzeni adresowej procesu. Wykorzystywane są obszary pamięci w których załadowany jest kod programu oraz bibliotek 
+dynamicznych. Obszary te są oznaczone jako do wykonywania, co pozwala ominąć zabezpieczenie bitu NX. Najczęściej jako baza gadżetów wykorzystywana
+jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów.
+Inną dogodną do wykorzystania biblioteką jest \verb+libwebcore.so+, która jest używana przez programy renderujące treści HTML.
 
-% przeciwdziałanie: ASLR
+W początkowych wersjach ataków wykorzystujących technikę ROP, ciąg adresów kolejnych gadżetów był umieszczany na stosie, natomiast gadżety były 
+dobierane w taki sposób, aby każdy z nich kończył się instrukcją powrotu, która pobiera wartość licznika instrukcji ze stosu. W architekturze x86 jest 
+to instrukcja \verb+ret+ (return), co jest genezą nazwy tej techniki. Odpowiednikiem tej instrukcji w architekturze ARM jest \verb+pop {pc}+.
+
+Możliwe jest jednak przeprowadzenie ataku z wykorzystaniem techniki ROP, w którym dane sterujące wykonaniem programu nie są umieszczone na stosie.
+W tym celu używany jest zestaw gadżetów, w których ostatnią instrukcją jest instrukcja skoku pośredniego (BX, BLX). Parametrem takiej instrukcji
+jest inny rejestr ogólnego przeznaczenia, a skok jest wykonywany do adresu jaki znajduje się w przekazanym rejestrze. Wartość tego rejestru
+może być wcześniej pobierana z dowolnego obszaru pamięci procesu, w którym atakujący zapisał dane, np. ze sterty. Taki wariant ataku typu ROP na 
+architekturze ARM został opisany w pracy \cite{noreturn}.
+
+Ręczne wyszukiwanie dogodnych fragmentów kodu, które mogą zostać użyte jako gadżet oraz składanie ich w sekwencję, tak aby uzyskać pożądane zachowanie
+programu jest bardzo czasochłonne. Dostępne są jednak narzędzia, które pozwalają ten proces zautomatyzować. W pracy \cite{kompilator}, został
+opisany kompilator ROP dla architektury x86. Natomiast w \cite{roparm} przedstawiono m.in. algorytmy służące do automatycznego wyszukiwania i składania
+gadżetów dla architektury ARM.
+
+Poniżej znajduje się przykład ataku wykorzystującego technikę ROP. Do przeprowadzenia ataku został wykorzystany błąd w programie z 
+wydruku \ref{print:overflow}. Celem ataku jest wykonanie przez program procedury \verb+system("/system/bin/sh")+ z biblioteki standardowej. 
+Baza gadżetów stanowi biblioteka \verb+lib.c+, która jest dynamicznie ładowana w trakcie wykonania programu.
+
 \begin{print}
 \begin{verbatim}
    0x189d8 <getcwd+12>:	mov	r0, r4
@@ -697,23 +722,34 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 \caption{Gadżet}
 \end{print}
 
-%(gdb) x/2i 0x4001a9d9
-%   0x4001a9d9:	mov	r0, r4
-%   0x4001a9db:	pop	{r4, pc}
-
-\SaveVerb{binsh}|"/system/bin/sh"|
-\SaveVerb{libc}|libc.so|
-\begin{print}
+Skonstruowania poniższego, przykładowego ataku zostało poprzedzone wykonaniem następnujących czynności przygotowujących:
+\begin{itemize}
+\item Uzyskanie adresu pamięci, pod którym jest załadowana biblioteka \verb+libc.so+. Najprościej można to zrobić przy użyciu narzędzia \verb+nm+. 
+Niestety pakiet Android NDK nie zawiera tego programu. Innym sposobem na otrzymanie adresów zmapowanych obszarów pamięci procesu jest przeczytanie 
+pliku \verb+/proc/<pid>/maps+. Dla programu, na którym zostanie przeprowadzony atak, jest on równy \verb+0x40002000+.
+\item Ustalenie adresu procedury \verb+system+ w bibliotece \verb+libc.so+. Można w tym celu użyć narzędzia \verb+gdb+:
+\begin{verbatim}
+(gdb) x/x system
+0x1a3a4 <system>:	0xb5704b2b
+\end{verbatim}
+Wartość \verb+0x1a3a4+ należy zwiększyć o offset, pod którym załadowana jest biblioteka \verb+libc.so+ w przestrzeni adresowej procesu.
+Ponieważ biblioteka \verb+libc.so+ jest skompilowana w trybie Thumb, do licznika instrukcji musi być zapisana wartość powiększona o 1.
+\item Wyszukanie w bibliotece \verb+libc.so+ dogodnych gadżetów. Kryteria jakie powinny spełnić to: 
+\begin{itemize}
+\item ostatnia instrukcja musi zapisywać przekazane wartości do licznika instrukcji,
+\item pozwolą na zapisanie do rejestru R0 adresu napisu \verb|"/system/bin/sh"|, który jest przekazywany jako argument procedury \verb+system+.
+\end{itemize}
+Kryteria te spełnia gadżet z wydruku \ref{print:getcwd-chunk}. Są to ostatnie dwie instrukcje procedury \verb+getcdw+.
+\item Wyszukanie adresu napisu \verb+"/system/bin/sh"+. Napis ten także znajduje się w bibliotece \verb+libc.so+ i można go wyszukać przy użyciu 
+narzędzi \verb+grep+ i \verb+objdump+.
 \begin{verbatim}
 (gdb) x/s 0x003ad3a
-0x3ad3a:	 "/system/bin/sh"
-\end{verbatim}
-\caption{Napis \protect\UseVerb{binsh} w bibliotece \protect\UseVerb{libc}.}
-\label{print:binsh}
-\end{print}
+0x3ad3a:         "/system/bin/sh"
+\end{verbatim} 
+\end{itemize}
 
-%(gdb) x/s 0x4003cd3a
-%0x4003cd3a:	 "/system/bin/sh"
+\textbf{TODO:} Opisać atak, który jest wykonywany przez program na wydruku \ref{print:rop}
+%Kod źródłowy programu, który uruchamia
 
 \begin{print}
 \begin{verbatim}
@@ -741,6 +777,7 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 21: }
 \end{verbatim}
 \caption{Program przeprowadzający atak z wykorzystaniem \textit{return-oriented programming}}
+\label{print:rop}
 \end{print}
 
 \subsection{Address space layout randomization (ASLR)}\label{section:aslr}
@@ -749,7 +786,6 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 % https://blog.duosecurity.com/2012/07/exploit-mitigations-in-android-jelly-bean-4-1/
 % https://www.kernel.org/doc/Documentation/sysctl/kernel.txt (randomize-va-space)
 
-%\section{Technika ,,heap spray''}
 \chapter{Tworzenie shellcode'u}\label{chapter:shellcode}
 
 
@@ -769,18 +805,22 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliografia}
 
-% troche nie na temat
 \bibitem[1]{decomp} Anthony Desnos, Geoffroy Gueguen \textit{Android: From Reversing to Decompilation}, Black Hat, Abu Dhabi, 2011 \
 
-\bibitem[2]{privescal} S. Höbarth, R. Mayrhofer, \textit{A framework for on-device privilege escalation exploit execution on android}, IWSSI/SPMU 2011: 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive 2011, czerwiec 2011. dostępne na \url{http://www.medien.ifi.lmu.de/iwssi2011/} \
+\bibitem[2]{privescal} S. Höbarth, R. Mayrhofer, \textit{A framework for on-device privilege escalation exploit execution on android}, IWSSI/SPMU 2011: 
+3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive 2011, czerwiec 2011. 
+dostępne na \url{http://www.medien.ifi.lmu.de/iwssi2011/} \
 
-\bibitem[3]{armguide} Gaurav Kumar, Aditya Gupta, \textit{A Short Guide on ARM Exploitation}, \url{http://www.exploit-db.com/wp-content/themes/exploit/docs/24493.pdf} \
+\bibitem[3]{armguide} Gaurav Kumar, Aditya Gupta, \textit{A Short Guide on ARM Exploitation}, 
+\url{http://www.exploit-db.com/wp-content/themes/exploit/docs/24493.pdf} \
 
 \bibitem[4]{alphanum} Yves Younan, Pieter Philippaerts, \textit{Alphanumeric RISC ARM shellcode}, Phrack, 66, czerwiec 2009 \
 
-\bibitem[5]{anatomy} Joshua Hulse, \textit{Buffer Overflows: Anatomy of an Exploit}, \url{http://packetstormsecurity.com/files/108549/Buffer-Overflows-Anatomy-Of-An-Exploit.html} \
+\bibitem[5]{anatomy} Joshua Hulse, \textit{Buffer Overflows: Anatomy of an Exploit}, 
+\url{http://packetstormsecurity.com/files/108549/Buffer-Overflows-Anatomy-Of-An-Exploit.html} \
 
-\bibitem[6]{explarm} Emanuele Acri, \textit{Exploiting Arm Linux Systems}, \url{http://packetstormsecurity.com/files/98376/Exploiting-ARM-Linux-Systems.html} \
+\bibitem[6]{explarm} Emanuele Acri, \textit{Exploiting Arm Linux Systems}, 
+\url{http://packetstormsecurity.com/files/98376/Exploiting-ARM-Linux-Systems.html} \
 
 \bibitem[7]{fuzzphone} Collin Mulliner, Charlie Miller, \textit{Fuzzing the Phone in your Phone}, Black Hat USA, 2009 \
 
@@ -790,7 +830,8 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 
 \bibitem[10]{nonexec} Itzhak Avraham, \textit{Non-Executable Stack ARM Exploitation}, Black Hat DC, 2011 \
 
-\bibitem[11]{smashing} jip@soldierx.com, \textit{Stack Smashing On A Modern Linux System}, \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \
+\bibitem[11]{smashing} jip@soldierx.com, \textit{Stack Smashing On A Modern Linux System}, 
+\url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \
 
 \bibitem[12]{armman} ARM Ltd. \textit{Arm architecture reference manual.} \
 
@@ -801,6 +842,18 @@ Technologia ,,NX bit'' jest wspierana przez system Android od wersji 2.3.
 \bibitem[15]{android} Android project, \url{http://developer.android.com} \
 
 \bibitem[16]{webkit} The WebKit Open Source Project, \url{http://www.webkit.org} \
+
+\bibitem[17]{noreturn} Lucas Davi, Alexandra Dmitrienko, Ahmad-Reza Sadeghi, Marcel Winandy, \textit{Return-Oriented Programming without Returns on 
+ARM}, 2010 \
+
+\bibitem[18]{roparm} T. Kornau. \textit{Return oriented programming for the ARM architecture. Master’s thesis.}, 2010 \
+
+\bibitem[19]{surgically} Giampaolo Fresi Roglia, Lorenzo Martignoni, Roberto Paleari, Danilo Bruschi. \textit{Surgically returning to randomized 
+lib(c).} Computer Security Applications Conference, 2009 \
+
+\bibitem[20]{kompilator} Paweł Janic, \textit{Kompilator ROP}, 2012 \
+
+
 
 \end{thebibliography}
 
