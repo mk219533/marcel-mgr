@@ -1,0 +1,7 @@
+directory jni
+target remote :5039
+file obj/local/armeabi/reverse_tcp
+b shellcode
+continue
+
+info reg
