@@ -24,6 +24,7 @@ char shellcode[] = {
 
 void main() 
 {
+  char c[1000];
   strcpy(c, shellcode);
   ((void (*)())(c+1))();
 }
