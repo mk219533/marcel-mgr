@@ -2,7 +2,6 @@
 
 \usepackage{polski}
 \usepackage{graphicx}
-\usepackage{todonotes}
 \usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{fancyvrb}
@@ -11,7 +10,7 @@
 \usepackage{float}
 
 \floatstyle{ruled}
-\newfloat{print}{tb}{lop}[section]
+\newfloat{print}{tb}{lop}[chapter]
 \floatname{print}{Wydruk}
 
 \usetikzlibrary{arrows,positioning} 
@@ -114,7 +113,6 @@ krótkie streszczenie pracy
 \tableofcontents
 %\listoffigures
 %\listoftables
-\listoftodos
 
 \chapter*{Wprowadzenie}
 
@@ -452,7 +450,7 @@ technika ataku pozwalająca na zmianę zachowania programu.
 
 Program \ref{print:overflow} został skompilowany z optymalizacjami (\verb+-Os+) do kodu maszynowego w trybie Thumb-2. Wykonanie procedury 
 \verb+exploit+ w trakcie normalnego wykonania programu nigdy nie powinno nastąpić. Użycie tej procedury w linii 15 jest tylko po to, aby nie 
-została usunięta w trakcie optymalizacji kodu przez kompilator jako martwy kod.
+została usunięta przez kompilator jako martwy kod w trakcie optymalizacji.
 
 \subsection{Nadpisanie adresu powrotu}
 
@@ -494,12 +492,12 @@ Adres początku kodu funkcji \verb+exploit+ można uzyskać za pomocą narzędzi
 \end{verbatim}
 
 Aby doprowadzić do wykonania procedury \verb+exploit+, należy uruchomić program z dostatecznie długim argumentem. Ponieważ na bufor \verb+buffer+ 
-zostało zaalokowanych na stosie 108 bajtów, wartość, która ma zostać wczytana do rejestru licznika instrukcji, należy umieścić kolejnych pozycjach.
+zostało zaalokowanych na stosie 108 bajtów, wartość, która ma zostać wczytana do rejestru licznika instrukcji, należy umieścić na~kolejnych pozycjach.
 Wartość ta musi też być zapisana w takiej kolejności bajtowej, w jakiej został skompilowany program. Domyślnie jest to little-endian.
 Cały argument musi być poprawnym napisem, a więc nie może zawierać bajtu o wartości zero. Skonstruowanie takiego argumentu jest jednak możliwe, 
 dzięki odpowiedniej kolejności bajtowej przekazywanego adresu -- dwa najmniej znaczące bajty adresu będą położone jako pierwsze. Kolejny bardziej 
-znaczący bajt adresu, który jest równy zero, poprawnie zakończy napis. Dodatkowo wykorzystywany jest fakt, że najbardziej znaczący adresu bajt
-pierwotnie odłożonego adresu powrotu jest także równy zero. Bajt ten nie zostanie on nadpisany trakcie przepełnienia bufora. Kod maszynowy funkcji 
+znaczący bajt adresu, który jest równy zero, poprawnie zakończy napis. Dodatkowo wykorzystywany jest fakt, że najbardziej znaczący bajt adresu
+pierwotnie odłożonego adresu powrotu jest także równy zero. Bajt ten nie zostanie nadpisany trakcie przepełnienia bufora. Kod maszynowy funkcji 
 \verb+exploit+ jest skompilowany w trybie Thumb-2, więc aby został poprawnie zinterpretowany przez procesor, adres funkcji \verb+exploit+, 
 tj.~\verb+0x84d0+, musi być zwiększony o 1. Poniżej uzyskujemy spodziewany efekt, czyli wykonanie procedury \verb+exploit+, która wypisuje napis 
 na~standardowe wyjście:
@@ -536,10 +534,10 @@ Exploited!
 \end{print}
 
 W nowoczesnych kompilatorach zostało dodane zabezpieczenie, które znacząco utrudnia wykonywanie ataków polegających na nadpisywaniu niektórych danych 
-znajdujących się na stosie. Kod maszynowy funkcji, która alokuje bufor na stosie, jest wzbogacany o dodatkowe sprawdzenie, czy nie wystąpiło 
-przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'' lub ,,ciasteczka'' (ang. \textit{canaries}, 
+znajdujących się na~stosie. Kod maszynowy funkcji, która alokuje bufor na stosie, jest wzbogacany o dodatkowe sprawdzenie, czy nie wystąpiło 
+przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'' lub ,,ciasteczka'' (ang. \textit{canary}, 
 \textit{cookie}). Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury a danymi kontrolnymi programu 
-odkładanymi na stosie, np. adresem powrotu z funkcji, wskaźnikiem ramki itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. 
+odkładanymi na stosie, np. adresem powrotu z~funkcji, wskaźnikiem ramki itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. 
 Dzięki temu, że jego wartość jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane 
 jest sprawdzenie, czy wcześniej zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończy się 
 błędem.
@@ -548,11 +546,11 @@ W kompilatorze GCC zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego wł
 i \verb+--no-stack-protector+. W zestawie narzędzi Android NDK zostało dodane w wersji 1.5 i domyślnie jest włączone. Począwszy od tej wersji, także 
 wszystkie źródła bibliotek systemowych są skompilowane z włączoną ochroną. 
 
-Kod assemblera funkcji \verb+vulnerable+ z przykładu~\ref{print:overflow} z włączonym zabezpieczeniem ProPolice został umieszczony 
+Kod assemblerowy procedury \verb+vulnerable+ z przykładu~\ref{print:overflow} z włączonym zabezpieczeniem ProPolice został umieszczony 
 na~wydruku~\ref{print:vulnerable-propolice}. W instrukcjach 2, 5, 6, 8, 9 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na 
-stosie. Natomiast instrukcje 11 -- 15 sprawdzają czy wartość ta nie została zmieniona.
+stosie. Natomiast instrukcje 11 -- 15 sprawdzają, czy wartość ta nie została zmieniona.
 
-Należy zauważyć, że powyższa metoda wykrywania przepełnienia buforów chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest 
+Należy zauważyć, że powyższa metoda wykrywania przepełnienia bufora chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest 
 zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
 
 \section{Wstrzyknięcie kodu}\label{section:injection}
@@ -610,6 +608,76 @@ zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do ni
 \label{print:asm-shellcode}
 \end{print}
 
+
+\begin{print}
+\begin{verbatim}
+ 1:  char *sh[2] = { "/system/bin/ls", NULL };
+ 2:  execve(sh[0], sh, NULL);
+\end{verbatim}
+\caption{Kod w języku C}
+\label{print:c-shellcode}
+\end{print}
+
+W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
+Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
+aby atakujący mógł osiągnąć zamierzone cele. W~punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
+z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcode'em}. Tworzenie tego typu wstawek zostanie 
+omówione w rozdziale \ref{section:shellcode}. Aby przekazany kod został wykonany przez program, potrzebne jest odpowiednie ustawienie wartości
+licznika instrukcji na adres pamięci, w którym umieszczony jest \textit{shellcode}. Sposób, w jaki zostanie to zrobione, jest zależny od błędu 
+w programie. Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z~podprogramu, co zostało opisane w poprzednim
+punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[node distance=0mm ]
+\node[punkt] (nop) {NOP};
+\node[punkt, right=of nop] (shell) {shellcode};
+\node[punkt, right=of shell] (ret) {adres powrotu}
+  edge[pil, bend right=120] (nop.north);
+
+\node[below=of nop] (stackdummy) {\phantom{adresa}};
+\node[below=of ret] (stack) {stos}
+  edge[pil] (stackdummy.west);
+\node[below=of stack] (adresydummy) {\phantom{adry}};
+\node[below=of stackdummy] (adresy) {adresy}
+  edge[pil] (adresydummy.east);
+\end{tikzpicture}
+\caption{Stos}
+\label{figure:stackoverflow}
+\end{figure}
+
+Program z przykładu \ref{print:overflow} można uruchomić z argumentem, w którym pierwsze 108 bajtów jest kodem maszynowym, który zostanie wykonany w 
+trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamięci na stosie zaalokowanego na bufor 
+\verb+buffer+. Ponieważ wstrzykiwany kod maszynowy ma mniejszy rozmiar, należy go poprzedzić odpowiednią liczbą instrukcji NOP (ang. 
+\textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
+
+Na wydruku \ref{print:asm-shellcode} został przedstawiony kod programu, który demonstruje atak z wykorzystaniem \textit{shellcode'u}.
+Program ten przyjmuje dwa argumenty: rozmiar bufora, jaki ma być wypełniony kodem maszynowym oraz adres pamięci, którym zostanie nadpisany adres 
+powrotu w atakowanym programie. Adres ten powinien wskazywać na dowolną instrukcję NOP umieszczoną na stosie w trakcie wykonanie procedury 
+\verb+vulnerable+. W liniach 33~--~34 parsowane są argumenty. Rozmiar bufora (\verb+size+) przekazywany jest jako liczba dziesiętna, natomiast 
+adres powrotu (\verb+ret+) jako liczba szesnastkowa. Następnie alokowany jest odpowiedni obszar pamięci, w którym przygotowany będzie argument
+atakowanego programu. Rozmiar ten jest powiększany względem wartości podanej przez użytkownika, aby otrzymać miejsce na poprawne 
+zakończenie napisu znakiem zero. W liniach 37~--~40 początek zaalokowanego obszaru pamięci zapisywany jest sekwencją instrukcji NOP w postaci kodu 
+maszynowego. Zapisywanych jest tyle bajtów, aby pozostała część pomieściła \textit{shellcode} oraz wartość, którą zostanie nadpisany adres powrotu.
+W linii 41 kopiowany jest kod maszynowy \textit{shellcode'u} tuż za sekwencją instrukcji NOP. W linii 43 zapisywana jest wartość, którą nadpisany 
+zostanie adres powrotu w trakcie wykonanie procedury \verb+vulnerable+. Użyta konstrukcja, tj. przypisanie wartości typu \verb+unsigned int+, 
+powoduje, że wartość zapisywana jest w odpowiedniej kolejności bajtowej (little-endian). Następnie uruchamiany jest program, który jest podatny 
+na błąd przepełnienia bufora z wcześniej przygotowanym argumentem.
+
+Przekazywany \textit{shellcode} realizuje instrukcje w języku C z wydruku \ref{print:c-shellcode}. Kod maszynowy został stworzony w taki sposób, 
+aby żaden jego bajt nie był równy zeru. Dzięki temu może być przekazany jako napis poprzez argument programu. W tym celu wykonywane są następujące 
+operacje:
+\begin{itemize}
+\item Kod maszynowy instrukcji \verb+svc 0x00+ (wywołanie usługi systemu operacyjnego) zawiera zerowy bajt. Aby go wyeliminować, początkowo
+została zapisana instrukcja \verb+svc 0xcc+. W liniach 9~--~12 odpowiedni bajt tej instrukcji jest zerowany.
+\item Pierwszym argumentem wywołania systemowego \verb+execve+ jest napis, który określa plik programu. Został on umieszczony za kodem maszynowy
+przekazywanych instrukcji (linie 23~--~27). Początkowo jest on zakończony bajtami o wartości \verb+0xcc+. Bajty te są zerowane przez instrukcje 
+w liniach 7 i 8.
+\item Drugim argumentem \verb+execve+ jest tablica łańcuchów przekazywanych jako argumenty nowego programu, która musi być zakończona pustym 
+wskaźnikiem. Miejsce na tą tablicę zostało zarezerwowane w liniach 21 i 22. Instrukcje z linii 13~--~16 zapisują odpowiednie wartości do tej tablicy: 
+adres napisu z plikiem programu oraz wartość zero.
+\end{itemize}
+
 \SaveVerb{buffer}|buffer|
 \begin{print}
 \begin{verbatim}
@@ -631,58 +699,8 @@ $4 = 0xbefffa7c
 \label{print:getsp}
 \end{print}
 
-\begin{print}
-\begin{verbatim}
- 1:  char *sh[2] = { "/system/bin/ls", NULL };
- 2:  execve(sh[0], sh, NULL);
-\end{verbatim}
-\caption{Kod w języku C}
-\label{print:c-shellcode}
-\end{print}
-
-W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
-Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
-aby atakujący mógł osiągnąć zamierzone cele. W punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
-z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcode'em}. Tworzenie tego typu wstawek zostanie 
-omówione w rozdziale \ref{section:shellcode}. Aby przekazany kod został wykonany przez program, potrzebne jest odpowiednie ustawienie wartości
-licznika instrukcji na adres pamięci, w którym umieszczony jest \textit{shellcode}. Sposób, w jaki zostanie to zrobione, jest zależny od błędu 
-w programie. Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z podprogramu, co zostało opisane w poprzednim
-punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
-
-Program z przykładu \ref{print:overflow} można uruchomić z argumentem, w którym pierwsze 108 bajtów jest kodem maszynowym, który zostanie wykonany w 
-trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby wskazywał początek obszaru pamięci na stosie zaalokowanego na bufor 
-\verb+buffer+. Ponieważ wstrzykiwany kod maszynowy ma mniejszy rozmiar, należy go poprzedzić odpowiednią liczbą instrukcji NOP (ang. 
-\textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
-
-Na wydruku \ref{print:asm-shellcode} został przedstawiony kod programu, który przeprowadza atak z wykorzystaniem \textit{shellcode'u}.
-Program ten przyjmuje dwa argumenty: rozmiar bufora, jaki ma być wypełniony kodem maszynowym oraz adres pamięci, którym zostanie nadpisany adres 
-powrotu w atakowanym programie. Adres ten powinien wskazywać na dowolną instrukcję NOP umieszczoną na stosie w trakcie wykonanie procedury 
-\verb+vulnerable+. W liniach 33~--~34 parsowane są argumenty. Rozmiar bufora (\verb+size+) przekazywany jest jako liczba dziesiętna, natomiast 
-adres powrotu (\verb+ret+) jako liczba szesnastkowa. Następnie alokowany jest odpowiedni obszar pamięci, w którym przygotowany będzie argument
-atakowanego programu. Rozmiar ten jest powiększany względem wartości podanej przez użytkownika, aby otrzymać miejsce na poprawne 
-zakończenie napisu znakiem zero. W liniach 37~--~40 początek zaalokowanego obszaru pamięci zapisywany jest sekwencją instrukcji NOP w postaci kodu 
-maszynowego. Zapisywanych jest tyle bajtów, aby pozostała część pomieściła \textit{shellcode} oraz wartość, którą zostanie nadpisany adres powrotu.
-W linii 41 kopiowany jest kod maszynowy \textit{shellcode'u} tuż za sekwencją instrukcji NOP. W linii 43 zapisywana jest wartość, którą nadpisany 
-zostanie adres powrotu w trakcie wykonanie procedury \verb+vulnerable+. Użyta konstrukcja, tj. przypisanie wartości typu \verb+unsigned int+, 
-powoduje, że wartość zapisywana jest w odpowiedniej kolejności bajtowej (little-endian). Następnie uruchamiany jest program, który jest podatny 
-na błąd przepełnienia bufora z wcześniej przygotowanym argumentem.
-
-Przekazywany \textit{shellcode} realizuje instrukcje w języku C z wydruku \ref{print:c-shellcode}. Kod maszynowy został stworzony w taki sposób, 
-aby żaden jego bajt nie był równy zero. Dzięki temu może być przekazany jako napis poprzez argument programu. W tym celu wykonywane są następujące 
-operacje:
-\begin{itemize}
-\item Kod maszynowy instrukcji \verb+svc 0x00+ (wywołanie usługi systemu operacyjnego) zawiera zerowy bajt. Aby go wyeliminować, początkowo
-została zapisana instrukcja \verb+svc 0xcc+. W liniach 9~--~12 odpowiedni bajt tej instrukcji jest zerowany.
-\item Pierwszym argumentem wywołania systemowego \verb+execve+ jest napis, który określa plik programu. Został on umieszczony za kodem maszynowy
-przekazywanych instrukcji (linie 23~--27). Początkowo jest on zakończony bajtami o wartości \verb+0xcc+. Bajty te są zerowane przez instrukcje 
-w liniach 7, 8.
-\item Drugim argumentem \verb+execve+ jest tablica łańcuchów przekazywanych jako argumenty nowego programu, która musi być zakończona pustym 
-wskaźnikiem. Miejsce na tą tablicę zostało zarezerwowane w liniach 21, 22. Instrukcje z linii 13~--~16 zapisują odpowiednie wartości do tej tablicy: 
-adres napisu z plikiem programu oraz wartość zero.
-\end{itemize}
-
 Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w 
-którym zostanie umieszczony shellcode. Adres ten można uzyskać uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ adres ten jest 
+którym zostanie umieszczony shellcode. Adres ten można uzyskać, uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ adres ten jest 
 przekazywany jako pierwszy argument procedury \verb+strcpy+ w linii 11 programu \ref{print:overflow}, należy odczytać wartość rejestru R0 w trakcie 
 wykonania procedury \verb+vulnerable+. Zostało to zaprezentowane na wydruku \ref{print:getsp}. Położenie stosu w kolejnych uruchomieniach programu 
 jest takie samo, ponieważ została wyłączona randomizacja przestrzeni adresowej procesu. Zostanie to opisane w punkcie \ref{section:aslr}.
@@ -693,75 +711,9 @@ wierzchołek stosu może znajdować się na różnej głębokości w zależnośc
 początku bufora nie jest konieczne. Wystarczy, że będzie on wskazywał na dowolną z instrukcji NOP. Spowoduje to wykonanie wszystkich kolejnych 
 instrukcji NOP, a następnie \textit{shellcode'u}. 
 
-\iffalse
-Sekwencja instrukcji NOP może być także dodatkowo wydłużona w sposób zaprezentowany na rysunku \ref{figure:stackoverflow-jump}. Miejsce, w którym
-umieszczona jest wartość, która nadpisuje adres powrotu, może być ominięte poprzez wykonanie skoku pośredniego:
-\begin{verbatim}
-add r0, pc, #4
-mov pc, r0
-\end{verbatim}
-\fi
-
-\begin{figure}
-\centering
-\begin{tikzpicture}[node distance=0mm ]
-\node[punkt] (nop) {NOP};
-\node[punkt, right=of nop] (shell) {shellcode};
-\node[punkt, right=of shell] (ret) {adres powrotu}
-  edge[pil, bend right=120] (nop.north);
-
-\node[below=of nop] (stackdummy) {\phantom{adresa}};
-\node[below=of ret] (stack) {stos}
-  edge[pil] (stackdummy.west);
-\node[below=of stack] (adresydummy) {\phantom{adry}};
-\node[below=of stackdummy] (adresy) {adresy}
-  edge[pil] (adresydummy.east);
-\end{tikzpicture}
-\caption{Stos}
-\label{figure:stackoverflow}
-\end{figure}
-
-\iffalse
-\begin{figure}[bth]
-\begin{center}
-\includegraphics[scale=0.75]{Nopsled.jpg} 
-\end{center}
-\caption[Sekwencja NOP z ominięciem adresu powrotu]{Sekwencja NOP z ominięciem adresu powrotu, źródło: \url{http://en.wikipedia.org/wiki/Buffer_overflow}}
-\label{figure:stackoverflow-jump}
-\end{figure}
-
-\begin{figure}
-\centering
-\begin{tikzpicture}[node distance=0mm ]
-\node[punkt] (nop) {NOP};
-\node[punkt, right=of nop] (jump) {jump};
-\node[punkt, right=of jump] (ret) {adres powrotu}
-  edge[pil, bend right=120] (nop.north);
-\node[punkt, right=of ret] (nopa) {NOP}
-  edge[pilrev, bend left=90] (jump.south);
-\node[punkt, right=of nopa] (shell) {shellcode};
-
-\node[below=of nop] (stackdummy) {\phantom{adresa}};
-\node[below=of shell] (stack) {stos}
-  edge[pil] (stackdummy.west);
-\node[below=of stack] (adresydummy) {\phantom{adry}};
-\node[below=of stackdummy] (adresy) {adresy}
-  edge[pil] (adresydummy.east);
-\end{tikzpicture}
-\caption{Stos}
-\label{figure:stackoverflow-jump}
-\end{figure}
-\fi
-
-% opisać 
-% nop-slide
-% ze ataakowany prgram jest prosty i można wszystko wyliczyć
-% bifor jest krótki i mieści się w nich shellcode, który ma 60 bajtów
-% 
-
 \subsection{Bit NX}
 
-W celu ochrony przed atakami, w których następuje wstrzyknięcie kodu maszynowego, w wersji 6 architektury ARM wprowadzona została technologia bitu NX 
+W celu ochrony przed atakami, w których następuje wstrzyknięcie kodu maszynowego, w~wersji 6 architektury ARM wprowadzona została technologia bitu NX 
 (ang. \textit{No Execute}). Umożliwia ona systemowi operacyjnemu oznaczyć wybrane strony pamięci jako niewykonywalne. Gdy bit NX dla danej strony 
 jest ustawiony, próba wykonania zawartości tej strony jako kodu kończy się wygenerowaniem wyjątku, zgłaszanego systemowi operacyjnemu, co powoduje 
 przerwanie wykonywania programu. Bit NX powinien być ustawiony dla wszystkich stron procesu oprócz tych, które zawierają kod programu i bibliotek
@@ -771,6 +723,32 @@ Technologia bitu NX jest wspierana przez system Android od wersji 2.3.
 
 \section{Return-oriented programming}
 
+\textit{Return-oriented programming} (ROP) jest to technika ataku, która pozwala na zmianę zachowania programu na dowolną, zamierzoną przez atakującego.
+W trakcie ataku z wykorzystaniem tej techniki program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
+\textit{chunk}), dostępnych w przestrzeni adresowej procesu. Wykorzystywane są obszary pamięci, w których załadowany jest kod programu oraz bibliotek 
+dynamicznych. Obszary te są oznaczone jako do wykonywania, co pozwala ominąć zabezpieczenie NX. Najczęściej jako baza gadżetów wykorzystywana
+jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów.
+Inną dogodną do wykorzystania biblioteką jest \verb+libwebcore.so+, która jest używana przez programy renderujące strony HTML.
+
+W początkowych wersjach ataków wykorzystujących technikę ROP ciąg adresów kolejnych gadżetów był umieszczany na stosie, natomiast gadżety były 
+dobierane w taki sposób, aby każdy z nich kończył się instrukcją powrotu, która pobiera wartość licznika instrukcji ze stosu. W architekturze x86 jest 
+to instrukcja \verb+ret+ (return), co jest genezą nazwy tej techniki. Odpowiednikiem tej instrukcji w architekturze ARM jest \verb+pop {pc}+.
+
+Możliwe jest jednak przeprowadzenie ataku z wykorzystaniem techniki ROP, w którym dane sterujące wykonaniem programu nie są umieszczone na stosie.
+W tym celu używany jest zestaw gadżetów, w których ostatnią instrukcją jest instrukcja skoku pośredniego (BX, BLX). Parametrem takiej instrukcji
+jest inny rejestr ogólnego przeznaczenia, a skok jest wykonywany do adresu, jaki znajduje się w przekazanym rejestrze. Wartość tego rejestru
+może być wcześniej pobierana z dowolnego obszaru pamięci procesu, w którym atakujący zapisał dane, np. ze~sterty. Taki wariant ataku typu ROP na 
+architekturze ARM został opisany w pracy \cite{noreturn}.
+
+Ręczne wyszukiwanie dogodnych fragmentów kodu, które mogą zostać użyte jako gadżet oraz składanie ich w sekwencję tak, aby uzyskać pożądane zachowanie
+programu jest bardzo czasochłonne. Dostępne są jednak narzędzia, które pozwalają ten proces zautomatyzować. W~pracy \cite{kompilator} został
+opisany kompilator ROP dla architektury x86. Natomiast w \cite{roparm} przedstawiono m.in. algorytmy służące do automatycznego wyszukiwania i składania
+gadżetów dla architektury ARM.
+
+Poniżej znajduje się przykład ataku wykorzystującego technikę ROP. Do przeprowadzenia ataku został wykorzystany błąd w programie z 
+wydruku \ref{print:overflow}. Celem ataku jest wykonanie przez program procedury \verb+system("/system/bin/sh")+ z biblioteki standardowej. 
+Bazę gadżetów stanowi biblioteka \verb+libc.so+, która jest dynamicznie ładowana w trakcie wykonania programu.
+
 \begin{print}
 \begin{verbatim}
    0x189d8 <getcwd+12>:	mov	r0, r4
@@ -779,61 +757,6 @@ Technologia bitu NX jest wspierana przez system Android od wersji 2.3.
 \caption{Gadżet}
 \label{print:getcwd-chunk}
 \end{print}
-
-\begin{print}
-\begin{verbatim}
- 1: #include <unistd.h>
- 2: #include <stdlib.h>
- 3:
- 4: #define OFFSET 0x40002000
- 5:
- 6: unsigned long rop[] = { 
- 7:   OFFSET + 0x000189db,      // pop	{r4, pc}
- 8:   OFFSET + 0x0003ad3a,      // "/system/bin/sh"
- 9:   OFFSET + 0x000189d9,      // mov	r0, r4
-10:                             // pop  {r4, pc}
-11:   0xcccccccc,
-12:   OFFSET + 0x0001a3a5,      // system(const char *)
-13:   0
-14: };
-15: 
-16: void main(int argc, char *argv[]) {
-17:   unsigned long size = strtoul(argv[1], NULL, 10);
-18:   char *payload = malloc(size + sizeof(rop));
-19:   memset(payload, 'X', size);
-20:   memcpy(payload + size, rop, sizeof(rop));
-21:   execl("./buffer-overflow", "./buffer-overflow", payload, NULL);
-21: }
-\end{verbatim}
-\caption{Program wykonujący atak z wykorzystaniem \textit{return-oriented programming}}
-\label{print:rop}
-\end{print}
-
-\textit{Return-oriented programming} (ROP) jest to technika ataku, która pozwala na zmianę zachowania programu na dowolną, zamierzoną przez atakującego.
-W trakcie ataku z wykorzystaniem tej techniki program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
-\textit{chunk}), dostępnych w przestrzeni adresowej procesu. Wykorzystywane są obszary pamięci, w których załadowany jest kod programu oraz bibliotek 
-dynamicznych. Obszary te są oznaczone jako do wykonywania, co pozwala ominąć zabezpieczenie NX. Najczęściej jako baza gadżetów wykorzystywana
-jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów.
-Inną dogodną do wykorzystania biblioteką jest \verb+libwebcore.so+, która jest używana przez programy renderujące strony HTML.
-
-W początkowych wersjach ataków wykorzystujących technikę ROP, ciąg adresów kolejnych gadżetów był umieszczany na stosie, natomiast gadżety były 
-dobierane w taki sposób, aby każdy z nich kończył się instrukcją powrotu, która pobiera wartość licznika instrukcji ze stosu. W architekturze x86 jest 
-to instrukcja \verb+ret+ (return), co jest genezą nazwy tej techniki. Odpowiednikiem tej instrukcji w architekturze ARM jest \verb+pop {pc}+.
-
-Możliwe jest jednak przeprowadzenie ataku z wykorzystaniem techniki ROP, w którym dane sterujące wykonaniem programu nie są umieszczone na stosie.
-W tym celu używany jest zestaw gadżetów, w których ostatnią instrukcją jest instrukcja skoku pośredniego (BX, BLX). Parametrem takiej instrukcji
-jest inny rejestr ogólnego przeznaczenia, a skok jest wykonywany do adresu, jaki znajduje się w przekazanym rejestrze. Wartość tego rejestru
-może być wcześniej pobierana z dowolnego obszaru pamięci procesu, w którym atakujący zapisał dane, np. ze sterty. Taki wariant ataku typu ROP na 
-architekturze ARM został opisany w pracy \cite{noreturn}.
-
-Ręczne wyszukiwanie dogodnych fragmentów kodu, które mogą zostać użyte jako gadżet oraz składanie ich w sekwencję tak, aby uzyskać pożądane zachowanie
-programu jest bardzo czasochłonne. Dostępne są jednak narzędzia, które pozwalają ten proces zautomatyzować. W pracy \cite{kompilator} został
-opisany kompilator ROP dla architektury x86. Natomiast w \cite{roparm} przedstawiono m.in. algorytmy służące do automatycznego wyszukiwania i składania
-gadżetów dla architektury ARM.
-
-Poniżej znajduje się przykład ataku wykorzystującego technikę ROP. Do przeprowadzenia ataku został wykorzystany błąd w programie z 
-wydruku \ref{print:overflow}. Celem ataku jest wykonanie przez program procedury \verb+system("/system/bin/sh")+ z biblioteki standardowej. 
-Bazę gadżetów stanowi biblioteka \verb+lib.c+, która jest dynamicznie ładowana w trakcie wykonania programu.
 
 Skonstruowania poniższego, przykładowego ataku zostało poprzedzone wykonaniem następujących czynności przygotowujących:
 \begin{itemize}
@@ -862,37 +785,64 @@ narzędzi \verb+grep+ i \verb+objdump+.
 \end{verbatim} 
 \end{itemize}
 
-Na wydruku \ref{print:rop} został przedstawiony program, który przeprowadza atak z wykorzystaniem techniki \textit{return-oriented programming}.
-Program ten przyjmuje jeden argument: odległość początku przepełnianego bufora od miejsca, w którym zostanie odłożony adres powrotu. Argument 
-programu jest zapisywany na zmiennej lokalnej \verb+size+. W liniach 18~--~20 przygotowywany jest argument, który zostanie przekazany do 
-atakowanego programu. Wartość początkowych \verb+size+ bajtów jest nieistotna. Wystarczy, że będą niezerowe, aby cały argument był poprawnym 
-napisem. Następnie umieszczane są dane sterujące atakiem w taki sposób, aby ich początek nadpisał odłożony na stosie adres powrotu. W linii 21 
-uruchamiany jest program podatny na atak ze spreparowanym argumentem.
+\begin{print}
+\begin{verbatim}
+ 1: #include <unistd.h>
+ 2: #include <stdlib.h>
+ 3:
+ 4: #define OFFSET 0x40002000
+ 5:
+ 6: unsigned long rop[] = { 
+ 7:   OFFSET + 0x000189db,      // pop	{r4, pc}
+ 8:   OFFSET + 0x0003ad3a,      // "/system/bin/sh"
+ 9:   OFFSET + 0x000189d9,      // mov	r0, r4
+10:                             // pop  {r4, pc}
+11:   0xcccccccc,
+12:   OFFSET + 0x0001a3a5,      // system(const char *)
+13:   0
+14: };
+15: 
+16: void main(int argc, char *argv[]) {
+17:   unsigned long size = strtoul(argv[1], NULL, 10);
+18:   char *payload = malloc(size + sizeof(rop));
+19:   memset(payload, 'X', size);
+20:   memcpy(payload + size, rop, sizeof(rop));
+21:   execl("./buffer-overflow", "./buffer-overflow", payload, NULL);
+22: }
+\end{verbatim}
+\caption{Program wykonujący atak z wykorzystaniem \textit{return-oriented programming}}
+\label{print:rop}
+\end{print}
 
-Wykonanie programu \ref{print:overflow}, uruchomionego z opisanym powyżej argumentem, ma następujący przebieg:
+Na wydruku \ref{print:rop} został przedstawiony program, który demonstruje atak z wykorzystaniem techniki ROP. Program ten przyjmuje jeden argument: 
+odległość początku przepełnianego bufora od miejsca, w którym zostanie odłożony adres powrotu. Argument programu jest zapisywany na zmiennej lokalnej 
+\verb+size+. W liniach 18~--~20 przygotowywany jest argument, który zostanie przekazany do atakowanego programu. Wartość początkowych \verb+size+ 
+bajtów jest nieistotna. Wystarczy, że będą niezerowe, aby cały argument był poprawnym napisem. Następnie umieszczane są dane sterujące atakiem w taki 
+sposób, aby ich początek nadpisał odłożony na stosie adres powrotu. W linii 21 uruchamiany jest program \ref{print:overflow} podatny na~atak ze 
+spreparowanym argumentem. Wykonanie tego programu, uruchomionego z opisanym powyżej argumentem, ma następujący przebieg:
 \begin{itemize}
 \item W ostatniej instrukcji procedury \verb+vulnerable+, tj. \verb+pop {pc}+, ze stosu pobierana jest wartość licznika instrukcji. W wyniku 
-przepełnienia bufora, wczytana zostanie wartość z linii 7 programu \ref{print:rop}. Jest to adres ostatniej instrukcji gadżetu 
+przepełnienia bufora wczytana zostanie wartość z linii 7 programu \ref{print:rop}. Jest to adres ostatniej instrukcji gadżetu 
 \ref{print:getcwd-chunk} powiększony o offset, pod którym znajduje się biblioteka \verb+libc.so+ w przestrzeni adresowej procesu.
 Adres ten jest także dodatkowo zwiększony o 1, ponieważ biblioteka \verb+libc.so+ została skompilowana w trybie Thumb. Wierzchołek stosu 
 po wykonaniu instrukcji \verb+pop {pc}+ będzie wskazywał na kolejną wartość danych sterujących.
 \item Ostatnia instrukcja gadżetu (\verb+pop {r4, pc}+) zostanie wykonana. Spowoduje to zapisanie do rejestru R4 adresu napisu \verb+"/system/bin/sh"+ 
 (linia 8), natomiast do licznika instrukcji będzie wczytany odpowiednio zwiększony adres pierwszej instrukcji gadżetu (linia 9).
 \item Obydwie instrukcje gadżetu zostaną wykonane. Adres napisu \verb+"/system/bin/sh"+ będzie skopiowany do rejestru R0. Ze stosu będą pobrane
-dwie kolejne wartości (linie 11, 12 na wydruku \ref{print:rop}) i zostaną zapisane kolejno w rejestrach R4 i PC (liczniku instrukcji). Wartość 
+dwie kolejne wartości (linie 11, 12 na~wydruku \ref{print:rop}) i zostaną zapisane kolejno w rejestrach R4 i PC (liczniku instrukcji). Wartość 
 wczytywana do rejestru R4 jest nieistotna, natomiast do licznika instrukcji zostanie zapisany odpowiednio zwiększony adres procedury \verb+system+ 
 z biblioteki standardowej. 
-\item Procedura \verb+system+ zostanie wykonana. Jako argument będzie przekazany napis, którego adres został wcześniej umieszczony w rejestrze R0. 
+\item Zostanie wykonana procedura \verb+system+. Jako argument będzie przekazany napis, którego adres został wcześniej umieszczony w rejestrze R0. 
 \end{itemize} 
 
 \subsection{Randomizacja przestrzeni adresowej procesu}\label{section:aslr}
 
-Randomizacja przestrzeni adresowej procesu (ang. \textit{Address space layout randomization, ASLR}) jest metodą, która znacząco zmniejsza szanse
-powodzenia ataków polegających na wykorzystaniu fragmentów kodu programu lub załadowanych bibliotek dynamicznych. Metoda ta jest dostarczana
-przez jądro systemu operacyjnego. Polega ona na rozmieszczaniu w losowych miejscach pamięci procesu kluczowych obszarów pamięci procesu, tj. 
-stosu, sterty, bibliotek dynamicznych oraz kodu programu. Randomizacji podlega jedynie kod, który jest niezależny od pozycji (ang. 
-\textit{Position independent code, PIC}). Odwołania do zmiennych i procedur globalnych są wtedy wykonywane pośrednio, z wykorzystaniem tablicy GOT 
-(\textit{Global Table Offset}), która jest wypełniana dopiero w trakcie wykonania programu.
+Randomizacja przestrzeni adresowej procesu -- ASLR (ang. \textit{Address space layout randomization}) jest metodą, która znacząco zmniejsza szanse
+powodzenia ataków polegających na~wykorzystaniu fragmentów kodu programu lub załadowanych bibliotek dynamicznych. Metoda ta jest dostarczana
+przez jądro systemu operacyjnego. Polega ona na rozmieszczaniu kluczowych obszarów pamięci procesu, tj. stosu, sterty, bibliotek dynamicznych oraz 
+kodu programu w~losowych miejscach przestrzeni adresowej procesu. Randomizacji podlega jedynie kod, który jest niezależny od pozycji -- PIC (ang. 
+\textit{Position independent code}). Odwołania do zmiennych i procedur globalnych są wtedy wykonywane pośrednio, z wykorzystaniem tablicy GOT 
+(ang. \textit{Global Table Offset}), która jest wypełniana dopiero w trakcie wykonania programu.
 
 W systemach operacyjnych opartych na jądrze Linuxa, a zatem także w systemie Android,  można zmienić ustawienia randomizacji przestrzeni adresowej poprzez zapisanie odpowiedniej 
 wartości do pliku \verb+/proc/sys/kernel/randomize_va_space+. Poszczególne wartości mają następujące znaczenie:
@@ -909,12 +859,6 @@ systemu została zaimplementowana randomizacja sterty oraz segmentów kodu. Jedn
 ze względu na występowanie przestarzałych programów zakładających położenie sterty pod stałym adresem. Z tego powodu położenie sterty nie podlegało 
 randomizacji. Opcja ta została wyłączona dopiero w wersji 4.0.3. W systemie Android w wersjach 4.0.x także kod maszynowy programów systemowych nie był 
 niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to naprawione dopiero w wersji 4.1.
-
-
-% https://blog.duosecurity.com/2012/02/a-look-at-aslr-in-android-ice-cream-sandwich-4-0/
-% https://blog.duosecurity.com/2012/07/exploit-mitigations-in-android-jelly-bean-4-1/
-% https://www.kernel.org/doc/Documentation/sysctl/kernel.txt (randomize-va-space)
-
 
 \chapter{Przykłady ataków i ich implementacja w narzędziu Metasploit}
 
