@@ -226,7 +226,7 @@ także skorzystanie z tych bibliotek w kodzie natywnym napisanym w C/C++. Przyk�
 \begin{itemize}
 \item \verb+libc+ -- standardowa biblioteka C, zoptymalizowana dla urządzeń wbudowanych,
 \item \verb+webcore+ -- silnik przeglądarki internetowej, wykorzystany też w innych aplikacjach, które potrzebują wyświetlić stronę HTML, np. 
-w kliencie poczty e-mail,
+w kliencie poczty elektronicznej,
 \item \verb+sqllite+ -- lekka, relacyjna baza danych,
 \item \verb+OpenGL+ -- biblioteka graficzna używana podczas renderowania grafiki dwu- i trójwymiarowej,
 \item zestaw bibliotek multimedialnych dostarczających kodeki wybranych formatów plików.
@@ -622,7 +622,7 @@ W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów n
 Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
 aby atakujący mógł osiągnąć zamierzone cele. W~punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
 z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcode'em}. Tworzenie tego typu wstawek zostanie 
-omówione w rozdziale \ref{section:shellcode}. Aby przekazany kod został wykonany przez program, potrzebne jest odpowiednie ustawienie wartości
+omówione w punkcie \ref{section:shellcode}. Aby przekazany kod został wykonany przez program, potrzebne jest odpowiednie ustawienie wartości
 licznika instrukcji na adres pamięci, w którym umieszczony jest \textit{shellcode}. Sposób, w jaki zostanie to zrobione, jest zależny od błędu 
 w programie. Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania adresu powrotu z~podprogramu, co zostało opisane w poprzednim
 punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
@@ -875,30 +875,30 @@ systemowych nie był niezależny od pozycji i z tego powodu nie podlegał random
 %  praca dla samsunga
 %  msf_user_guide.pdf
 
-\section{podatności w bibliotece Webkit}
+\section{Podatności w bibliotece WebKit}
 
 WebKit jest silnikiem przeglądarki internetowej rozwijanym na zasadach otwartego oprogramowania. Biblioteka ta odpowiada za przetwarzanie zawartości 
-stron internetowych (tj. kodu HTML, skryptów, arkuszy stylów CSS, XSL), a następnie wyświetlenie rezultatu. Webkit składa się z dwóch głównych 
+stron internetowych (tj. kodu HTML, skryptów, arkuszy stylów CSS, XSL), a następnie wyświetlenie rezultatu. WebKit składa się z dwóch głównych 
   komponentów:
 \begin{itemize}
-\item WebCore -- Zapewnia obsługę obiektowego modelu dokumentu DOM (ang. \textit{Document Object Model}) oraz grafiki wektorowej SVG (ang. 
+\item WebCore -- zapewnia obsługę obiektowego modelu dokumentu DOM (ang. \textit{Document Object Model}) oraz grafiki wektorowej SVG (ang. 
 \textit{Scalable Vector Graphics}). Komponent ten także renderuje treść strony internetowej.
-\item JavaScriptCore - Dostarcza silnik do obsługi języka JavaScript.
+\item JavaScriptCore - dostarcza silnik do obsługi języka JavaScript.
 \end{itemize}
 
-Biblioteka Webkit jest używana przez wiele popularnych przeglądarek internetowych, m.~in. Google Chrome oraz Safari. Biblioteka ta jest również 
+Biblioteka WebKit jest używana przez wiele popularnych przeglądarek internetowych, m.~in. Google Chrome oraz Safari. Biblioteka ta jest również 
 dostarczana wraz systemami operacyjnymi Android oraz iOS (system operacyjny firmy Apple dedykowany dla telefonów iPhone), w których wykorzystywana jest 
-przez domyślne aplikacje do przeglądania stron internetowych i przez programy obsługujące pocztę e-mail.  
+przez domyślne aplikacje do przeglądania stron internetowych i przez programy obsługujące pocztę elektroniczną.  
 
-CVE (ang. \textit{Common Vulnerabilities and Exposures}) jest katalogiem podatności oraz zagrożeń dotyczących bezpieczeństwa informacji w systemach 
-informatycznych. System ten jest zarządzany przez organizację MITRE. Każde zgłoszenie otrzymuje unikalny identyfikator i zawiera krótki opis podatności,
+CVE (ang. \textit{Common Vulnerabilities and Exposures}) jest bazą danych podatności oraz zagrożeń dotyczących bezpieczeństwa informacji w systemach 
+informatycznych. System ten jest zarządzany przez organizację MITRE. Każde zgłoszenie otrzymuje unikalny identyfikator i~zawiera krótki opis podatności,
 potencjalne ryzyka oraz wersje oprogramowania, w których występuje błąd. Identyfikatory CVE są uznawane za standard w systemach do wymiany informacji o 
 zagrożeniach. Każde zgłoszenie jest także oceniane w skali punktowej CVSS (ang. \textit{Common Vulnerability Scoring System}), dzięki której łatwo można
-ocenić, na ile dane zgłoszenie jest poważne. W latach 2010 -- 2011 zostało zgłoszonych ponad 200 podatności dotyczących biblioteki Webkit, spośród 
+ocenić, na ile dane zgłoszenie jest poważne. W latach 2010 -- 2011 zostało zgłoszonych ponad 200 podatności dotyczących biblioteki WebKit, spośród 
 których ok. 80\% pozwalało na wykonanie dostarczonego przez atakującego kodu. Szczegóły większości z tych błędów nie są publicznie dostępne, jednak na 
 portalach poświęconych bezpieczeństwu, np. \cite{exploitdb}, \cite{packetstorm}, można znaleźć przykłady ataków wykorzystujących niektóre podatności.
 
-W kolejnych punktach zostaną omówione wybrane błędy w bibliotece Webkit występujące także w systemie Android. Poniższe przykłady wymagają interakcji 
+W kolejnych punktach zostaną omówione wybrane błędy w bibliotece WebKit występujące także w systemie Android. Poniższe przykłady wymagają interakcji 
 ze strony użytkownika, który musi otworzyć w przeglądarce internetowej specjalnie spreparowaną stronę HTML. Na dołączonej płycie CD znajdują się 
 moduły frameworku Metasploit, które umożliwiają przeprowadzenie ataku.
 
@@ -1046,17 +1046,17 @@ I/DEBUG   (   28):          #03  pc 001cbf14  /system/lib/libwebcore.so
 \label{print:heap-spray}
 \end{print}
 
-Podatność w bibliotece Webkit o identyfikatorze CVE-2010-1119 została wykryta przez Vincenzo Iozzo i Ralfa Philippa Weinmanna podczas zawodów Pwn2Own 
+Podatność w bibliotece WebKit o identyfikatorze CVE-2010-1119 została wykryta przez Vincenzo Iozzo i Ralfa Philippa Weinmanna podczas zawodów Pwn2Own 
 towarzyszących konferencji CanSecWest w 2010 roku. Została użyta w trakcie tych zawodów do przeprowadzenia skutecznego włamania na telefon iPhone. 
-W obsłudze funkcji \verb+removeChild()+ w języku JavaScript został wykryty błąd, w wyniku którego możliwe jest odwołanie do wskaźnika do pamięci, która 
+W obsłudze funkcji \verb+removeChild()+ w języku JavaScript został wykryty błąd, w wyniku którego możliwe jest odwołanie do wskaźnika do~pamięci, która 
 wcześniej została zwolniona. Błąd ten może spowodować nieoczekiwane zamknięcie aplikacji przetwarzającej odpowiednie przygotowaną stronę HTML lub 
-umożliwić wykonanie przekazanego kodu. Biblioteka Webkit dostarczana z systemem Android także zawiera wykrytą podatność. Występuje ona w systemach w 
+umożliwić wykonanie przekazanego kodu. Biblioteka WebKit dostarczana z systemem Android także zawiera wykrytą podatność. Występuje ona w systemach w 
 wersji mniejszej niż 2.3.
 
-W trakcie przetwarzania przez bibliotekę Webkit strony HTML z wydruku \ref{print:use-after-free-html} dochodzi do błędu. Treść tej strony składa się z 
+W trakcie przetwarzania przez bibliotekę WebKit strony HTML z wydruku \ref{print:use-after-free-html} dochodzi do błędu. Treść tej strony składa się z 
 jednego znacznika akapitu \verb+<p>+ w linii 21. Znacznik ten zawiera atrybut \verb+id+ o wartości \verb+target+. Podczas ładowania strony HTML tworzony 
 jest obiektowy model dokumentu (ang. \textit{Document Object Model, DOM}) reprezentujący strukturę znaczników HTML. Z poziomu języka JavaScript możliwe 
-jest modyfikowanie tej struktury. Po załadowaniu treści strony wykonywana jest funkcja JavaScript \verb+heap()+. W linii 5 na zmienną lokalną 
+jest modyfikowanie tej struktury. Po załadowaniu treści strony wykonywana jest funkcja JavaScript \verb+heap()+. W linii 5 na~zmienną lokalną 
 \verb+p_node+ przypisywany jest węzeł reprezentujący znacznik o identyfikatorze \verb+target+, czyli znacznik akapitu z linii 21. Następnie na zmienna 
 lokalną \verb+id_attribute+ przypisywany jest węzeł związany z atrybutem \verb+id+. W linii 7 na zmiennej globalnej zapisywana jest tablica z elementami 
 potomnymi węzła \verb+id_attribute+. W tym przypadku jest to tablica jednoelementowa, która składa się z napisu \verb+target+. W linii 8 ze struktury 
@@ -1068,20 +1068,20 @@ zdefiniowana w miejscu. Na drugim argumencie przekazywane jest zerowe opóźnien
 
 Zakres widoczności zmiennych lokalnych \verb+p_node+ i \verb+id_attribute+ rozciąga się do końca funkcji \verb+heap()+ zdefiniowanej w liniach 4 -- 17. Po
 zakończeniu tej funkcji nie istnieje żadne odwołanie do węzłów dokumentu, na które wcześniej wskazywały zmienne lokalne. Z powodu nieprawidłowej 
-implementacji zarządzania pamięcią w bibliotece Webkit następuje zwolnienie pamięci, w której przechowywane były wewnętrzne dane związane z węzłami,
+implementacji zarządzania pamięcią w bibliotece WebKit następuje zwolnienie pamięci, w której przechowywane były wewnętrzne dane związane z węzłami,
 które zostały usunięte ze struktury dokumentu. Zwalniana jest także pamięć związana z elementem potomnym atrybutu \verb+id+, do którego istnieje 
 odwołanie w globalnej tablicy \verb+nodes+.
 
 Następnie wykonywana jest anonimowa funkcja zdefiniowana w liniach 11 -- 15. Na początku tworzonych jest 10000 nowych, czterobajtowych napisów, 
 których binarna reprezentacja będzie równa 0x41414141. Z dużym prawdopodobieństwem na któryś z tych napisów zostanie ponownie przydzielony obszar 
 pamięci, do którego istnieje odwołanie w globalnej tablicy \verb+nodes+. W linii 14 wykonywana jest metoda \verb+alert()+, co powoduje wyświetlenie 
-okienka z komunikatem i guzikiem do potwierdzenia. W tym czasie wykonanie kodu JavaScript zostaje wstrzymane. Jest to dogodny moment do podpięcia się 
+okienka z~komunikatem i guzikiem do potwierdzenia. W tym czasie wykonanie kodu JavaScript zostaje wstrzymane. Jest to dogodny moment do podpięcia się 
 do procesu przeglądarki debuggerem GDB, który umożliwia dokładną analizę pamięci procesu, stanu rejestrów i wykonywanych instrukcji. W linii 15 
 następuje odwołanie do wcześniej zwolnionej pamięci. Jeżeli jeden z napisów utworzonych w linii 12 został utworzony pod adresem, do którego następuje 
 odwołanie, to proces przeglądarki kończy się błędem. Do logu systemowego zapisywane są szczegółowe informacje o zakończonym procesie, m. in. wartości 
-rejestrów i dane znajdujące się na szczycie stosu. Przykład takiego zrzutu stanu procesu znajduje się na wydruku \ref{print:stacktrace}. Wynika z niego,
+rejestrów i dane znajdujące się na szczycie stosu. Przykład takiego zrzutu stanu procesu znajduje się na wydruku \ref{print:stacktrace}. Wynika z~niego,
 że proces został zakończony, ponieważ wykonał odwołanie do niepoprawnego adresu pamięci 0x41414195. W rejestrze R0 znajdowała się wartość
-0x41414141, czyli wartość jednego z napisów utworzonego w linii 12 na wydruku \ref{print:use-after-free-html}. Gdy doszło do błędu licznik instrukcji 
+0x41414141, czyli wartość jednego z~napisów utworzonego w linii 12 na wydruku \ref{print:use-after-free-html}. Gdy doszło do błędu licznik instrukcji 
 miał wartość 0xaa04a57a i wskazywał na instrukcję w bibliotece \verb+libwebcore.so+ pod adresem 0x4a57a.
 
 Na wydruku \ref{print:webcore-asm} znajdują się instrukcje assemblera biblioteki \verb+libwebcore.so+, których wykonanie spowodowało błąd programu.
@@ -1092,10 +1092,10 @@ kolejne instrukcje zostałyby wykonane. Instrukcja 4a57c kopiuje zawartość rej
 którego adres początku kodu znajduje się w rejestrze R2. 
 
 Należy zauważyć, że wartość rejestru R0 może być kontrolowana przez atakującego. Wartość 0x41414141 w powyższym przykładzie może być dowolnie zmieniona.
-Wykorzystując technikę \textit{heap spray} możliwe jest także ustawienie dowolnej wartości rejestru R2 i spowodowanie, aby program zaczął wykonywać 
-dostarczony kod maszynowy. Technika ta polega na spowodowaniu, aby program wykonywał alokacje dużych bloków pamięci o pożądanej zawartości. może być to 
-wykonane, na przykład poprzez utworzenie w kodzie JavaScript długich napisów zawierających odpowiednią treść, a następnie ich zwielokrotnienie. 
-Koniecznie jest także oszacowanie adresu pamięci, pod którym zostaną umieszczone przekazane dane. Można tego dokonać wykorzystując sposób, w jaki 
+Wykorzystując technikę \textit{heap spray}, możliwe jest także ustawienie dowolnej wartości rejestru R2 i spowodowanie, aby program zaczął wykonywać 
+dostarczony kod maszynowy. Technika ta polega na~spowodowaniu, aby program wykonywał alokacje dużych bloków pamięci o pożądanej zawartości. Może być to 
+wykonane na przykład poprzez utworzenie w kodzie JavaScript długich napisów zawierających odpowiednią treść, a następnie ich zwielokrotnienie. 
+Koniecznie jest także oszacowanie adresu pamięci, pod którym zostaną umieszczone przekazane dane. Można tego dokonać, wykorzystując sposób, w jaki 
 przydzielana jest pamięć. Początkowy zakres sterty w trakcie działania programu zazwyczaj ulega fragmentacji i nie występują w nim odpowiednio długie 
 spójne, niewykorzystane bloki. W takim przypadku sterta jest powiększana i przydzielany jest pierwszy dostatecznie długi fragment pamięci. Początkowy 
 rozmiar sterty i adresy, pod którymi się znajduje, można odczytać z pliku \verb+/proc/<pid>/maps+:
@@ -1104,26 +1104,26 @@ rozmiar sterty i adresy, pod którymi się znajduje, można odczytać z pliku \v
 0000a000-00547000 rwxp 0000a000 00:00 0          [heap]
 \end{verbatim}
 Na potrzeby kilku pierwszych alokacji pamięci mogą być wykorzystane spójne fragmenty pamięci, które w trakcie działania programu były już użyte i 
-zostały zwolnione. Natomiast przy kolejnych alokacjach będą zwracane bloki pamięci pamięci począwszy od adresu 0x00547000.
+zostały zwolnione. Natomiast przy kolejnych alokacjach będą zwracane bloki pamięci pamięci, począwszy od adresu 0x00547000.
 
 Schemat pamięci, który umożliwia wykonanie dostarczonego w treści strony kodu, przedstawiony jest na rysunku \ref{figure:use-after-free-heap}.
 Różowe prostokąty oznaczają zaalokowaną i wykorzystywaną przez program pamięć. Kolorem zielonym zaznaczono fragmenty pamięci, w których są utworzone
 krótkie napisy, które zawierają oszacowany adres, pod którymi znajdą się kolejne dane. Aby atak mógł się powieść, jeden z takin napisów musi zostać 
-umieszczony w miejscu, z którego biblioteka \verb+libwebcore.so+ w instrukcji 4a578 pobiera wartość rejestro R0. Zostało to oznaczone kolorem oliwkowo 
+umieszczony w miejscu, z~którego biblioteka \verb+libwebcore.so+ w instrukcji 4a578 pobiera wartość rejestro R0. Zostało to oznaczone kolorem oliwkowo 
 zielonym. Bloki pamięci utworzone poprzez \textit{heap spray} zawierają dwa rodzaje zawartości. Żółte protokąty przedstawiąją pamięć wypełnioną
 wartością, która zostanie wczytana do rejestru R2 w instrukcji 4a57a. Wartość ta powinna być adresem pamięci, w którym znajduje się przekazany kod 
-maszynowy. Bloki z kodem poprzedzonym sekwencję instrukcji NOP są koloru fioletowego. Skok do tego kodu zostanie wykonany w instrukcji 4a57e.
+maszynowy. Bloki z kodem poprzedzonym sekwencję instrukcji NOP są koloru fioletowego. Skok do tego kodu zostanie wykonany w~instrukcji 4a57e.
 
 W pełni funkcjonalny atak składa się ze strony HTML z wydruku \ref{print:use-after-free-html}, w którym wywołanie funkcji \verb+setTimeout()+ 
-w liniach 10~--~16 jest zastąpione jej zmodyfikowaną wersją z wydruku \ref{print:heap-spray}. Konstrukcja \verb+#{zmienna}+ oznacza, że w miejscu
+w liniach 10~--~16 jest zastąpione jej zmodyfikowaną wersją z~wydruku \ref{print:heap-spray}. Konstrukcja \verb+#{zmienna}+ oznacza, że w miejscu
 jej wystąpienia powinien zostać wstawiony odpowiednio zakodowany kod maszynowy instrukcji. Wykonanie przedstawionej funkcji JavaScript powoduje 
 zaaranżowanie pamięci na stercie tak, jak jest to opisane w poprzednich akapitach. W liniach 2~--~4 tworzona jest duża ilość napisów, które zawierają 
-adres pamięci, w której zostaną umieszczone kolejne dane. W liniach 5~--~10 na zmiennych \verb+scode+ i \verb+nops+ zapisywane są dwa rodzaje napisów, 
+adres pamięci, w której zostaną umieszczone kolejne dane. W liniach 5~--~10 na zmiennych \verb+scode+ i~\verb+nops+ zapisywane są dwa rodzaje napisów, 
 których długość wynosi 0x1000 bajtów. Napis \verb+nops+ składa się z wielokrotnie powtórzonego kodu maszynowego instrukcji NOP. Natomiast napis 
 \verb+scode+ jest wypełniony wartościami 0x00600060. Jest to adres, pod którym powinny zostać umieszczone bloki pamięci zawierające instrukcje NOP. 
 W liniach 11 i 12 do napisu \verb+nops+ doklejany jest \textit{shellcode}, który zostanie wykonany w trakcie ataku. Tworzenie \textit{shellcode'u}
-zostanie opisane w punkcie \ref{section:shellcode}. W liniach 14~--~23 wykonywana jest pętla, w której w każdym obrocie do treści strony dopisywany 
-jest jeden z napisów \verb+scode+ lub \verb+nops+. Powoduje to, że biblioteka Webkit na każdy z tych napisów alokuje kolejne bloki pamięci, a następnie
+zostanie opisane w punkcie \ref{section:shellcode}. W liniach 14~--~23 wykonywana jest pętla, w~której w każdym obrocie do treści strony dopisywany 
+jest jeden z napisów \verb+scode+ lub \verb+nops+. Powoduje to, że biblioteka WebKit na każdy z tych napisów alokuje kolejne bloki pamięci, a~następnie
 umieszcza w nich przekazaną zawartość. W pierwszych 130 iteracjach kopiowany jest napis \verb+scode+, który zawiera adres pamięci. Następnie 120 razy
 kopiowana jest sekwencja instrukcji NOP zakończonych \textit{shellcode'em}. W kolejnym obrocie pętli (linie 19~--~22) następuje odwołanie do pamięci, 
 która została zwolniona, a następnie nadpisana nowymi wartościami. Powoduje to wykonanie instrukcji z wydruku \ref{print:webcore-asm}, w trakcie którego 
@@ -1262,6 +1262,20 @@ int main(int argc, char *argv[]) {
 \caption{shellcode nawiązujący połączenie zwrotne}
 \label{print:reverse_tcp_asm}
 \end{print}
+
+% odnieść się do poprzednich punktów, że użyto szellcode'u bez opisywania
+% definicja shellcode'u
+% rodzaje shellcode i kiedy używane
+% opisac shellcode jaki jest potrzebny w przypadku ataku na przeglądarkę
+% wprowadzić program w c
+% opisać instrukcje asemblera
+% opisać zmiany, jakie trzeba w nim wykonać
+% - przejście do trynu thumb
+% - pozbycie się wywołać funkcji z biblioteki standardowej i zamienić na wywołania systemowe
+% - umieszczenie danych za kodem
+% - nie jest konieczne pozbywanie sie 0
+% rozwinąć i opisać wykonane zmiany na przykładzie trzeciego wydruku
+
 
 \iffalse
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla non scelerisque neque, eget blandit enim. Quisque lacinia turpis ipsum, sit amet pellentesque felis convallis ac. Morbi nulla felis, rutrum et massa et, laoreet interdum quam. Nam eget iaculis sem. Sed cursus felis mauris, at sagittis turpis convallis vel. Fusce facilisis lobortis lacus a iaculis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse vel auctor dolor. Donec id mattis purus. Nam tempor tristique tellus, aliquam pharetra ligula. Pellentesque facilisis in dui ut mattis. Proin neque libero, ullamcorper sed risus nec, commodo dictum quam. Mauris ut erat dapibus risus elementum bibendum.
