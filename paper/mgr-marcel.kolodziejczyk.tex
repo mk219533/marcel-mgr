@@ -93,7 +93,7 @@
   D.4.6. Security and Privacy Protection}
 
 % Słowa kluczowe:
-\keywords{android, arm, atak, bezpieczeństwo, przepełnienie bufora, metasploit, exploit, shellcode}
+\keywords{android, arm, bezpieczeństwo, przepełnienie bufora, return-oriented programming, exploit, shellcode, WebKit}
 
 % Tu jest dobre miejsce na Twoje własne makra i~środowiska:
 \newtheorem{defi}{Definicja}[section]
@@ -106,7 +106,9 @@
 
 %tu idzie streszczenie na strone poczatkowa
 \begin{abstract}
-krótkie streszczenie pracy
+Praca zawiera omówienie bezpieczeństwa telefonów komórkowych wyposażonych w system operacyjny Android. 
+Opisane są popularne techniki przeprowadzania ataku oraz mechanizmy przed nimi chroniące.
+Przedstawione są wybrane podatności w bibliotece WebKit oraz implementacja ataków, które pozwalają na uzyskanie zdalnego dostępu do urządzenia.
 \end{abstract}
 
 
@@ -114,15 +116,48 @@ krótkie streszczenie pracy
 %\listoffigures
 %\listoftables
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% WPROWADZENIE
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \chapter*{Wprowadzenie}
 
+Dzięki dynamicznemu rozwojowi technologii nowoczesne telefony komórkowe oprócz swoich tradycyjnych funkcjonalności, czyli wykonywania połączeń 
+głosowych, oferują szereg nowych możliwości. Większość takich urządzeń pozwala swobodnie korzystać z zasobów internetu, służyć jako
+klient poczty elektronicznej, dokonywać płatności bankowych. Dodatkowe podzespoły dają także możliwość korzystania z nawigacji satelitarnej
+oraz wykonywania zdjęć fotograficznych. Pamięć tego typu urządzeń bardzo często zawiera wiele ważnych informacji na temat jego właściciela.
+Daje to pokusę do poszukiwania błędów w aplikacjach zainstalowanych na telefonie, które pozwolą na przejęcie dostępu danych znajdujących się
+na urządzeniu oraz na wykonywanie czynności w imieniu właściciela telefonu.
+
+Inspiracją do napisania niniejszej pracy był mój udział w projekcie realizowanym przez Uniwersytet Warszawski we współpracy z firmą Samsung. W ramach 
+tego projektu grupa studentów pod kierownictwem dra Marcina Peczarskiego i dra Jakuba Pawlewicza stworzyła framework do wykonywania zautomatyzowanych
+testów bezpieczeństwa telefonów zaopatrzonych w system operacyjny Android. Przed wykonaniem prac implementacyjnych został przygotowany raport opisujący 
+badaną platformę oraz potencjalne wektory ataków, np. komunikacja Wi-Fi, 
+Bluetooth, GSM, luki w jądrze systemu lub dostępnych aplikacjach.
+
+W rozdziale \ref{chapter:platforma} omówiony został zarys architektury procesorów ARM, w które jest wyposażonych większość urządzeń przenośnych. 
+Rozdział ten opisuje także podstawowe komponenty, z których składa się system Android oraz model bezpieczeństwa. Omówione zostały także narzędzia 
+udostępnione dla programistów aplikacji.
+
+Rozdział \ref{chapter:techniki} przedstawia podstawowe techniki ataków, które umożliwiają wykonanie dostarczonego kodu, czyli przepełnienie bufora
+oraz technika \textit{Return-oriented programming}. Tego typu ataki są szczególnie niebezpieczne, ponieważ umożliwiają wykonanie dowolnych 
+operacji na urządzeniu. Opisane zostały także zabezpieczenia wprowadzane w kolejnych wydaniach systemu operacyjnego Android, które znacząco 
+utrudniają albo wręcz uniemożliwiają przeprowadzenie opisywanych ataków.
+
+Rozdział \ref{chapter:przyklady} zawiera praktyczne przykłady ataków i ich implementację. Opisane zostały wybrane podatności w bibliotece WebKit, 
+która jest silnikiem domyślnej przeglądarki internetowej w systemie Android. Przedstawiona jest analiza działania programu, który wczytuje odpowiednio 
+spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisany jest proces tworzenia \textit{shellcode'u}, czyli 
+krótkiego fragmentu kodu maszynowego, który może być użyty do uzyskania dostępu do linii poleceń na urządzeniu.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% ROZDZIAŁ 2
+% ROZDZIAŁ 1
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Platforma sprzętowa i programowa}
+\chapter{Platforma sprzętowa i programowa}\label{chapter:platforma}
 
 Android jest systemem operacyjnym i zestawem aplikacji dedykowanym przede wszystkim dla urządzeń przenośnych z ekranami dotykowymi, takimi jak 
 np. smartfon, tablet. Jądro systemu zostało oparte na jądrze Linuksa. System ten został zaprojektowany i stworzony głównie z myślą o urządzeniach
@@ -404,7 +439,7 @@ Wersja	& Nazwa kodowa	& Udział	\\
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Techniki ataków i sposoby przeciwdziałania}
+\chapter{Techniki ataków i sposoby przeciwdziałania}\label{chapter:techniki}
 
 \section{Błąd przepełnienie bufora na stosie}
 
@@ -871,7 +906,7 @@ systemowych nie był niezależny od pozycji i z tego powodu nie podlegał random
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Przykłady ataków i ich implementacja}
+\chapter{Przykłady ataków i ich implementacja}\label{chapter:przyklady}
 
 \section{Podatności w bibliotece WebKit}
 
