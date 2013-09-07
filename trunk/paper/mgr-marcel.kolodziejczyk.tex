@@ -74,7 +74,7 @@
   }
 
 % miesiąc i~rok:
-\date{Czerwiec 2013}
+\date{Wrzesień 2013}
 
 %Podać dziedzinę wg klasyfikacji Socrates-Erasmus:
 \dziedzina{
@@ -93,7 +93,7 @@
   D.4.6. Security and Privacy Protection}
 
 % Słowa kluczowe:
-\keywords{android, arm, bezpieczeństwo, przepełnienie bufora, return-oriented programming, exploit, shellcode, WebKit}
+\keywords{android, arm, bezpieczeństwo, przepełnienie bufora, return-oriented programming, exploit, shellcode, webkit}
 
 % Tu jest dobre miejsce na Twoje własne makra i~środowiska:
 \newtheorem{defi}{Definicja}[section]
@@ -106,9 +106,10 @@
 
 %tu idzie streszczenie na strone poczatkowa
 \begin{abstract}
-Praca zawiera omówienie bezpieczeństwa telefonów komórkowych wyposażonych w system operacyjny Android. 
-Opisane są popularne techniki przeprowadzania ataku oraz mechanizmy przed nimi chroniące.
-Przedstawione są wybrane podatności w bibliotece WebKit oraz implementacja ataków, które pozwalają na uzyskanie zdalnego dostępu do urządzenia.
+W pracy omówiono wybrane aspekty bezpieczeństwa telefonów komórkowych wyposażonych w system operacyjny Android. 
+Opisano popularne techniki przeprowadzania ataku oraz mechanizmy przed nimi chroniące.
+Przedstawiono wybrane podatności w bibliotece WebKit, które pozwalają na uzyskanie zdalnego dostępu do urządzenia.
+%TODO implementacja ataków w postaci modułów frameworku metasploit
 \end{abstract}
 
 
@@ -127,29 +128,34 @@ Przedstawione są wybrane podatności w bibliotece WebKit oraz implementacja ata
 Dzięki dynamicznemu rozwojowi technologii nowoczesne telefony komórkowe oprócz swoich tradycyjnych funkcjonalności, czyli wykonywania połączeń 
 głosowych, oferują szereg nowych możliwości. Większość takich urządzeń pozwala swobodnie korzystać z zasobów internetu, służyć jako
 klient poczty elektronicznej, dokonywać płatności bankowych. Dodatkowe podzespoły dają także możliwość korzystania z nawigacji satelitarnej
-oraz wykonywania zdjęć fotograficznych. Pamięć tego typu urządzeń bardzo często zawiera wiele ważnych informacji na temat jego właściciela.
-Daje to pokusę do poszukiwania błędów w aplikacjach zainstalowanych na telefonie, które pozwolą na przejęcie dostępu danych znajdujących się
-na urządzeniu oraz na wykonywanie czynności w imieniu właściciela telefonu.
+oraz wykonywania zdjęć fotograficznych. Pamięć tego typu urządzenia bardzo często zawiera wiele ważnych informacji na temat jego właściciela.
+Daje to pokusę do poszukiwania błędów w aplikacjach zainstalowanych na telefonie pozwalających na przejęcie dostępu do danych znajdujących się
+w jego pamięci oraz na wykonywanie czynności w imieniu właściciela telefonu.
 
 Inspiracją do napisania niniejszej pracy był mój udział w projekcie realizowanym przez Uniwersytet Warszawski we współpracy z firmą Samsung. W ramach 
 tego projektu grupa studentów pod kierownictwem dra Marcina Peczarskiego i dra Jakuba Pawlewicza stworzyła framework do wykonywania zautomatyzowanych
 testów bezpieczeństwa telefonów zaopatrzonych w system operacyjny Android. Przed wykonaniem prac implementacyjnych został przygotowany raport opisujący 
-badaną platformę oraz potencjalne wektory ataków, np. komunikacja Wi-Fi, 
-Bluetooth, GSM, luki w jądrze systemu lub dostępnych aplikacjach.
+badaną platformę oraz potencjalne wektory ataków, np. komunikacja Wi-Fi, Bluetooth, GSM, luki w jądrze systemu lub dostępnych aplikacjach.
+%TODO kilka zdan na czym polegał moj udział
 
-W rozdziale \ref{chapter:platforma} omówiony został zarys architektury procesorów ARM, w które jest wyposażonych większość urządzeń przenośnych. 
+W rozdziale \ref{chapter:platforma} przedstawiony został zarys architektury procesorów ARM, w które jest wyposażonych większość urządzeń przenośnych. 
 Rozdział ten opisuje także podstawowe komponenty, z których składa się system Android oraz model bezpieczeństwa. Omówione zostały także narzędzia 
 udostępnione dla programistów aplikacji.
 
-Rozdział \ref{chapter:techniki} przedstawia podstawowe techniki ataków, które umożliwiają wykonanie dostarczonego kodu, czyli przepełnienie bufora
-oraz technika \textit{Return-oriented programming}. Tego typu ataki są szczególnie niebezpieczne, ponieważ umożliwiają wykonanie dowolnych 
+Rozdział \ref{chapter:techniki} omawia podstawowe techniki ataków, które umożliwiają wykonanie dostarczonego kodu, czyli przepełnienie bufora
+oraz technika \textit{return-oriented programming}. Tego typu ataki są szczególnie niebezpieczne, ponieważ umożliwiają wykonanie dowolnych 
 operacji na urządzeniu. Opisane zostały także zabezpieczenia wprowadzane w kolejnych wydaniach systemu operacyjnego Android, które znacząco 
 utrudniają albo wręcz uniemożliwiają przeprowadzenie opisywanych ataków.
 
-Rozdział \ref{chapter:przyklady} zawiera praktyczne przykłady ataków i ich implementację. Opisane zostały wybrane podatności w bibliotece WebKit, 
-która jest silnikiem domyślnej przeglądarki internetowej w systemie Android. Przedstawiona jest analiza działania programu, który wczytuje odpowiednio 
-spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisany jest proces tworzenia \textit{shellcode'u}, czyli 
+Rozdział \ref{chapter:przyklady} zawiera praktyczne przykłady ataków i ich implementację. Opisano wybrane podatności w bibliotece WebKit, 
+która jest silnikiem domyślnej przeglądarki internetowej w systemie Android. Przedstawiono analizę działania programu, który wczytuje odpowiednio 
+spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisano proces tworzenia \textit{shellcode'u}, czyli 
 krótkiego fragmentu kodu maszynowego, który może być użyty do uzyskania dostępu do linii poleceń na urządzeniu.
+
+%TODO kilka zdań uwypuklić moj udział:
+% kod ktory napisałem
+% testy jakie wykonałem
+% czego jestem autorem
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -188,7 +194,7 @@ Instrukcja skoku do~parzystego adresu powoduje przejście do 32-bitowego zestawu
 
 \subsection{Rejestry}
 
-Z punktu widzenia programisty dostępnych jest szesnaście 32-bitowych rejestrów R0~--~R15. Trzy z nich mają dedykowane przeznaczenie:
+Z punktu widzenia programisty dostępnych jest szesnaście 32-bitowych rejestrów: R0~--~R15. Trzy z nich mają dedykowane przeznaczenie:
 
 \begin{itemize}
 \item SP (ang. \textit{Stack Pointer}) -- R13 -- wskaźnik stosu,
@@ -200,7 +206,7 @@ Dodatkowo występuje rejestr statusu procesora CPSR (ang. \textit{Current Proces
 Carry, oVerflow. Większość instrukcji podstawowego zestawu może być wykonywanych warunkowo, w zależności od stanu tych znaczników. Szczegółowe 
 informacje na ten temat można znaleźć w \cite{armman}.
 
-\subsection{Standard wywołania podprogramów}
+\subsection{Standard wywoływania podprogramów}
 
 Zbiór reguł i konwencji, które określają sposób wywoływania podprogramów, przekazywania im argumentów oraz odbierania zwracanej wartości, 
 a także format plików binarnych nazywa się ABI (ang. \textit{Application Binary Interface}). Kompletną dokumentację ABI dla architektury ARM można 
@@ -208,8 +214,8 @@ znaleźć w \cite{armcall}. Zdefiniowano w niej następujące zasady wywoływani
 \begin{itemize}
 \item Do przekazywania argumentów i zwracania wyniku funkcji używane są rejestry R0~--~R3. Kolejne argumenty mogą być przekazywane na stosie.
 \item Wartości rejestrów R0~--~R3 i R12 mogą być dowolnie modyfikowane w trakcie wykonania podprogramu.
-\item Zawartość rejestrów R4~--~R11, LR, SP musi być przywrócona do wartości sprzed wywołania podprogramu. Zazwyczaj w prologu rejestry te 
-odkłada się na stos, aby przywrócić ich wartości w epilogu.
+\item Zawartość rejestrów R4~--~R11, LR, SP musi być przywrócona do wartości sprzed wywołania podprogramu. Zazwyczaj w prologu wartości tych
+rejestrów odkłada się na stos, aby przywrócić te wartości w epilogu.
 \item Stos rośnie w kierunku mniejszych adresów pamięci.
 \end{itemize}
 
@@ -234,7 +240,7 @@ Rysunek \ref{figure:architektura} przedstawia najważniejsze komponenty systemu 
 \begin{center}
 \includegraphics[width=\textwidth]{system-architecture.jpg} 
 \end{center}
-\caption[Główne komponenty systemu Android]{Główne komponenty systemu Android, źródło: \url{http://developer.android.com/about/versions/index.html}}
+\caption[Główne komponenty systemu Android]{Główne komponenty systemu Android, źródło: \url{http://developer.android.com/about/versions/index.html} }
 \label{figure:architektura}
 \end{figure}
 
@@ -275,12 +281,13 @@ w kliencie poczty elektronicznej,
 
 \subsection{Środowisko czasu wykonania}
 
-Środowisko czasu wykonania systemu Android składa się z maszyny wirtualnej Dalvik oraz podstawowych bibliotek Javy.
+Środowisko czasu wykonania systemu Android składa się z maszyny wirtualnej Dalvik oraz podstawowych bibliotek Javy, w której jest napisana większość 
+aplikacji użytkownika.
 
-Dalvik jest maszyną wirtualną, która została stworzona specjalnie dla systemu Android, w celu zapewnienia odpowiedniej wydajności na urządzeniach 
+Dalvik jest maszyną wirtualną, która została stworzona specjalnie dla systemu Android w celu zapewnienia odpowiedniej wydajności na urządzeniach 
 z mniejszymi zasobami, jak np. telefony komórkowe. Dalvik nie jest maszyną wirtualną Javy i używa własnego kodu bajtowego w formacie \verb+.dex+ 
 (ang. \textit{Dalvik executable}). Możliwa jest jednak konwersja kodu bajtowego Javy do kodu Dalvika. W przeciwieństwie do wirtualnej maszyny Javy, 
-która jest maszyną stosową, Dalvik jest maszyną rejetrową. Dalvik umożliwia uruchomienie wielu aplikacji jednocześnie, wydajnie tworząc klika instancji 
+która jest maszyną stosową, Dalvik jest maszyną rejestrową. Dalvik umożliwia uruchomienie wielu aplikacji jednocześnie, wydajnie tworząc klika instancji 
 maszyny wirtualnej. Zapewnia izolację procesów, zarządzanie pamięcią oraz wielowątkowość. 
 
 \subsection{Aplikacje}
@@ -295,7 +302,7 @@ taką samą funkcjonalność.
 Platforma Android została zaprojektowana w taki sposób, aby możliwe było także zainstalowanie aplikacji z potencjalnie niezaufanych źródeł.
 Jest to odmienny model niż w przypadku telefonów iPhone (z systemem operacyjnym iOS), gdzie wszystkie aplikacje mogą być jedynie zainstalowane
 z jednego źródła (\textit{Apple Store}) i mogą być zweryfikowane przed upublicznieniem. Z tego powodu system Android posiada mechanizmy bezpieczeństwa 
-działające na wielu poziomach. Izolowanie aplikacji wykorzystuje mechanizmy kontroli dostępu do systemu plików, jakie udostępnia jądro Linuxa oraz 
+działające na wielu poziomach. Izolowanie aplikacji wykorzystuje mechanizmy kontroli dostępu do systemu plików, jakie udostępnia jądro Linuxa, oraz 
 mechanizm nadawania wybranych uprawnień zatwierdzanych przez użytkownika w trakcie instalacji aplikacji. Aplikacje muszą być także podpisane przy użyciu 
 kryptografii z kluczem publicznym, jednak ten mechanizm umożliwia jedynie wiarygodne zidentyfikowanie autora aplikacji.
 
@@ -329,7 +336,7 @@ poprzez użycie flag \verb+MODE_WORLD_READABLE+ i \verb+MODE_WORLD_WRITABLE+ pod
 
 Katalog z danymi aplikacji domyślnie znajduje się w \verb+/data/data/<nazwa pakietu>/+ i~posiada następującą strukturę:
 \begin{itemize}
-\item \verb+databases+ -- służy do przechowywania baz danych sqlite,
+\item \verb+databases+ -- służy do przechowywania baz danych \verb+sqlite+,
 \item \verb+lib+ -- zawiera wszystkie natywne biblioteki używane przez aplikację, skopiowane podczas instalacji,
 \item \verb+files+ -- katalog, gdzie domyślnie są tworzone pliki przez aplikację,
 \item \verb+shared_prefs+ -- zawiera XML-owe pliki konfiguracyjne aplikacji.
@@ -370,12 +377,12 @@ autora instalowanej aplikacji. W przyszłości system podpisywania może zostać
 zweryfikowanych, podobnie jak to jest w przypadku konkurencyjnego iPhone'a firmy Apple. W obecnych wydaniach systemu Android funkcjonalność taka nie 
 jest zaimplementowana.
 
-Mechanizm podpisywanie aplikacji umożliwia programom współdzielenie zasobów, co zostało opisane w punkcie \ref{subsection:piaskownica}
+Mechanizm podpisywania aplikacji umożliwia programom współdzielenie zasobów, co zostało opisane w punkcie \ref{subsection:piaskownica}
 
 \section{Narzędzia programistyczne}
 
 Twórcy systemu Android udostępnili bardzo dobre narzędzia niezbędne do rozwijania i testowania aplikacji na ten system: SDK (ang. \textit{Software
-Development Kit}) i NDK (ang. \textit{Native Development Kit}).
+Development Kit}) i NDK (ang. \textit{Native Development Kit}) \cite{android}.
 
 Android SDK jest podstawowym zestawem narzędzi przydatnym dla bardziej zaawansowanych użytkowników systemu oraz programistów . Najważniejsze komponenty 
 tego pakietu to:
@@ -394,7 +401,7 @@ ich części w C/C++. W jego skład wchodzą między innymi:
 \begin{itemize}
 \item różne wersje kompilatora GCC dla wybranych architektur procesora (ARM, x86, ...),
 \item standardowe narzędzia do debugowania i optymalizacji kodu, np. \verb+gdb+, \verb+objdump+, \verb+gcov+, \verb+gdbserver+, \verb+ar+, \verb+ld+,
-\item pliki nagłówkowe i skompilowane statyczne i dynamiczne biblioteki, np. \verb+libc+, \verb+libz+, \verb@libstdc++@, \verb+libm+.
+\item pliki nagłówkowe oraz skompilowane statycznie i dynamicznie biblioteki, np. \verb+libc+, \verb+libz+, \verb@libstdc++@, \verb+libm+.
 \end{itemize}
 
 Obydwa pakiety posiadają bogatą dokumentację oraz zawierają liczne przykłady użycia. Przykłady w dalszej części pracy będą używały powyższych narzędzi.
@@ -482,12 +489,15 @@ Wersja	& Nazwa kodowa	& Udział	\\
 \label{print:vulnerable}
 \end{print}
 
+%todo cytowanie
+\cite{Kumar} - ogolne techinik na arma buffer, rop, shellcode
+\cite{Hulse}  - ogolnie o buffer overfolw
 Przepełnienie bufora to błąd w kodzie programu umożliwiający wczytanie do wyznaczonego obszaru pamięci większej ilości danych, niż zarezerwował na ten 
 cel programista. Dane wykraczające poza rozmiar bufora nadpisują obszar pamięci bezpośrednio z nim sąsiadujący, który może zawierać inne dane lub 
 informacje decydujące o przepływie sterowania w wykonywanym programie.
 
-Na przykładzie programu \ref{print:overflow}, w którym występuje błąd umożliwiający przepełnienie bufora na stosie, zastanie omówiona 
-technika ataku pozwalająca na zmianę zachowania programu.
+Na przykładzie programu przedstawionego na wydruku \ref{print:overflow}, w którym występuje błąd umożliwiający przepełnienie bufora na stosie, zostanie 
+omówiona technika ataku pozwalająca na zmianę zachowania programu. 
 
 Program \ref{print:overflow} został skompilowany z optymalizacjami (\verb+-Os+) do kodu maszynowego w trybie Thumb-2. Wykonanie procedury 
 \verb+exploit+ w trakcie normalnego wykonania programu nigdy nie powinno nastąpić. Użycie tej procedury w linii 15 jest tylko po to, aby nie 
@@ -495,13 +505,13 @@ została usunięta przez kompilator jako martwy kod w trakcie optymalizacji.
 
 \subsection{Nadpisanie adresu powrotu}
 
-W punkcie tym zostanie zaprezentowana atak, w wyniku którego sterowanie programu przejdzie do wykonywania funkcji \verb+exploit+.
-W funkcji \verb+vulnerable+ wykonywane jest kopiowanie napisu przekazanego jako argument \verb+arg+ do lokalnie zadeklarowanego bufora \verb+buffer+ 
+W punkcie tym zostanie zaprezentowana atak, w wyniku którego sterowanie programu przejdzie do wykonywania fbbbbbb \verb+exploit+.
+W funkcj \verb+vulnerable+ wykonywane jest kopiowanie napisu przekazanego jako argument \verb+arg+ do lokalnie zadeklarowanego bufora \verb+buffer+ 
 o rozmiarze 100 bajtów. Błędem jest niesprawdzenie długości przekazywanego napisu. Uruchomienie programu z dostatecznie długim argumentem kończy się 
 naruszeniem ochrony pamięci:
 
 \begin{verbatim}
-sh-3.2# ./buffer-overflow `printf 'A%.0s' {1..108}`
+sh-3.2# ./buffer-overflow `printf 'A%.0s' {1..160}`
 Segmentation fault
 \end{verbatim}
 
@@ -526,10 +536,10 @@ która nie jest poprawnym adresem kodu programu.
 Jeżeli adres powrotu zostanie nadpisany przez inny, poprawny adres kodu, możliwa będzie zmiana przepływu sterowania w programie. Umieszczenie
 w tym miejscu adresu początku kodu procedury \verb+exploit+ spowoduje, że zostanie ona wykonana po zakończeniu procedury \verb+vulnerable+.
 
-Adres początku kodu funkcji \verb+exploit+ można uzyskać za pomocą narzędzia \verb+gdb+:
+Adres początku kodu funkcji \verb+exploit+ można uzyskać za pomocą narzędzia GDB:
 \begin{verbatim}
-(gdb) x/x exploit 
-0x84d0 <exploit>:	0x4803b508
+(gdb) info address exploit 
+Symbol "exploit" is a function at address 0x84d0.
 \end{verbatim}
 
 Aby doprowadzić do wykonania procedury \verb+exploit+, należy uruchomić program z dostatecznie długim argumentem. Ponieważ na bufor \verb+buffer+ 
@@ -537,8 +547,8 @@ zostało zaalokowanych na stosie 108 bajtów, wartość, która ma zostać wczyt
 Wartość ta musi też być zapisana w takiej kolejności bajtowej, w jakiej został skompilowany program. Domyślnie jest to little-endian.
 Cały argument musi być poprawnym napisem, a więc nie może zawierać bajtu o wartości zero. Skonstruowanie takiego argumentu jest jednak możliwe, 
 dzięki odpowiedniej kolejności bajtowej przekazywanego adresu -- dwa najmniej znaczące bajty adresu będą położone jako pierwsze. Kolejny bardziej 
-znaczący bajt adresu, który jest równy zero, poprawnie zakończy napis. Dodatkowo wykorzystywany jest fakt, że najbardziej znaczący bajt adresu
-pierwotnie odłożonego adresu powrotu jest także równy zero. Bajt ten nie zostanie nadpisany trakcie przepełnienia bufora. Kod maszynowy funkcji 
+znaczący bajt adresu, który jest równy zeru, poprawnie zakończy napis. Dodatkowo wykorzystywany jest fakt, że najbardziej znaczący bajt adresu
+pierwotnie odłożonego adresu powrotu jest także równy zeru. Bajt ten nie zostanie nadpisany trakcie przepełnienia bufora. Kod maszynowy funkcji 
 \verb+exploit+ jest skompilowany w trybie Thumb-2, więc aby został poprawnie zinterpretowany przez procesor, adres funkcji \verb+exploit+, 
 tj.~\verb+0x84d0+, musi być zwiększony o 1. Poniżej uzyskujemy spodziewany efekt, czyli wykonanie procedury \verb+exploit+, która wypisuje napis 
 na~standardowe wyjście:
@@ -580,7 +590,7 @@ przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ci
 \textit{cookie}). Znacznik ten jest umieszczany pomiędzy obszarem pamięci przeznaczonym na zmienne lokalne procedury a danymi kontrolnymi programu 
 odkładanymi na stosie, np. adresem powrotu z~funkcji, wskaźnikiem ramki itp. Jeżeli dojdzie do przepełnienia bufora, znacznik ten zostanie nadpisany. 
 Dzięki temu, że jego wartość jest losowa, atakujący z bardzo małym prawdopodobieństwem może zgadnąć odpowiednią wartość. W epilogu procedury wykonywane 
-jest sprawdzenie, czy wcześniej zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia buforu, działanie programu kończy się 
+jest sprawdzenie, czy wcześniej zapisana wartość nie została zmodyfikowana. W przypadku wykrycia przepełnienia bufora, działanie programu kończy się 
 błędem.
 
 W kompilatorze GCC zabezpieczenie to nazywane jest \verb+ProPolice+. Do jego włączenia lub wyłączenia służą flagi kompilatora: \verb+--stack-protector+
@@ -591,8 +601,8 @@ Kod assemblerowy procedury \verb+vulnerable+ z przykładu~\ref{print:overflow} z
 na~wydruku~\ref{print:vulnerable-propolice}. W instrukcjach 2, 5, 6, 8, 9 pobierana jest wartość ciasteczka i umieszczana w odpowiednim miejscu na 
 stosie. Natomiast instrukcje 11 -- 15 sprawdzają, czy wartość ta nie została zmieniona.
 
-Należy zauważyć, że powyższa metoda wykrywania przepełnienia bufora chroni jedynie dane kontrolne programu. W dalszym ciągu możliwe jest 
-zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu.
+Należy zauważyć, że powyższa metoda wykrywania przepełnienia bufora chroni jedynie dane kontrolne programu, np. odłożony adres powrotu. W dalszym 
+ciągu możliwe jest zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do niezamierzonego zachowania programu \cite{soldierx}.
 
 \section{Wstrzyknięcie kodu}\label{section:injection}
 
@@ -662,9 +672,9 @@ zmodyfikowanie innych zmiennych lokalnych procedury, co może doprowadzić do ni
 W przykładzie z poprzedniego punktu został zaprezentowany jeden ze sposobów na wykorzystanie błędu programistycznego w celu zmiany sterowania programu.
 Uruchomienie programu z odpowiednio spreparowanym argumentem pozwoliło wywołać dowolną procedurę programu. Zazwyczaj jest to jednak niewystarczające, 
 aby atakujący mógł osiągnąć zamierzone cele. W~punkcie tym zostanie zaprezentowany atak, w trakcie którego przekazywany jest kod maszynowy zgodny 
-z architekturą procesora danego urządzenia. Takie fragmenty kodu maszynowego nazywane są \textit{shellcode'em}. Aby przekazany kod został wykonany 
+z architekturą procesora danego urządzenia. Taki fragment kodu maszynowego nazywany jest \textit{shellcode'em}. Aby przekazany kod został wykonany 
 przez program, potrzebne jest odpowiednie ustawienie wartości licznika instrukcji na adres pamięci, w którym umieszczony jest \textit{shellcode}. 
-Sposób, w jaki zostanie to zrobione, jest zależny od błędu w programie. Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania 
+Sposób, w jaki zostanie to zrobione, jest zależny od błędu w programie \cite{Acri}. Poniżej zostanie przedstawione wstrzyknięcie kodu z wykorzystaniem nadpisania 
 adresu powrotu z~podprogramu, co zostało opisane w poprzednim punkcie. Można jednak także wykorzystać w tym celu dowolny inny błąd w programie. 
 
 \begin{figure}
@@ -764,7 +774,10 @@ Technologia bitu NX jest wspierana przez system Android od wersji 2.3.
 \section{Return-oriented programming}
 
 \textit{Return-oriented programming} (ROP) jest to technika ataku, która pozwala na zmianę zachowania programu na dowolną, zamierzoną przez atakującego.
-W trakcie ataku z wykorzystaniem tej techniki program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
+Technikę tą opisał Hovav Shacham w 2007 roku \cite{Shacham} na architekturze x86. Następnie została rozwinięta na architektury SPARC \cite{Buchanan}, 
+AVR \cite{Francillon}, PowerPC \cite{Lidner} oraz ARM \cite{Kornau}.
+
+W trakcie ataku z wykorzystaniem techniki ROP program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
 \textit{chunk}), dostępnych w przestrzeni adresowej procesu. Wykorzystywane są obszary pamięci, w których załadowany jest kod programu oraz bibliotek 
 dynamicznych. Obszary te są oznaczone jako do wykonywania, co pozwala ominąć zabezpieczenie NX. Najczęściej jako baza gadżetów wykorzystywana
 jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów.
@@ -778,11 +791,11 @@ Możliwe jest jednak przeprowadzenie ataku z wykorzystaniem techniki ROP, w któ
 W tym celu używany jest zestaw gadżetów, w których ostatnią instrukcją jest instrukcja skoku pośredniego (BX, BLX). Parametrem takiej instrukcji
 jest inny rejestr ogólnego przeznaczenia, a skok jest wykonywany do adresu, jaki znajduje się w przekazanym rejestrze. Wartość tego rejestru
 może być wcześniej pobierana z dowolnego obszaru pamięci procesu, w którym atakujący zapisał dane, np. ze~sterty. Taki wariant ataku typu ROP na 
-architekturze ARM został opisany w pracy \cite{noreturn}.
+architekturze ARM został opisany w pracy \cite{Davi}.
 
-Ręczne wyszukiwanie dogodnych fragmentów kodu, które mogą zostać użyte jako gadżet oraz składanie ich w sekwencję tak, aby uzyskać pożądane zachowanie
-programu jest bardzo czasochłonne. Dostępne są jednak narzędzia, które pozwalają ten proces zautomatyzować. W~pracy \cite{kompilator} został
-opisany kompilator ROP dla architektury x86. Natomiast w \cite{roparm} przedstawiono m.in. algorytmy służące do automatycznego wyszukiwania i składania
+Ręczne wyszukiwanie dogodnych fragmentów kodu, które mogą zostać użyte jako gadżet, oraz składanie ich w sekwencję, tak aby uzyskać pożądane zachowanie
+programu, jest bardzo czasochłonne. Dostępne są jednak narzędzia, które pozwalają ten proces zautomatyzować. W~pracy \cite{janic} został
+opisany kompilator ROP dla architektury x86. Natomiast w \cite{Kornau} przedstawiono m.in. algorytmy służące do automatycznego wyszukiwania i składania
 gadżetów dla architektury ARM.
 
 Poniżej znajduje się przykład ataku wykorzystującego technikę ROP. Do przeprowadzenia ataku został wykorzystany błąd w programie z 
@@ -866,10 +879,10 @@ przepełnienia bufora wczytana zostanie wartość z linii 7 programu \ref{print:
 \ref{print:getcwd-chunk} powiększony o offset, pod którym znajduje się biblioteka \verb+libc.so+ w przestrzeni adresowej procesu.
 Adres ten jest także dodatkowo zwiększony o 1, ponieważ biblioteka \verb+libc.so+ została skompilowana w trybie Thumb. Wierzchołek stosu 
 po wykonaniu instrukcji \verb+pop {pc}+ będzie wskazywał na kolejną wartość danych sterujących.
-\item Ostatnia instrukcja gadżetu (\verb+pop {r4, pc}+) zostanie wykonana. Spowoduje to zapisanie do rejestru R4 adresu napisu \verb+"/system/bin/sh"+ 
+\item Zostanie wykonana ostatnia instrukcja gadżetu (\verb+pop {r4, pc}+). Spowoduje to zapisanie do rejestru R4 adresu napisu \verb+"/system/bin/sh"+ 
 (linia 8), natomiast do licznika instrukcji będzie wczytany odpowiednio zwiększony adres pierwszej instrukcji gadżetu (linia 9).
-\item Obydwie instrukcje gadżetu zostaną wykonane. Adres napisu \verb+"/system/bin/sh"+ będzie skopiowany do rejestru R0. Ze stosu będą pobrane
-dwie kolejne wartości (linie 11, 12 na~wydruku \ref{print:rop}) i zostaną zapisane kolejno w rejestrach R4 i PC (liczniku instrukcji). Wartość 
+\item Zostaną wykonane obydwie instrukcje tego samego gadżetu. Do rejestru R0 będzie skopiowany adres napisu \verb+"/system/bin/sh"+. Ze stosu będą 
+pobrane dwie kolejne wartości (linie 11, 12 na~wydruku \ref{print:rop}) i zostaną zapisane kolejno w rejestrach R4 i PC (liczniku instrukcji). Wartość 
 wczytywana do rejestru R4 jest nieistotna, natomiast do licznika instrukcji zostanie zapisany odpowiednio zwiększony adres procedury \verb+system+ 
 z biblioteki standardowej. 
 \item Zostanie wykonana procedura \verb+system+. Jako argument będzie przekazany napis, którego adres został wcześniej umieszczony w rejestrze R0. 
@@ -877,12 +890,12 @@ z biblioteki standardowej.
 
 \subsection{Randomizacja przestrzeni adresowej procesu}\label{section:aslr}
 
-Randomizacja przestrzeni adresowej procesu -- ASLR (ang. \textit{Address space layout randomization}) jest metodą, która znacząco zmniejsza szanse
-powodzenia ataków polegających na~wykorzystaniu fragmentów kodu programu lub załadowanych bibliotek dynamicznych. Metoda ta jest dostarczana
-przez jądro systemu operacyjnego. Polega ona na rozmieszczaniu kluczowych obszarów pamięci procesu, tj. stosu, sterty, bibliotek dynamicznych oraz 
-kodu programu w~losowych miejscach przestrzeni adresowej procesu. Randomizacji podlega jedynie kod, który jest niezależny od pozycji -- PIC (ang. 
-\textit{Position independent code}). Odwołania do zmiennych i procedur globalnych są wtedy wykonywane pośrednio, z wykorzystaniem tablicy GOT 
-(ang. \textit{Global Table Offset}), która jest wypełniana dopiero w trakcie wykonania programu.
+Randomizacja przestrzeni adresowej procesu -- ASLR (ang. \textit{address space layout randomization}) jest metodą, która znacząco, ale nie całkowicie
+\cite{Roglia}, zmniejsza szanse powodzenia ataków polegających na~wykorzystaniu fragmentów kodu programu lub załadowanych bibliotek dynamicznych. Metoda 
+ta jest dostarczana przez jądro systemu operacyjnego. Polega ona na rozmieszczaniu kluczowych obszarów pamięci procesu, tj. stosu, sterty, bibliotek 
+dynamicznych oraz kodu programu w~losowych miejscach przestrzeni adresowej procesu. Randomizacji podlega jedynie kod, który jest niezależny od pozycji 
+-- PIC (ang. \textit{position independent code}). Odwołania do zmiennych i procedur globalnych są wtedy wykonywane pośrednio, z wykorzystaniem tablicy 
+GOT (ang. \textit{Global Table Offset}), która jest wypełniana dopiero w trakcie wykonania programu.
 
 W systemach operacyjnych opartych na jądrze Linuxa, a zatem także w systemie Android,  można zmienić ustawienia randomizacji przestrzeni adresowej 
 poprzez zapisanie odpowiedniej wartości do pliku \verb+/proc/sys/kernel/randomize_va_space+. Poszczególne wartości mają następujące znaczenie:
@@ -908,26 +921,30 @@ systemowych nie był niezależny od pozycji i z tego powodu nie podlegał random
 
 \chapter{Przykłady ataków i ich implementacja}\label{chapter:przyklady}
 
-\section{Podatności w bibliotece WebKit}
-
-WebKit jest silnikiem przeglądarki internetowej rozwijanym na zasadach otwartego oprogramowania. Biblioteka ta odpowiada za przetwarzanie zawartości 
-stron internetowych (tj. kodu HTML, skryptów, arkuszy stylów CSS, XSL), a następnie wyświetlenie rezultatu. WebKit składa się z dwóch głównych 
-  komponentów:
-\begin{itemize}
-\item WebCore -- zapewnia obsługę obiektowego modelu dokumentu DOM (ang. \textit{Document Object Model}) oraz grafiki wektorowej SVG (ang. 
-\textit{Scalable Vector Graphics}). Komponent ten także renderuje treść strony internetowej.
-\item JavaScriptCore - dostarcza silnik do obsługi języka JavaScript.
-\end{itemize}
-
-Biblioteka WebKit jest używana przez wiele popularnych przeglądarek internetowych, m.~in. Google Chrome oraz Safari. Biblioteka ta jest również 
-dostarczana wraz systemami operacyjnymi Android oraz iOS (system operacyjny firmy Apple dedykowany dla telefonów iPhone), w których wykorzystywana jest 
-przez domyślne aplikacje do przeglądania stron internetowych i przez programy obsługujące pocztę elektroniczną.  
+\section{CVE}
 
 CVE (ang. \textit{Common Vulnerabilities and Exposures}) jest bazą danych podatności oraz zagrożeń dotyczących bezpieczeństwa informacji w systemach 
 informatycznych. System ten jest zarządzany przez organizację MITRE. Każde zgłoszenie otrzymuje unikalny identyfikator i~zawiera krótki opis podatności,
 potencjalne ryzyka oraz wersje oprogramowania, w których występuje błąd. Identyfikatory CVE są uznawane za standard w systemach do wymiany informacji o 
 zagrożeniach. Każde zgłoszenie jest także oceniane w skali punktowej CVSS (ang. \textit{Common Vulnerability Scoring System}), dzięki której łatwo można
-ocenić, na ile dane zgłoszenie jest poważne. W latach 2010 -- 2011 zostało zgłoszonych ponad 200 podatności dotyczących biblioteki WebKit, spośród 
+ocenić, na ile dane zgłoszenie jest poważne.
+
+\section{Podatności w bibliotece WebKit}
+
+WebKit jest silnikiem przeglądarki internetowej rozwijanym na zasadach otwartego oprogramowania \cite{webkit}. Biblioteka ta odpowiada za przetwarzanie zawartości 
+stron internetowych (tj. kodu HTML, skryptów, arkuszy stylów CSS, XSL), a następnie wyświetlenie rezultatu. WebKit składa się z dwóch głównych 
+  komponentów:
+\begin{itemize}
+\item WebCore -- zapewnia obsługę obiektowego modelu dokumentu DOM (ang. \textit{Document Object Model}) oraz grafiki wektorowej SVG (ang. 
+\textit{Scalable Vector Graphics}). Komponent ten także renderuje treść strony internetowej.
+\item JavaScriptCore -- dostarcza silnik do obsługi języka JavaScript.
+\end{itemize}
+
+Biblioteka WebKit jest używana przez wiele popularnych przeglądarek internetowych, m.in. Google Chrome oraz Safari. Biblioteka ta jest również 
+dostarczana wraz systemami operacyjnymi Android oraz iOS (system operacyjny firmy Apple dedykowany dla telefonów iPhone), w których wykorzystywana jest 
+przez domyślne aplikacje do przeglądania stron internetowych i przez programy obsługujące pocztę elektroniczną.  
+
+Opierając się na danych z CVE, w latach 2010 -- 2011 zostało zgłoszonych ponad 200 podatności dotyczących biblioteki WebKit, spośród 
 których ok. 80\% pozwalało na wykonanie dostarczonego przez atakującego kodu. Szczegóły większości z tych błędów nie są publicznie dostępne, jednak na 
 portalach poświęconych bezpieczeństwu, np. \cite{exploitdb}, \cite{packetstorm}, można znaleźć przykłady ataków wykorzystujących niektóre podatności.
 
@@ -1076,6 +1093,7 @@ signal 11 (SIGSEGV), fault addr 41414195
 \label{print:heap-spray}
 \end{print}
 
+%TODO cytowanie
 Podatność w bibliotece WebKit o identyfikatorze CVE-2010-1119 została wykryta przez Vincenzo Iozzo i Ralfa Philippa Weinmanna podczas zawodów Pwn2Own 
 towarzyszących konferencji CanSecWest w 2010 roku. Została użyta w trakcie tych zawodów do przeprowadzenia skutecznego włamania na telefon iPhone. 
 W obsłudze funkcji \verb+removeChild()+ w języku JavaScript został wykryty błąd, w wyniku którego możliwe jest odwołanie do wskaźnika do~pamięci, która 
@@ -1108,10 +1126,10 @@ pamięci, do którego istnieje odwołanie w globalnej tablicy \verb+nodes+. W li
 okienka z~komunikatem i guzikiem do potwierdzenia. W tym czasie wykonanie kodu JavaScript zostaje wstrzymane. Jest to dogodny moment do podpięcia się 
 do procesu przeglądarki debuggerem GDB, który umożliwia dokładną analizę pamięci procesu, stanu rejestrów i wykonywanych instrukcji. W linii 15 
 następuje odwołanie do wcześniej zwolnionej pamięci. Jeżeli jeden z napisów utworzonych w linii 12 został utworzony pod adresem, do którego następuje 
-odwołanie, to proces przeglądarki kończy się błędem. Do logu systemowego zapisywane są szczegółowe informacje o zakończonym procesie, m. in. wartości 
+odwołanie, to proces przeglądarki kończy się błędem. Do logu systemowego zapisywane są szczegółowe informacje o zakończonym procesie, m.in. wartości 
 rejestrów i dane znajdujące się na szczycie stosu. Przykład takiego zrzutu stanu procesu znajduje się na wydruku \ref{print:stacktrace}. Wynika z~niego,
 że proces został zakończony, ponieważ wykonał odwołanie do niepoprawnego adresu pamięci 0x41414195. W rejestrze R0 znajdowała się wartość
-0x41414141, czyli wartość jednego z~napisów utworzonego w linii 12 na wydruku \ref{print:use-after-free-html}. Gdy doszło do błędu licznik instrukcji 
+0x41414141, czyli wartość jednego z~napisów utworzonego w linii 12 na wydruku \ref{print:use-after-free-html}. Gdy doszło do błędu, licznik instrukcji 
 miał wartość 0xaa04a57a i wskazywał na instrukcję w bibliotece \verb+libwebcore.so+ pod adresem 0x4a57a.
 
 Na wydruku \ref{print:webcore-asm} znajdują się instrukcje assemblera biblioteki \verb+libwebcore.so+, których wykonanie spowodowało błąd programu.
@@ -1141,15 +1159,15 @@ dotychczasowego końca sterty.
 Schemat pamięci, który umożliwia wykonanie dostarczonego w treści strony kodu, przedstawiony jest na rysunku \ref{figure:use-after-free-heap}.
 Różowe prostokąty oznaczają zaalokowaną i wykorzystywaną przez program pamięć. Kolorem zielonym zaznaczono fragmenty pamięci, w których są utworzone
 krótkie napisy, które zawierają oszacowany adres, pod którymi znajdą się kolejne dane. Aby atak mógł się powieść, jeden z takich napisów musi zostać 
-umieszczony w miejscu, z~którego biblioteka \verb+libwebcore.so+ w instrukcji 4a578 pobiera wartość rejestru R0. Zostało to oznaczone kolorem oliwkowo 
-zielonym. Bloki pamięci utworzone poprzez \textit{heap spray} zawierają dwa rodzaje zawartości. Żółte prostokąty przedstawiają pamięć wypełnioną
+umieszczony w miejscu, z~którego biblioteka \verb+libwebcore.so+ w instrukcji 4a578 pobiera wartość rejestru R0. Zostało to oznaczone kolorem 
+oliwkowozielonym. Bloki pamięci utworzone poprzez \textit{heap spray} zawierają dwa rodzaje zawartości. Żółte prostokąty przedstawiają pamięć wypełnioną
 wartością, która zostanie wczytana do rejestru R2 w instrukcji 4a57a. Wartość ta powinna być adresem pamięci, w którym znajduje się przekazany kod 
 maszynowy. Bloki z kodem poprzedzonym sekwencję instrukcji NOP są koloru fioletowego. Skok do tego kodu zostanie wykonany w~instrukcji 4a57e.
 
 W pełni funkcjonalny atak składa się ze strony HTML z wydruku \ref{print:use-after-free-html}, w którym wywołanie funkcji \verb+setTimeout()+ 
 w liniach 10~--~16 jest zastąpione jej zmodyfikowaną wersją z~wydruku \ref{print:heap-spray}. Konstrukcja \verb+#{zmienna}+ oznacza, że w miejscu
 jej wystąpienia powinien zostać wstawiony odpowiednio zakodowany kod maszynowy instrukcji procesora. Wykonanie przedstawionej funkcji JavaScript powoduje 
-zaaranżowanie pamięci na stercie tak, jak jest to opisane w poprzednich akapitach. W liniach 2~--~4 tworzona jest duża ilość napisów, które zawierają 
+zaaranżowanie pamięci na stercie tak, jak zostało to opisane w poprzednich akapitach. W liniach 2~--~4 tworzona jest duża ilość napisów, które zawierają 
 adres pamięci, pod którym zostaną umieszczone kolejne dane. W liniach 5~--~10 na zmiennych \verb+scode+ i~\verb+nops+ zapisywane są dwa rodzaje napisów, 
 których długość wynosi 0x1000 bajtów. Napis \verb+nops+ składa się z wielokrotnie powtórzonego kodu maszynowego instrukcji NOP. Natomiast napis 
 \verb+scode+ jest wypełniony wartościami 0x00600060. Jest to adres, pod którym powinny być umieszczone bloki pamięci zawierające instrukcje NOP. 
@@ -1253,13 +1271,14 @@ signal 11 (SIGSEGV), fault addr dddddddd
 \label{print:parse-float-exploit}
 \end{print}
 
+%TODO cytat
 Błąd w bibliotece WebKit, oznaczony sygnaturą CVE-2010-1807, został zgłoszony przez Keitha Makana. Występuje on w obsłudze metody JavaScript 
-\verb+parseFloat+ i polega na nie niepoprawnym parsowaniu niestandardowej reprezentacji liczb zmiennoprzecinkowych. Implementacja metody
+\verb+parseFloat+ i polega na niepoprawnym parsowaniu niestandardowej reprezentacji liczb zmiennoprzecinkowych. Implementacja metody
 \verb+parseFloat+ w~WebKit dopuszcza zapis wartości NaN (ang. \textit{Not a Number}) w postaci \verb+NaN(x)+, gdzie \verb+x+ może składać się z liczb 
 szesnastkowych i spacji. Jeżeli przekazano jedną liczbę szesnastkową, to jest ona ustawiana na 52-bitowej mantysie wynikowej wartości NaN. Jeżeli 
 przekazano więcej liczb szesnastkowych rozdzielonych spacjami, pierwsza z nich jest ustawiana na wyższych 20 bitach mantysy, natomiast druga i kolejne 
 liczby są ustawiane na niższych 32 bitach. Standard binarnej reprezentacji liczb zmiennoprzecinkowych IEEE 754 definiuje dwa rodzaje wartości NaN: cichy 
-i sygnalizujący. Różnią się one tym, że w cichych nie-liczbach najstarszy bit mantysy jest równy 1, a w sygnalizujących jest on równy 0. Większość
+i sygnalizujący. Różnią się one tym, że w cichych nieliczbach najstarszy bit mantysy jest równy 1, a w sygnalizujących jest on równy 0. Większość
 operacji, których argumentem jest sygnalizująca wartość NaN, powoduje zgłoszenie wyjątku. Z powodu błędnego parsowania przekazanego napisu 
 postaci \verb+NaN(x)+ w metodzie \verb+parseFloat+ możliwie jest stworzenie sygnalizującej wartości NaN z dowolną wartością mantysy. Zgłoszony wyjątek 
 po wykonaniu operacji na takiej liczbie nie jest poprawnie obsługiwany.
@@ -1270,27 +1289,27 @@ w którym wykonywana jest funkcja \verb+trigger+. Funkcja ta została zdefiniowa
 nowy element dokumentu. W linii 6 jest on ustawiany jako element potomny węzła o identyfikatorze \verb+BodyID+. W linii 7 ustawiana jest treść 
 stworzonego elementu. Przypisywany jest wynik jednoargumentowej operacji minus na liczbie zmiennoprzecinkowej powstałej w wyniku sparsowania 
 przekazanego napisu, który jest opisaną powyżej niestandardową notacją wartości NaN. Przekazany argument, tj. \verb+ffffedddddddd+, powoduje, że 
-najstarszy bit mantysy jest równy 1, a więc powstała w wyniku parsowania wartość NaN jest sygnalizująca. Pozostałe cyfry liczby szesnastkowej mogą 
-być ustawione dowolnie. 
+najstarszy bit mantysy jest równy 1, a więc powstała w wyniku parsowania wartość NaN jest sygnalizująca. Pozostałe bitu mogą być ustawione dowolnie. 
 
 Otwarcie w domyślnej przeglądarce systemu Android strony HTML z wydruku \ref{print:parse-float-simple} powoduje nieoczekiwane zakończenie programu 
 błędem. Do logu systemowego zapisywany jest zrzut stanu zakończonego procesu. Istotne wpisy z tego zrzutu zostały przedstawione na wydruku 
 \ref{print:parse-float-stacktrace}. Wynika z niego, że proces został zakończony, ponieważ wykonał odwołanie do niepoprawnego adresu pamięci 0xdddddddd.
 Jest to wartość, która była przekazana na dolnych 32 bitach mantysy wartości NaN w linii 7 na wydruku \ref{print:parse-float-simple}. Wartość ta 
 znajdowała się również w rejestrze R1. Wykonanie operacji minus na sygnalizującej wersji liczby NaN skutkuje wygenerowaniem wyjątku. Gdy doszło do 
-błędu licznik instrukcji miał wartość 0xaa00c148 i wskazywał na instrukcję w bibliotece \verb+libwebcore.s+o pod adresem 0x0000c148. 
+błędu, licznik instrukcji miał wartość 0xaa00c148 i wskazywał na instrukcję w bibliotece \verb+libwebcore.s+o pod adresem 0x0000c148. 
 
 Przy użyciu programu GDB, dostarczonego w zestawie narzędzi Android NDK, można zdiagnozować wykonywane przez przeglądarkę instrukcje 
 procesora oraz kolejne wartości rejestrów. Instrukcje, podczas wykonania których doszło do naruszenia ochrony pamięci, zostały umieszczone na wydruku 
 \ref{print:parse-float-asm}. Instrukcja 0xaa00c146 nadpisuje rejestr R1 wartością pamięci spod adresu znajdującego się w tym rejestrze. W trakcie 
 wykonania programu do rejestru R1 przybrał wartość 0xdddddddd, która była dostarczona w treści strony HTML. Kolejna instrukcja, 
 tj. 0xaa00c148 zapisuje w rejestrze R0 wartość spod adresu umieszczonego w rejestrze R1. Spowodowało to wystąpienie błędu naruszenia ochrony pamięci, 
-ponieważ wartość 0xdddddddd, była niepoprawnym adresem w przestrzeni adresowej procesu. Gdyby jednak wartość ta była poprawna, to w kolejnej 
+ponieważ wartość 0xdddddddd była niepoprawnym adresem w przestrzeni adresowej procesu. Gdyby jednak wartość ta była poprawna, to w kolejnej 
 instrukcji (0xaa00c14a) do rejestru R3 zapisana zostanie wartość spod pobranego adresu w rejestrze R0 powiększonego o 48, a następnie w instrukcji 
 0xaa00c14e wywoływany jest podprogram umieszczony pod adresem z rejestru R3.
 
 Podobnie jak w punkcie \ref{subsection:cve-2010-1119}, wykorzystując technikę \textit{heap spray} możliwa jest zmiana przepływu sterowania w programie 
 w taki sposób, aby wykonany został dostarczony kod maszynowy. Osoba, która wykryła omawiany błąd, przedstawiła w serwisie \cite{exploitdb} 
+%fixme poprawic cytowanie
 przykład strony HTML (wydruk \ref{print:parse-float-exploit}), która w ten sposób zmienia zachowanie biblioteki WebKit.
 Ciało strony HTML (linie 25~--~29) składa się z jednego znacznika \verb+<script>+, w którym wykonywana jest funkcja \verb+exploit+ zdefiniowana 
 w liniach 9~--~23. W liniach 10~--~13 na zmienną \verb+nop+ przypisywana jest wielokrotnie powtórzona wartość 0x005733bc, która zostanie użyta 
@@ -1471,11 +1490,14 @@ struct in_addr {
 \label{print:reverse_tcp_asm}
 \end{print}
 
+% cytowania :
+\cite{Younan}
+\cite{Salwan}
 W poprzednich punktach przedstawione zostały wybrane podatności w bibliotece WebKit, dzięki którym możliwe jest wykonanie dostarczonego kodu. 
 Poniżej zostanie omówiony sam proces tworzenia shellcode'u, który umożliwi zdalny dostęp do powłoki systemowej. Podczas wykonania shellcode'u
 nawiązywane jest połączenie zwrotne na ustalony adres IP oraz port, a następnie uruchamiany jest proces powłoki, którego standardowe wejście i 
-wyjście jest przekierowane na  gniazdo związane z połączeniem. Aby uzyskać dostęp do powłoki atakowanego urządzenia konieczne jest uruchomienie
-serwera TCP, który nasłuchuje na odpowiednim porcie. W tym celu można użyć narzędzia \verb+netcat+, np. uruchomić serwer na porcie 4444 można 
+wyjście jest przekierowane na  gniazdo związane z połączeniem. Aby uzyskać dostęp do powłoki atakowanego urządzenia, konieczne jest uruchomienie
+serwera TCP, który nasłuchuje na odpowiednim porcie. W tym celu można użyć narzędzia \verb+netcat+, np. można uruchomić serwer na porcie 4444
 poprzez użycie następujących opcji:
 \begin{verbatim}
 nc -l -p 4444
@@ -1492,10 +1514,10 @@ na deskryptorach standardowego wejścia, standardowego wyjścia i standardowego 
 otwarte strumienie są zamykane. W linii 8 uruchamiany jest program \verb+/system/bin/sh+. Komunikacja z uruchomionym programem odbywa się przez 
 utworzone połączenie sieciowe.
 
-Shellcode powstanie poprzez zmodyfikowanie kodu assemblera procedury \verb+connect_back+. Za pomocą narzędzia GDB, można zobaczyć wygenerowane
+Shellcode powstanie poprzez zmodyfikowanie kodu assemblera procedury \verb+connect_back+. Za pomocą narzędzia GDB można zobaczyć wygenerowane
 przez kompilator instrukcje tej procedury. Są one umieszczone na wydruku \ref{print:connect_back_asm}. W linii 1 na stos odkładane są wartości 
-rejestrów R0~--~R5 i LR. Odłożona wartość rejestru LR zostanie użyta do powrotu z podprogramu. W linii 2  do rejestru R5 kopiowany jest przekazany
-w parametrze adres struktury \verb+sockaddr_in+. Następnie w liniach 3~--~5 do rejestrów R0~--~R2 zapisywane są argumenty wywołania funkcji systemowej
+rejestrów R0~--~R5 i LR. Odłożona wartość rejestru LR zostanie użyta do powrotu z podprogramu. W linii 2 do rejestru R5 kopiowany jest adres struktury 
+\verb+sockaddr_in+, przekazany w parametrze. Następnie w liniach 3~--~5 do rejestrów R0~--~R2 zapisywane są argumenty wywołania funkcji systemowej
 \verb+socket+. W linii 6 następuje wywołanie tej funkcji, która znajduje się pod adresem 0x84ac. W linii 7 do rejestru R4 kopiowany jest zwrócony numer
 gniazda. W linii 8 do rejestru R2 zapisywany jest trzeci argument procedury \verb+connect+, czyli rozmiar struktury \verb+socket_in+. Drugim parametrem
 jest adres tej struktury i jest on kopiowany z rejestru R5 do R1. Pierwszy argument tej funkcji, czyli numer deskryptora,  już znajduje się w~rejestrze 
@@ -1516,7 +1538,7 @@ Aby instrukcje assemblera z wydruku \ref{print:connect_back_asm} mogły być uż
 innego programu, adresy tych funkcji mogą być inne. Wywołania poszczególnych funkcji powinny być zamienione na odpowiadające im wywołania przerwań
 systemowych. Numery przerwań systemowych można znaleźć w pliku \verb+/usr/include/asm/unistd.h+. Na wydruku \ref{print:unistd} znajdują się definicje 
 przerwań użytych w shellcodzie, tj. \verb+execve+, \verb+dup2+, \verb+socket+, \verb+connect+. Wywołanie przerwania systemowego wymaga zapisania
-do rejestru R7 jego numeru i~wykonania instrukcji \verb+svc 0+. Argumenty przekazywane są w rejestrach R0-R4.
+do rejestru R7 jego numeru i~wykonania instrukcji \verb+svc 0+. Argumenty przekazywane są w rejestrach R0~--~R4.
 \item Drugim argumentem procedury \verb+connect+ jest wskaźnik do struktury \verb+sockaddr_in+. W~programie \ref{print:reverse_tcp_c} struktura 
 ta została utworzona na stosie w procedurze \verb+main+, a następnie przekazana jako argument procedury \verb+connect_back+. Ponieważ dane te nie będą
 dostępne podczas wykonania w kontekście innego programu, należy je umieścić w shellcodzie. Adres, pod którym te dane zostaną umieszczone, będzie mógł
@@ -1552,43 +1574,49 @@ zarezerwowanych na tablicę \verb+sin_zero+.
 \item Dane umieszczone w liniach 45,46 są także użyte jako miejsce, w którym zapisana jest tablica \verb+args+, przekazywana do wywołania systemowego 
 \verb+execve+.
 \item W linii 47 znajduje się napis \verb+/system/bin/sh+.
-
-
 \end{itemize}
 
+\section{Metasploit}
 
+\cite{metasploit}
+\cite{Trammel}
+
+\chapter{Podsumowanie}
+
+\cite{Mulliner} - wysyla smsy ktore unieruchomiaja telefon/smsy (gsm)
+\cite{Hobarth} - rootownie telefonu z androidem
+\cite{avraham} - w prosty sosob o exploitach
+
+asdasd
 
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliografia}
-\bibitem[1]{decomp} Anthony Desnos, Geoffroy Gueguen \textit{Android: From Reversing to Decompilation}, Black Hat, Abu Dhabi, 2011 \
-\bibitem[2]{privescal} S. Höbarth, R. Mayrhofer, \textit{A framework for on-device privilege escalation exploit execution on android}, IWSSI/SPMU 2011: 
-3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive 2011, czerwiec 2011. 
-dostępne na \url{http://www.medien.ifi.lmu.de/iwssi2011/} \
-\bibitem[3]{armguide} Gaurav Kumar, Aditya Gupta, \textit{A Short Guide on ARM Exploitation}, 
-\url{http://www.exploit-db.com/wp-content/themes/exploit/docs/24493.pdf} \
-\bibitem[4]{alphanum} Yves Younan, Pieter Philippaerts, \textit{Alphanumeric RISC ARM shellcode}, Phrack, 66, czerwiec 2009 \
-\bibitem[5]{anatomy} Joshua Hulse, \textit{Buffer Overflows: Anatomy of an Exploit}, \url{http://packetstormsecurity.com/files/108549/Buffer-Overflows-Anatomy-Of-An-Exploit.html} \
-\bibitem[6]{explarm} Emanuele Acri, \textit{Exploiting Arm Linux Systems}, 
-\url{http://packetstormsecurity.com/files/98376/Exploiting-ARM-Linux-Systems.html} \
-\bibitem[7]{fuzzphone} Collin Mulliner, Charlie Miller, \textit{Fuzzing the Phone in your Phone}, Black Hat USA, 2009 \
-\bibitem[8]{howtoshell} Jonathan Salwan, \textit{How to Create a Shellcode on ARM Architecture}, \url{http://www.exploit-db.com/papers/15652/} \
-\bibitem[9]{telephony} Dustin ,,I)ruid'' Trammel, \textit{Metasploit Framework Telephony}, Black Hat USA, 2009 \
-\bibitem[10]{nonexec} Itzhak Avraham, \textit{Non-Executable Stack ARM Exploitation}, Black Hat DC, 2011 \
-\bibitem[11]{smashing} jip@soldierx.com, \textit{Stack Smashing On A Modern Linux System}, 
-\url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \
-\bibitem[12]{armman} ARM Ltd. \textit{Arm architecture reference manual.} \
-\bibitem[13]{armcall} ARM Ltd. \textit{Procedure call standard for the arm architecture.} \
-\bibitem[14]{metasploit} Metasploit framework, \url{http://www.metasploit.com} \
-\bibitem[15]{android} Android project, \url{http://developer.android.com} \
-\bibitem[16]{webkit} The WebKit Open Source Project, \url{http://www.webkit.org} \
-\bibitem[17]{noreturn} Lucas Davi, Alexandra Dmitrienko, Ahmad-Reza Sadeghi, Marcel Winandy, \textit{Return-Oriented Programming without Returns on 
-ARM}, 2010 \
-\bibitem[18]{roparm} T. Kornau. \textit{Return oriented programming for the ARM architecture. Master’s thesis.}, 2010 \
-\bibitem[19]{surgically} Giampaolo Fresi Roglia, Lorenzo Martignoni, Roberto Paleari, Danilo Bruschi. \textit{Surgically returning to randomized 
-lib(c).} Computer Security Applications Conference, 2009 \
-\bibitem[20]{kompilator} Paweł Janic, \textit{Kompilator ROP}, praca magisterska, Uniwersytet Warszawski, 2012 \
-\bibitem[21]{exploitdb} The Exploit Database, \url{http://www.exploit-db.com/} \
-\bibitem[22]{packetstorm} Packet Storm, \url{http://packetstormsecurity.com/} \
+\bibitem[1]{Acri} E. Acri. \textit{Exploiting Arm Linux Systems}. \url{http://packetstormsecurity.com} \ %
+\bibitem[2]{avraham} I. Avraham. \textit{Non-Executable Stack ARM Exploitation}. Black Hat DC, 2011, \url{http://www.blackhat.com} \ %
+\bibitem[3]{Buchanan} E. Buchanan, R. Roemer, H. Shacham, and S. Savage. \textit{When good instructions go bad: Generalizing return-oriented programming to RISC}. ACM Press, 2008, \url{http://cseweb.ucsd.edu/~hovav} \ %
+\bibitem[4]{Davi} L. Davi, A. Dmitrienko, A.-R. Sadeghi, M. Winandy. \textit{Return-Oriented Programming without Returns on ARM}. 2010 \url{http://www.trust.informatik.tu-darmstadt.de} \ %
+\bibitem[5]{desnos} A. Desnos, G. Gueguen. \textit{Android: From Reversing to Decompilation}. Black Hat, Abu Dhabi, 2011, \url{http://www.blackhat.com} \
+\bibitem[6]{Francillon} A. Francillon and C. Castelluccia. \textit{Code injection attacks on Harvard-architecture devices}. ACM Press, 2008, \url{http://arxiv.org} \ %
+\bibitem[7]{janic} P. Janic. \textit{Kompilator ROP}. praca magisterska, Uniwersytet Warszawski, 2012 \ %
+\bibitem[8]{soldierx} jip@soldierx.com. \textit{Stack Smashing On A Modern Linux System}. \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \ %
+\bibitem[9]{Hobarth} S. Höbarth, R. Mayrhofer. \textit{A framework for on-device privilege escalation exploit execution on android}, 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive, 2011, \url{http://www.medien.ifi.lmu.de/iwssi2011/} \ %
+\bibitem[10]{Hulse} J. Hulse. \textit{Buffer Overflows: Anatomy of an Exploit}. \url{http://packetstormsecurity.com} \ %
+\bibitem[11]{Kornau} T. Kornau. \textit{Return oriented programming for the ARM architecture}. praca magisterska, Ruhr-Universität Bochum, 2010, \url{http://zynamics.com/downloads/kornau-tim--diplomarbeit--rop.pdf} \ %
+\bibitem[12]{Kumar} G. Kumar, A. Gupta. \textit{A Short Guide on ARM Exploitation}. \url{http://www.exploit-db.com} \ %
+\bibitem[13]{Lidner} F. Lidner. \textit{Developments in Cisco IOS forensics}. CONFidence 2.0, 2009. \url{http://www.recurity-labs.com} \ %
+\bibitem[14]{Mulliner} C. Mulliner, Ch. Miller. \textit{Fuzzing the Phone in your Phone}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
+\bibitem[15]{Roglia} G F. Roglia, L. Martignoni, R. Paleari, D. Bruschi. \textit{Surgically returning to randomized lib(c)}. Computer Security Applications Conference, 2009, \url{http://air.unimi.it} \ %
+\bibitem[16]{Salwan} J. Salwan. \textit{How to Create a Shellcode on ARM Architecture}. \url{http://www.exploit-db.com/papers/15652/} \ %
+\bibitem[17]{Shacham} H. Shacham. \textit{The geometry of innocent flesh on the bone Return-into-libc without function calls (on the x86)}. ACM Press, 2007, \url{http://cseweb.ucsd.edu/~hovav} \ %
+\bibitem[18]{Trammel} D. ,,I)ruid'' Trammel. \textit{Metasploit Framework Telephony}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
+\bibitem[19]{Younan} Y. Younan, P. Philippaerts. \textit{Alphanumeric RISC ARM shellcode}. Phrack, 66, 2009, \url{http://www.phrack.org} \ %
+\bibitem[20]{android} -. Android project. \url{http://developer.android.com} \ %
+\bibitem[21]{armman} -. ARM Ltd. \textit{Arm architecture reference manual.}, \url{http://www.arm.com} \ %
+\bibitem[22]{armcall} -. ARM Ltd. \textit{Procedure call standard for the arm architecture.}, \url{http://www.arm.com} \ %
+\bibitem[23]{exploitdb} -. Exploit Database. \url{http://www.exploit-db.com} \ %
+\bibitem[24]{metasploit} -. Metasploit framework. \url{http://www.metasploit.com} \ %
+\bibitem[25]{packetstorm} -. Packet Storm. \url{http://packetstormsecurity.com} \ %
+\bibitem[26]{webkit} -. WebKit Open Source Project. \url{http://www.webkit.org} \ %
 \end{thebibliography}
 
 \end{document}
