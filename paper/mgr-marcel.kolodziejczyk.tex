@@ -497,7 +497,16 @@ cel programista. Dane wykraczające poza rozmiar bufora nadpisują obszar pamię
 informacje decydujące o przepływie sterowania w wykonywanym programie.
 
 Na przykładzie programu przedstawionego na wydruku \ref{print:overflow}, w którym występuje błąd umożliwiający przepełnienie bufora na stosie, zostanie 
-omówiona technika ataku pozwalająca na zmianę zachowania programu. 
+omówiona technika ataku pozwalająca na zmianę zachowania programu. Program ten znajduje się także na dołączonej płycie CD w katalogu
+\verb+examples/2.1-buffer-overflow+. Program może być skompilowany poprzez wydanie poleceń:
+\begin{verbatim}
+$ cd examples/2.1-buffer-overflow
+$ <ndk_root>/ndk-build
+Compile thumb  : buffer-overflow <= buffer-overflow.c
+Executable     : buffer-overflow
+Install        : buffer-overflow => libs/armeabi/buffer-overflow
+\end{verbatim}
+gdzie \verb+<ndk-root>+ jest katalogiem, w którym jest zainstalowany zestaw narzędzi NDK. 
 
 Program \ref{print:overflow} został skompilowany z optymalizacjami (\verb+-Os+) do kodu maszynowego w trybie Thumb-2. Wykonanie procedury 
 \verb+exploit+ w trakcie normalnego wykonania programu nigdy nie powinno nastąpić. Użycie tej procedury w linii 15 jest tylko po to, aby nie 
@@ -702,6 +711,7 @@ trakcie ataku, natomiast adres powrotu zostanie nadpisany w taki sposób, aby ws
 \textit{no operation}). Po wykonaniu linii 11 programu, stos będzie wypełniony tak, jak na rysunku \ref{figure:stackoverflow}.
 
 Na wydruku \ref{print:asm-shellcode} został przedstawiony kod programu, który demonstruje atak z wykorzystaniem \textit{shellcode'u}.
+Pliki źródłowe tego programu znajdują się także na dołączonej płycie CD w katalogu \verb+examples/2.4-exploit+.
 Program ten przyjmuje dwa argumenty: rozmiar bufora, jaki ma być wypełniony kodem maszynowym oraz adres pamięci, którym zostanie nadpisany adres 
 powrotu w atakowanym programie. Adres ten powinien wskazywać na dowolną instrukcję NOP umieszczoną na stosie w trakcie wykonanie procedury 
 \verb+vulnerable+. W liniach 33~--~34 parsowane są argumenty. Rozmiar bufora (\verb+size+) przekazywany jest jako liczba dziesiętna, natomiast 
@@ -867,7 +877,8 @@ narzędzi \verb+grep+ i \verb+objdump+.
 \label{print:rop}
 \end{print}
 
-Na wydruku \ref{print:rop} został przedstawiony program, który demonstruje atak z wykorzystaniem techniki ROP. Program ten przyjmuje jeden argument: 
+Na wydruku \ref{print:rop} został przedstawiony program, który demonstruje atak z wykorzystaniem techniki ROP. Pliki źródłowe tego programu znajdują 
+się także na dołączonej płycie CD w katalogu \verb+examples/2.8-rop+. Program ten przyjmuje jeden argument: 
 odległość początku przepełnianego bufora od miejsca, w którym zostanie odłożony adres powrotu. Argument programu jest zapisywany na zmiennej lokalnej 
 \verb+size+. W liniach 18~--~20 przygotowywany jest argument, który zostanie przekazany do atakowanego programu. Wartość początkowych \verb+size+ 
 bajtów jest nieistotna. Wystarczy, że będą niezerowe, aby cały argument był poprawnym napisem. Następnie umieszczane są dane sterujące atakiem w taki 
@@ -1503,7 +1514,8 @@ poprzez użycie następujących opcji:
 nc -l -p 4444
 \end{verbatim}
 
-Na wydruku \ref{print:reverse_tcp_c} jest umieszczony program w języku C, na podstawie którego stworzony zostanie shellcode. Program przyjmuje dwa 
+Na wydruku \ref{print:reverse_tcp_c} jest umieszczony program w języku C, na podstawie którego stworzony zostanie shellcode. Pliki źródłowe tego 
+programu znajdują się także na dołączonej płycie CD w katalogu \verb+examples/3.9-reverse_tcp+. Program przyjmuje dwa 
 argumenty: nazwę hosta, do którego zostanie wykonane połączenie i numer portu. W liniach 12~--~16 są tworzone i inicjowane struktury danych
 \verb+hostent+ i \verb+sockaddr_in+, które będą użyte do utworzenia połączenia przez gniazdo. Przypisywany jest adres IPv4 i port przekazany jako 
 argument programu. Ustawiana jest także flaga \verb+AF_INET+ określająca rodzaj podanego adresu. W linii 17 wywoływana jest procedura 
@@ -1575,6 +1587,9 @@ zarezerwowanych na tablicę \verb+sin_zero+.
 \verb+execve+.
 \item W linii 47 znajduje się napis \verb+/system/bin/sh+.
 \end{itemize}
+
+Na dołączonej do pracy płycie CD w katalogach \verb+examples/3.13-shellcode-asm+ oraz \verb+examples/3.13-shellcode+ znajdują się programy w języku C 
+demonstrujące wykonanie instrukcji z wydruku \ref{print:reverse_tcp_asm}.
 
 \section{Metasploit}
 
