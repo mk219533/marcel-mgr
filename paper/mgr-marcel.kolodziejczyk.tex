@@ -93,7 +93,7 @@
   D.4.6. Security and Privacy Protection}
 
 % Słowa kluczowe:
-\keywords{android, arm, bezpieczeństwo, przepełnienie bufora, return-oriented programming, exploit, shellcode, webkit}
+\keywords{android, arm, bezpieczeństwo, exploit, metasploit, przepełnienie bufora, return-oriented programming, shellcode, webkit}
 
 % Tu jest dobre miejsce na Twoje własne makra i~środowiska:
 \newtheorem{defi}{Definicja}[section]
@@ -109,7 +109,7 @@
 W pracy omówiono wybrane aspekty bezpieczeństwa telefonów komórkowych wyposażonych w system operacyjny Android. 
 Opisano popularne techniki przeprowadzania ataku oraz mechanizmy przed nimi chroniące.
 Przedstawiono wybrane podatności w bibliotece WebKit, które pozwalają na uzyskanie zdalnego dostępu do urządzenia.
-%TODO implementacja ataków w postaci modułów frameworku metasploit
+Ataki korzystające z tych podatności zostały zaimplementowane w postaci modułów frameworku Metasploit.
 \end{abstract}
 
 
@@ -489,12 +489,9 @@ Wersja	& Nazwa kodowa	& Udział	\\
 \label{print:vulnerable}
 \end{print}
 
-%todo cytowanie
-\cite{Kumar} - ogolne techinik na arma buffer, rop, shellcode
-\cite{Hulse}  - ogolnie o buffer overfolw
 Przepełnienie bufora to błąd w kodzie programu umożliwiający wczytanie do wyznaczonego obszaru pamięci większej ilości danych, niż zarezerwował na ten 
 cel programista. Dane wykraczające poza rozmiar bufora nadpisują obszar pamięci bezpośrednio z nim sąsiadujący, który może zawierać inne dane lub 
-informacje decydujące o przepływie sterowania w wykonywanym programie.
+informacje decydujące o przepływie sterowania w wykonywanym programie \cite{Kumar, Hulse}.
 
 Na przykładzie programu przedstawionego na wydruku \ref{print:overflow}, w którym występuje błąd umożliwiający przepełnienie bufora na stosie, zostanie 
 omówiona technika ataku pozwalająca na zmianę zachowania programu. Program ten znajduje się także na dołączonej płycie CD w katalogu
@@ -514,8 +511,8 @@ została usunięta przez kompilator jako martwy kod w trakcie optymalizacji.
 
 \subsection{Nadpisanie adresu powrotu}
 
-W punkcie tym zostanie zaprezentowana atak, w wyniku którego sterowanie programu przejdzie do wykonywania fbbbbbb \verb+exploit+.
-W funkcj \verb+vulnerable+ wykonywane jest kopiowanie napisu przekazanego jako argument \verb+arg+ do lokalnie zadeklarowanego bufora \verb+buffer+ 
+W punkcie tym zostanie zaprezentowany atak, w wyniku którego sterowanie programu przejdzie do wykonywania funkcji \verb+exploit+.
+W funkcji \verb+vulnerable+ wykonywane jest kopiowanie napisu przekazanego jako argument \verb+arg+ do lokalnie zadeklarowanego bufora \verb+buffer+ 
 o rozmiarze 100 bajtów. Błędem jest niesprawdzenie długości przekazywanego napisu. Uruchomienie programu z dostatecznie długim argumentem kończy się 
 naruszeniem ochrony pamięci:
 
@@ -593,6 +590,7 @@ Exploited!
 \label{print:vulnerable-propolice}
 \end{print}
 
+Początkowo wykrawanie błędów polegających na przepełnieniu bufora polegało na statycznej analizie kodu \cite{Wagner, Larochelle, Lhee, Toth}.
 W nowoczesnych kompilatorach zostało dodane zabezpieczenie, które znacząco utrudnia wykonywanie ataków polegających na nadpisywaniu niektórych danych 
 znajdujących się na~stosie. Kod maszynowy funkcji, która alokuje bufor na stosie, jest wzbogacany o dodatkowe sprawdzenie, czy nie wystąpiło 
 przepełnienie bufora. Polega ono na umieszczeniu na stosie małego, losowego ciągu znaków, tzw. ,,kanarka'' lub ,,ciasteczka'' (ang. \textit{canary}, 
@@ -790,12 +788,13 @@ AVR \cite{Francillon}, PowerPC \cite{Lidner} oraz ARM \cite{Kornau}.
 W trakcie ataku z wykorzystaniem techniki ROP program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
 \textit{chunk}), dostępnych w przestrzeni adresowej procesu. Wykorzystywane są obszary pamięci, w których załadowany jest kod programu oraz bibliotek 
 dynamicznych. Obszary te są oznaczone jako do wykonywania, co pozwala ominąć zabezpieczenie NX. Najczęściej jako baza gadżetów wykorzystywana
-jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów.
+jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów \cite{Krahmer}.
 Inną dogodną do wykorzystania biblioteką jest \verb+libwebcore.so+, która jest używana przez programy renderujące strony HTML.
 
 W początkowych wersjach ataków wykorzystujących technikę ROP ciąg adresów kolejnych gadżetów był umieszczany na stosie, natomiast gadżety były 
-dobierane w taki sposób, aby każdy z nich kończył się instrukcją powrotu, która pobiera wartość licznika instrukcji ze stosu. W architekturze x86 jest 
-to instrukcja \verb+ret+ (return), co jest genezą nazwy tej techniki. Odpowiednikiem tej instrukcji w architekturze ARM jest \verb+pop {pc}+.
+dobierane w taki sposób, aby każdy z nich kończył się instrukcją powrotu, która pobiera wartość licznika instrukcji ze stosu \cite{McDonald, Nergal}. 
+W architekturze x86 jest to instrukcja \verb+ret+ (return), co jest genezą nazwy tej techniki. Odpowiednikiem tej instrukcji w 
+architekturze ARM jest \verb+pop {pc}+.
 
 Możliwe jest jednak przeprowadzenie ataku z wykorzystaniem techniki ROP, w którym dane sterujące wykonaniem programu nie są umieszczone na stosie.
 W tym celu używany jest zestaw gadżetów, w których ostatnią instrukcją jest instrukcja skoku pośredniego (BX, BLX). Parametrem takiej instrukcji
@@ -806,7 +805,7 @@ architekturze ARM został opisany w pracy \cite{Davi}.
 Ręczne wyszukiwanie dogodnych fragmentów kodu, które mogą zostać użyte jako gadżet, oraz składanie ich w sekwencję, tak aby uzyskać pożądane zachowanie
 programu, jest bardzo czasochłonne. Dostępne są jednak narzędzia, które pozwalają ten proces zautomatyzować. W~pracy \cite{janic} został
 opisany kompilator ROP dla architektury x86. Natomiast w \cite{Kornau} przedstawiono m.in. algorytmy służące do automatycznego wyszukiwania i składania
-gadżetów dla architektury ARM.
+gadżetów dla architektury ARM. Automatyczne tworzenie gadżetów ROP jest także tematem prac \cite{Roemer} i \cite{Hund}.
 
 Poniżej znajduje się przykład ataku wykorzystującego technikę ROP. Do przeprowadzenia ataku został wykorzystany błąd w programie z 
 wydruku \ref{print:overflow}. Celem ataku jest wykonanie przez program procedury \verb+system("/system/bin/sh")+ z biblioteki standardowej. 
@@ -924,6 +923,11 @@ w jądrze systemu została zaimplementowana randomizacja sterty oraz segmentów 
 sterty nie podlegało randomizacji. Opcja ta została wyłączona dopiero w wersji 4.0.3. W systemie Android w wersjach 4.0.x także kod maszynowy programów 
 systemowych nie był niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to naprawione dopiero w wersji 4.1.
 
+W systemach, które nie nie posiadają randomizacji przestrzeni adresowej procesu wykrywanie ataków typu ROP jest możliwe poprzez monitorowanie
+instrukcji wykonywanych przez procesor i dopasowywanie ich do określonych wzorców \cite{Abadi, Erlingsson, Davi2, Chen}. Inne podejście polega na 
+kompilowaniu programów w taki sposób, aby  zestaw instrukcji, z których się składają uniemożliwiał wykonanie ataku ROP \cite{Li}. Jednak tego typu metody 
+są mało wydajne i powodują znaczący narzut na działanie systemu.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % ROZDZIAŁ 3
@@ -935,7 +939,7 @@ systemowych nie był niezależny od pozycji i z tego powodu nie podlegał random
 \section{CVE}
 
 CVE (ang. \textit{Common Vulnerabilities and Exposures}) jest bazą danych podatności oraz zagrożeń dotyczących bezpieczeństwa informacji w systemach 
-informatycznych. System ten jest zarządzany przez organizację MITRE. Każde zgłoszenie otrzymuje unikalny identyfikator i~zawiera krótki opis podatności,
+informatycznych \cite{cve}. System ten jest zarządzany przez organizację MITRE. Każde zgłoszenie otrzymuje unikalny identyfikator i~zawiera krótki opis podatności,
 potencjalne ryzyka oraz wersje oprogramowania, w których występuje błąd. Identyfikatory CVE są uznawane za standard w systemach do wymiany informacji o 
 zagrożeniach. Każde zgłoszenie jest także oceniane w skali punktowej CVSS (ang. \textit{Common Vulnerability Scoring System}), dzięki której łatwo można
 ocenić, na ile dane zgłoszenie jest poważne.
@@ -957,7 +961,7 @@ przez domyślne aplikacje do przeglądania stron internetowych i przez programy 
 
 Opierając się na danych z CVE, w latach 2010 -- 2011 zostało zgłoszonych ponad 200 podatności dotyczących biblioteki WebKit, spośród 
 których ok. 80\% pozwalało na wykonanie dostarczonego przez atakującego kodu. Szczegóły większości z tych błędów nie są publicznie dostępne, jednak na 
-portalach poświęconych bezpieczeństwu, np. \cite{exploitdb}, \cite{packetstorm}, można znaleźć przykłady ataków wykorzystujących niektóre podatności.
+portalach poświęconych bezpieczeństwu można znaleźć przykłady ataków wykorzystujących niektóre podatności \cite{exploitdb, packetstorm}.
 
 W kolejnych punktach zostaną omówione wybrane błędy w bibliotece WebKit występujące także w systemie Android. Poniższe przykłady wymagają interakcji 
 ze strony użytkownika, który musi otworzyć w przeglądarce internetowej specjalnie spreparowaną stronę HTML.
@@ -1104,9 +1108,8 @@ signal 11 (SIGSEGV), fault addr 41414195
 \label{print:heap-spray}
 \end{print}
 
-%TODO cytowanie
 Podatność w bibliotece WebKit o identyfikatorze CVE-2010-1119 została wykryta przez Vincenzo Iozzo i Ralfa Philippa Weinmanna podczas zawodów Pwn2Own 
-towarzyszących konferencji CanSecWest w 2010 roku. Została użyta w trakcie tych zawodów do przeprowadzenia skutecznego włamania na telefon iPhone. 
+towarzyszących konferencji CanSecWest w 2010 roku \cite{Iozzo}. Została użyta w trakcie tych zawodów do przeprowadzenia skutecznego włamania na telefon iPhone. 
 W obsłudze funkcji \verb+removeChild()+ w języku JavaScript został wykryty błąd, w wyniku którego możliwe jest odwołanie do wskaźnika do~pamięci, która 
 wcześniej została zwolniona. Błąd ten może spowodować nieoczekiwane zamknięcie aplikacji przetwarzającej odpowiednie przygotowaną stronę HTML lub 
 umożliwić wykonanie przekazanego kodu. Biblioteka WebKit dostarczana z systemem Android także zawiera wykrytą podatność. Występuje ona w systemach w 
@@ -1282,8 +1285,7 @@ signal 11 (SIGSEGV), fault addr dddddddd
 \label{print:parse-float-exploit}
 \end{print}
 
-%TODO cytat
-Błąd w bibliotece WebKit, oznaczony sygnaturą CVE-2010-1807, został zgłoszony przez Keitha Makana. Występuje on w obsłudze metody JavaScript 
+Błąd w bibliotece WebKit, oznaczony sygnaturą CVE-2010-1807, został zgłoszony przez Keitha Makana \cite{Keith}. Błąd występuje w obsłudze metody JavaScript 
 \verb+parseFloat+ i polega na niepoprawnym parsowaniu niestandardowej reprezentacji liczb zmiennoprzecinkowych. Implementacja metody
 \verb+parseFloat+ w~WebKit dopuszcza zapis wartości NaN (ang. \textit{Not a Number}) w postaci \verb+NaN(x)+, gdzie \verb+x+ może składać się z liczb 
 szesnastkowych i spacji. Jeżeli przekazano jedną liczbę szesnastkową, to jest ona ustawiana na 52-bitowej mantysie wynikowej wartości NaN. Jeżeli 
@@ -1501,9 +1503,6 @@ struct in_addr {
 \label{print:reverse_tcp_asm}
 \end{print}
 
-% cytowania :
-\cite{Younan}
-\cite{Salwan}
 W poprzednich punktach przedstawione zostały wybrane podatności w bibliotece WebKit, dzięki którym możliwe jest wykonanie dostarczonego kodu. 
 Poniżej zostanie omówiony sam proces tworzenia shellcode'u, który umożliwi zdalny dostęp do powłoki systemowej. Podczas wykonania shellcode'u
 nawiązywane jest połączenie zwrotne na ustalony adres IP oraz port, a następnie uruchamiany jest proces powłoki, którego standardowe wejście i 
@@ -1544,7 +1543,8 @@ zakończy się powodzeniem, to sterowanie nigdy już nie wróci. W przeciwnym ra
 i do rejestru licznika instrukcji wczytywany jest adres powrotu.
 
 
-Aby instrukcje assemblera z wydruku \ref{print:connect_back_asm} mogły być użyte jako shellcode, konieczne jest wykonanie następujących modyfikacji:
+Aby instrukcje assemblera z wydruku \ref{print:connect_back_asm} mogły być użyte jako shellcode, konieczne jest wykonanie następujących modyfikacji
+\cite{Salwan}:
 \begin{itemize}
 \item W liniach 6, 10, 13, 16, 19 oraz 26 wykonywany jest skok do funkcji biblioteki standardowej. W przypadku wykonywania tych instrukcji w kontekście
 innego programu, adresy tych funkcji mogą być inne. Wywołania poszczególnych funkcji powinny być zamienione na odpowiadające im wywołania przerwań
@@ -1563,6 +1563,9 @@ umieszczone w shellcodzie.
 \item Konwersja instrukcji assemblerowych do postaci binarnej może być wykonana w dwóch krokach: skompilowanie zmodyfikowanego programu, a następnie
 wypisanie kodu wynikowego za pomocą narzędzia GDB. 
 \end{itemize}
+W przypadku shellcode'u, który będzie umieszczony w treści strony HTML jako argument metody \verb+unescape+, nie występują żadne ograniczenia na 
+zakres znaków, z jakich będzie się on składał. Możliwe są jednak dalsze modyfikacje, dzięki którym wynikowy kod maszynowy może się składać jedynie
+ze znaków alfanumerycznych \cite{Younan}.
 
 Na wydruku \ref{print:reverse_tcp_asm} znajduje się kod assemblera, w którym zostały wykonane powyższe modyfikacje. Przy każdej instrukcji jest 
 umieszczony kod maszynowy tej instrukcji w trybie Thumb. W stosunku do kodu z wydruku \ref{print:connect_back_asm} zaszły następujące zmiany:
@@ -1593,45 +1596,59 @@ demonstrujące wykonanie instrukcji z wydruku \ref{print:reverse_tcp_asm}.
 
 \section{Metasploit}
 
-\cite{metasploit}
-\cite{Trammel}
 
 \chapter{Podsumowanie}
 
-\cite{Mulliner} - wysyla smsy ktore unieruchomiaja telefon/smsy (gsm)
-\cite{Hobarth} - rootownie telefonu z androidem
-\cite{avraham} - w prosty sosob o exploitach
-
-asdasd
+% todo
+%\cite{Mulliner} - wysyla smsy ktore unieruchomiaja telefon/smsy (gsm)
+%\cite{Hobarth} - rootownie telefonu z androidem
+%\cite{avraham} - w prosty sosob o exploitach
 
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliografia}
-\bibitem[1]{Acri} E. Acri. \textit{Exploiting Arm Linux Systems}. \url{http://packetstormsecurity.com} \ %
-\bibitem[2]{avraham} I. Avraham. \textit{Non-Executable Stack ARM Exploitation}. Black Hat DC, 2011, \url{http://www.blackhat.com} \ %
-\bibitem[3]{Buchanan} E. Buchanan, R. Roemer, H. Shacham, and S. Savage. \textit{When good instructions go bad: Generalizing return-oriented programming to RISC}. ACM Press, 2008, \url{http://cseweb.ucsd.edu/~hovav} \ %
-\bibitem[4]{Davi} L. Davi, A. Dmitrienko, A.-R. Sadeghi, M. Winandy. \textit{Return-Oriented Programming without Returns on ARM}. 2010 \url{http://www.trust.informatik.tu-darmstadt.de} \ %
-\bibitem[5]{desnos} A. Desnos, G. Gueguen. \textit{Android: From Reversing to Decompilation}. Black Hat, Abu Dhabi, 2011, \url{http://www.blackhat.com} \
-\bibitem[6]{Francillon} A. Francillon and C. Castelluccia. \textit{Code injection attacks on Harvard-architecture devices}. ACM Press, 2008, \url{http://arxiv.org} \ %
-\bibitem[7]{janic} P. Janic. \textit{Kompilator ROP}. praca magisterska, Uniwersytet Warszawski, 2012 \ %
-\bibitem[8]{soldierx} jip@soldierx.com. \textit{Stack Smashing On A Modern Linux System}. \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \ %
-\bibitem[9]{Hobarth} S. Höbarth, R. Mayrhofer. \textit{A framework for on-device privilege escalation exploit execution on android}, 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive, 2011, \url{http://www.medien.ifi.lmu.de/iwssi2011/} \ %
-\bibitem[10]{Hulse} J. Hulse. \textit{Buffer Overflows: Anatomy of an Exploit}. \url{http://packetstormsecurity.com} \ %
-\bibitem[11]{Kornau} T. Kornau. \textit{Return oriented programming for the ARM architecture}. praca magisterska, Ruhr-Universität Bochum, 2010, \url{http://zynamics.com/downloads/kornau-tim--diplomarbeit--rop.pdf} \ %
-\bibitem[12]{Kumar} G. Kumar, A. Gupta. \textit{A Short Guide on ARM Exploitation}. \url{http://www.exploit-db.com} \ %
-\bibitem[13]{Lidner} F. Lidner. \textit{Developments in Cisco IOS forensics}. CONFidence 2.0, 2009. \url{http://www.recurity-labs.com} \ %
-\bibitem[14]{Mulliner} C. Mulliner, Ch. Miller. \textit{Fuzzing the Phone in your Phone}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
-\bibitem[15]{Roglia} G F. Roglia, L. Martignoni, R. Paleari, D. Bruschi. \textit{Surgically returning to randomized lib(c)}. Computer Security Applications Conference, 2009, \url{http://air.unimi.it} \ %
-\bibitem[16]{Salwan} J. Salwan. \textit{How to Create a Shellcode on ARM Architecture}. \url{http://www.exploit-db.com/papers/15652/} \ %
-\bibitem[17]{Shacham} H. Shacham. \textit{The geometry of innocent flesh on the bone Return-into-libc without function calls (on the x86)}. ACM Press, 2007, \url{http://cseweb.ucsd.edu/~hovav} \ %
-\bibitem[18]{Trammel} D. ,,I)ruid'' Trammel. \textit{Metasploit Framework Telephony}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
-\bibitem[19]{Younan} Y. Younan, P. Philippaerts. \textit{Alphanumeric RISC ARM shellcode}. Phrack, 66, 2009, \url{http://www.phrack.org} \ %
-\bibitem[20]{android} -. Android project. \url{http://developer.android.com} \ %
-\bibitem[21]{armman} -. ARM Ltd. \textit{Arm architecture reference manual.}, \url{http://www.arm.com} \ %
-\bibitem[22]{armcall} -. ARM Ltd. \textit{Procedure call standard for the arm architecture.}, \url{http://www.arm.com} \ %
-\bibitem[23]{exploitdb} -. Exploit Database. \url{http://www.exploit-db.com} \ %
-\bibitem[24]{metasploit} -. Metasploit framework. \url{http://www.metasploit.com} \ %
-\bibitem[25]{packetstorm} -. Packet Storm. \url{http://packetstormsecurity.com} \ %
-\bibitem[26]{webkit} -. WebKit Open Source Project. \url{http://www.webkit.org} \ %
+\bibitem[1]{Abadi} M. Abadi, M. Budiu, Ú. Erlingsson, J. Ligatti. \textit{Control-flow integrity: Principles, implementations, and applications}. ACM Press, 2005, \url{http://www.informatik.tu-darmstadt.de} \ %
+\bibitem[2]{Acri} E. Acri. \textit{Exploiting Arm Linux Systems}. \url{http://packetstormsecurity.com} \ %
+\bibitem[3]{avraham} I. Avraham. \textit{Non-Executable Stack ARM Exploitation}. Black Hat DC, 2011, \url{http://www.blackhat.com} \ %
+\bibitem[4]{Buchanan} E. Buchanan, R. Roemer, H. Shacham, and S. Savage. \textit{When good instructions go bad: Generalizing return-oriented programming to RISC}. ACM Press, 2008, \url{http://cseweb.ucsd.edu/~hovav} \ %
+\bibitem[5]{Chen} P. Chen, H. Xiao, X. Shen, X. Yin, B. Mao, L. Xie. \textit{DROP: Detecting return-oriented programming malicious code}. Springer, 2009, \url{http://www.researchgate.net} \ %
+\bibitem[6]{Davi} L. Davi, A. Dmitrienko, A.-R. Sadeghi, M. Winandy. \textit{Return-Oriented Programming without Returns on ARM}. 2010 \url{http://www.trust.informatik.tu-darmstadt.de} \ %
+\bibitem[7]{Davi2} L. Davi, A.-R. Sadeghi, M. Winandy. \textit{Dynamic integrity measurement and attestation: Towards defense against return-oriented programming attacks}. ACM Press, 2009. \url{http://www.trust.informatik.tu-darmstadt.de} \ %
+\bibitem[8]{desnos} A. Desnos, G. Gueguen. \textit{Android: From Reversing to Decompilation}. Black Hat, Abu Dhabi, 2011, \url{http://www.blackhat.com} \
+\bibitem[9]{Erlingsson} Ú. Erlingsson, M. Abadi, M. Vrable, M. Budiu, G. Necula. \textit{XFI: Software guards for system address spaces}. USENIX, 2006. \url{https://www.usenix.org} \ %
+\bibitem[10]{Francillon} A. Francillon and C. Castelluccia. \textit{Code injection attacks on Harvard-architecture devices}. ACM Press, 2008, \url{http://arxiv.org} \ %
+\bibitem[11]{Iozzo} V. Iozzo and R.P. Weinmann, \textit{CVE-2010-1119}, 2010, \url{http://packetstormsecurity.com} \ %
+\bibitem[12]{janic} P. Janic. \textit{Kompilator ROP}. praca magisterska, Uniwersytet Warszawski, 2012 \ %
+\bibitem[13]{soldierx} jip@soldierx.com. \textit{Stack Smashing On A Modern Linux System}. \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \ %
+\bibitem[14]{Hobarth} S. Höbarth, R. Mayrhofer. \textit{A framework for on-device privilege escalation exploit execution on android}, 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive, 2011, \url{http://www.medien.ifi.lmu.de/iwssi2011/} \ %
+\bibitem[15]{Hulse} J. Hulse. \textit{Buffer Overflows: Anatomy of an Exploit}. \url{http://packetstormsecurity.com} \ %
+\bibitem[16]{Hund} R. Hund, T. Holz, and F. Freiling. \textit{Return-oriented rootkits: Bypassing kernel code integrity protection mechanisms}. USENIX, 2009, \url{https://www.usenix.org} \ %
+\bibitem[17]{Keith} MJ Keith, \textit{Android 2.0-2.1 Reverse Shell Exploit}, 2010, \url{http://www.exploit-db.com} \ %
+\bibitem[18]{Kornau} T. Kornau. \textit{Return oriented programming for the ARM architecture}. praca magisterska, Ruhr-Universität Bochum, 2010, \url{http://zynamics.com/downloads/kornau-tim--diplomarbeit--rop.pdf} \ %
+\bibitem[19]{Krahmer} S. Krahmer. \textit{x86-64 buffer overflow exploits and the borrowed code chunks exploitation technique}, 2005. \url{http://www.suse.de/~krahmer} \ %
+\bibitem[20]{Kumar} G. Kumar, A. Gupta. \textit{A Short Guide on ARM Exploitation}. \url{http://www.exploit-db.com} \ %
+\bibitem[21]{Larochelle} D. Larochelle, D. Evans \textit{Statically Detecting Likely Buffer Overflow Vulnerabilities}. USENIX, 2001, \url{http://www.usenix.org} \ %
+\bibitem[22]{Lhee} K. Lhee, S.J. Chapin. \textit{Type-Assisted Dynamic Buffer Overflow Detection}. USENIX, 2002, \url{http://www.usenix.org} \ %
+\bibitem[23]{Li} J. Li, Z. Wang, X. Jiang, M. Grace, S. Bahram. \textit{Defeating return-oriented rootkits with “return-less” kernels}. ACM Press, 2010, \url{http://www.researchgate.net} \ %
+\bibitem[24]{Lidner} F. Lidner. \textit{Developments in Cisco IOS forensics}. CONFidence 2.0, 2009. \url{http://www.recurity-labs.com} \ %
+\bibitem[25]{McDonald} J. McDonald. \textit{Defeating Solaris/SPARC non-executable stack protection}. Bugtraq, 1999, \url{http://seclists.org} \ %
+\bibitem[26]{Mulliner} C. Mulliner, Ch. Miller. \textit{Fuzzing the Phone in your Phone}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
+\bibitem[27]{Nergal} Nergal. \textit{The advanced return-into-lib(c) exploits: PaX case study}. Phrack Magazine, 58(4), 2001, \url{http://www.phrack.org} \ %
+\bibitem[28]{Roglia} G F. Roglia, L. Martignoni, R. Paleari, D. Bruschi. \textit{Surgically returning to randomized lib(c)}. Computer Security Applications Conference, 2009, \url{http://air.unimi.it} \ %
+\bibitem[29]{Roemer} R. Roemer. \textit{Finding the bad in good code: Automated return-oriented programming exploit discovery}. praca magisterska, UC San Diego, 2009, \url{https://cseweb.ucsd.edu/~rroemer} \ %
+\bibitem[30]{Salwan} J. Salwan. \textit{How to Create a Shellcode on ARM Architecture}. \url{http://www.exploit-db.com/papers/15652/} \ %
+\bibitem[31]{Shacham} H. Shacham. \textit{The geometry of innocent flesh on the bone Return-into-libc without function calls (on the x86)}. ACM Press, 2007, \url{http://cseweb.ucsd.edu/~hovav} \ %
+\bibitem[32]{Toth} T. Toth, C. Kruegel \textit{Accurate buffer overflow detection via abstract pay load execution}. Springer, 2002, \url{http://www.auto.tuwien.ac.at} \ %
+\bibitem[33]{Trammel} D. ,,I)ruid'' Trammel. \textit{Metasploit Framework Telephony}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
+\bibitem[34]{Wagner} D. Wagner, J.S. Foster, E.A. Brewer, A. Aiken \textit{A First Step Towards Automated Detection of Buffer Overrun Vulnerabilities}. NDSS, 2000, \url{www.cs.berkeley.edu/~daw} \ %
+\bibitem[35]{Younan} Y. Younan, P. Philippaerts. \textit{Alphanumeric RISC ARM shellcode}. Phrack, 66, 2009, \url{http://www.phrack.org} \ %
+\bibitem[36]{android} -. Android project. \url{http://developer.android.com} \ %
+\bibitem[37]{armman} -. ARM Ltd. \textit{Arm architecture reference manual.}, \url{http://www.arm.com} \ %
+\bibitem[38]{armcall} -. ARM Ltd. \textit{Procedure call standard for the arm architecture.}, \url{http://www.arm.com} \ %
+\bibitem[39]{cve} -. Common Vulnerabilities and Exposures (CVE). \url{http://cve.mitre.org} \ %
+\bibitem[40]{exploitdb} -. Exploit Database. \url{http://www.exploit-db.com} \ %
+\bibitem[41]{metasploit} -. Metasploit framework. \url{http://www.metasploit.com} \ %
+\bibitem[42]{packetstorm} -. Packet Storm. \url{http://packetstormsecurity.com} \ %
+\bibitem[43]{webkit} -. WebKit Open Source Project. \url{http://www.webkit.org} \ %
 \end{thebibliography}
 
 \end{document}
