@@ -133,10 +133,15 @@ Daje to pokusę do poszukiwania błędów w aplikacjach zainstalowanych na telef
 w jego pamięci oraz na wykonywanie czynności w imieniu właściciela telefonu.
 
 Inspiracją do napisania niniejszej pracy był mój udział w projekcie realizowanym przez Uniwersytet Warszawski we współpracy z firmą Samsung. W ramach 
-tego projektu grupa studentów pod kierownictwem dra Marcina Peczarskiego i dra Jakuba Pawlewicza stworzyła framework do wykonywania zautomatyzowanych
-testów bezpieczeństwa telefonów zaopatrzonych w system operacyjny Android. Przed wykonaniem prac implementacyjnych został przygotowany raport opisujący 
-badaną platformę oraz potencjalne wektory ataków, np. komunikacja Wi-Fi, Bluetooth, GSM, luki w jądrze systemu lub dostępnych aplikacjach.
-%TODO kilka zdan na czym polegał moj udział
+tego projektu grupa studentów pod kierownictwem dra Marcina Peczarskiego i dra Jakuba Pawlewicza stworzyła rozszerzenie frameworku Metasploit, które
+umożliwia wykonywanie zautomatyzowanych testów bezpieczeństwa telefonów zaopatrzonych w system operacyjny Android. Powstały funkcjonalności pozwalające 
+na symulowanie interakcji użytkownika telefonu, moduł raportujący oraz szereg różnego rodzaju testów dedykowanych dla urządzeń z systemem Android.
+Przed wykonaniem prac implementacyjnych został przygotowany raport opisujący badaną platformę oraz potencjalne wektory ataków, np. komunikacja Wi-Fi, 
+Bluetooth, GSM, luki w jądrze systemu lub dostępnych aplikacjach. Każda osoba biorąca udział w przedsięwzięciu była odpowiedzialna za osobne elementy 
+projektu. Mój udział polegał na przeprowadzeniu analizy istniejących narzędzi do wykonywania testów penetracyjnych, w wyniku której wybrany został 
+framework Metasploit. Następnie zaimplementowałem różnego typu shellcode'y dla architektury ARM i systemu operacyjnego Android, których wcześniej nie 
+było we frameworku. Dostosowałem także istniejące moduły typu exploit, które implementują konkretne znane ataki, do systemu Android. W raporcie 
+końcowym opisałem wykonane zmiany oraz wyniki przeprowadzonych testów.
 
 W rozdziale \ref{chapter:platforma} przedstawiony został zarys architektury procesorów ARM, w które jest wyposażonych większość urządzeń przenośnych. 
 Rozdział ten opisuje także podstawowe komponenty, z których składa się system Android oraz model bezpieczeństwa. Omówione zostały także narzędzia 
@@ -144,18 +149,22 @@ udostępnione dla programistów aplikacji.
 
 Rozdział \ref{chapter:techniki} omawia podstawowe techniki ataków, które umożliwiają wykonanie dostarczonego kodu, czyli przepełnienie bufora
 oraz technika \textit{return-oriented programming}. Tego typu ataki są szczególnie niebezpieczne, ponieważ umożliwiają wykonanie dowolnych 
-operacji na urządzeniu. Opisane zostały także zabezpieczenia wprowadzane w kolejnych wydaniach systemu operacyjnego Android, które znacząco 
-utrudniają albo wręcz uniemożliwiają przeprowadzenie opisywanych ataków.
+operacji na urządzeniu. Zaimplementowane są przykładowe programy demonstrujące krok po kroku poszczególne techniki. Opisane zostały także zabezpieczenia 
+wprowadzane w kolejnych wydaniach systemu operacyjnego Android, które znacząco utrudniają albo wręcz uniemożliwiają przeprowadzenie opisywanych ataków. 
+Zaprezentowany jest też bogaty zbiór publikacji naukowych dotyczących bezpieczeństwa systemów informatycznych.
 
 Rozdział \ref{chapter:przyklady} zawiera praktyczne przykłady ataków i ich implementację. Opisano wybrane podatności w bibliotece WebKit, 
 która jest silnikiem domyślnej przeglądarki internetowej w systemie Android. Przedstawiono analizę działania programu, który wczytuje odpowiednio 
 spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisano proces tworzenia \textit{shellcode'u}, czyli 
-krótkiego fragmentu kodu maszynowego, który może być użyty do uzyskania dostępu do linii poleceń na urządzeniu.
+krótkiego fragmentu kodu maszynowego, który może być użyty do uzyskania dostępu do linii poleceń na urządzeniu. Przedstawione ataki oraz shellcode
+zostały zaimplementowane w postaci modułów frameworku Metasploit.
 
-%TODO kilka zdań uwypuklić moj udział:
-% kod ktory napisałem
-% testy jakie wykonałem
-% czego jestem autorem
+Niniejsza praca wnosi istotny wkład w dziedzinie bezpieczeństwa telefonów komórkowych. Wiedza zaprezentowana w rozdziale \ref{chapter:techniki} pokazuje 
+bieżące kierunki rozwoju badań z zakresu bezpieczeństwa. Zaimplementowane przykłady ataków pozwalają dokładnie zrozumieć sposób ich działania i mogą być 
+podstawą do dalszych modyfikacji. Framework Metasploit jest jednym z najpopularniejszych narzędzi do wykonywania testów penetracyjnych. W swojej bazie
+dysponuje ponad 1100 atakami, wykorzystującymi znane podatności. Jednak tylko nieliczne są przeznaczone do wykonywania testów na telefonach 
+wyposażonych w system operacyjny Android. Stworzone moduły frameworku Metasploit rozszerzają jego bazę danych w tym zakresie. Dzięki modularności 
+frameworku możliwe jest też wykorzystanie stworzonego shellcode'u w wielu innych, istniejących już atakach.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -1596,6 +1605,34 @@ demonstrujące wykonanie instrukcji z wydruku \ref{print:reverse_tcp_asm}.
 
 \section{Metasploit}
 
+Framework Metasploit jest jednym z najbardziej popularnych narzędzi służących do testów penetracyjnych i łamania zabezpieczeń systemów 
+teleinformatycznych \cite{metasploit}. Narzędzie to jest rozwijane przez firmę Rapid7 i jest udostępnione na otwartej licencji BSD. Metasploit od 
+wersji 3.0 został całkowicie przepisany w języku Ruby. Środowisko może być uruchamiane na wielu wersjach systemu Unix i Linux oraz w systemie Windows. 
+Z narzędzia można korzystać poprzez klasyczną aplikację graficzną, aplikację webową oraz program konsolowy. Framework Metasploit jest zaprojektowany 
+w bardzo modularny sposób, dzięki czemu w prosty sposób można wykorzystać istniejące fragmenty kodu. Framework Metasploit udostępnia interfejs, dzięki 
+któremu można przygotowywać własne moduły, korzystając z gotowych komponentów.
+
+Wraz z frameworkiem Metasploit jest dostarczona bogata baza ponad 1100 modułów typu exploit implementujących znane ataki. Dostępny jest także szereg 
+modułów pomocniczych, na przykład:
+\begin{itemize}
+\item shellcode'y na różne architektury procesorów, 
+\item moduły wykrywające wersję zainstalowanego oprogramowania na docelowym serwerze,
+\item moduły implementujące komunikację wybranymi protokołami, np. HTTP, FTP, SNMP, SMB, NTP,
+\item moduły, które generują sekwencję danych wejściowych podczas ataków typu \textit{brute-force},
+\item moduły wykonujące popularne ataki typu DoS (ang. \textit{Denial of Service}), 
+\item moduły symulujące działanie serwerów m.in. MySQL, HTTP, DNS, POP3, SSH, IMAP, VNC,
+\item obsługa komunikacji radiowej, np. Bluetooth, Wi-Fi.
+\end{itemize}
+
+Większość z tych narzędzi jest jednak dedykowana do wykonywania testów penetracyjnych klasycznych komputerów stacjonarnych oraz infrastruktury 
+serwerowej. W frameworku Metasploit brakuje modułów przeznaczonych dla urządzeń przenośnych. Do nielicznych tego typu modułów można zaliczyć obsługę 
+telefonii VoIP \cite{Trammel}. Dostarczonych  jest także kilka shellcode'ów w architekturze ARM dla systemów opartych o jądro Linuxa oraz dla systemu 
+iOS (system operacyjny urządzeń marki iPhone).
+
+Ataki opisane w punktach \ref{subsection:cve-2010-1119} i \ref{subsection:cve-2010-1807} zostały zaimplementowane jako moduły typu exploit i znajdują 
+się na dołączonej płycie w katalogu \verb+msf3/modules/exploits/linux/browser+. Na podstawie shellcode'u zaprezentowanego w punkcie \ref{section:shellcode} 
+powstał moduł typu payload i znajduje się w katalogu \verb+msf3/modules/payloads/singles/linux/armle+. Aby dodać powyższe moduły do frameworku 
+należy skopiować dostarczone pliki z zachowaniem struktury katalogów do folderu, w którym został zainstalowany Metasploit.
 
 \chapter{Podsumowanie}
 
