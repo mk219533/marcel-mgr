@@ -797,7 +797,7 @@ AVR \cite{Francillon}, PowerPC \cite{Lidner} oraz ARM \cite{Kornau}.
 W trakcie ataku z wykorzystaniem techniki ROP program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
 \textit{chunk}), dostępnych w przestrzeni adresowej procesu. Wykorzystywane są obszary pamięci, w których załadowany jest kod programu oraz bibliotek 
 dynamicznych. Obszary te są oznaczone jako do wykonywania, co pozwala ominąć zabezpieczenie NX. Najczęściej jako baza gadżetów wykorzystywana
-jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów \cite{Krahmer}.
+jest biblioteka dynamiczna \verb+libc.so+ ponieważ jest używana w większości programów oraz ze względu na fakt, że zawiera dużą liczbę gadżetów \cite{Krahmer, Avraham}. 
 Inną dogodną do wykorzystania biblioteką jest \verb+libwebcore.so+, która jest używana przez programy renderujące strony HTML.
 
 W początkowych wersjach ataków wykorzystujących technikę ROP ciąg adresów kolejnych gadżetów był umieszczany na stosie, natomiast gadżety były 
@@ -835,10 +835,10 @@ Skonstruowania poniższego, przykładowego ataku zostało poprzedzone wykonaniem
 Niestety pakiet Android NDK nie zawiera tego programu. Innym sposobem na otrzymanie adresów zmapowanych obszarów pamięci procesu jest przeczytanie 
 pliku \verb+/proc/<pid>/maps+. Dla programu, na którym zostanie przeprowadzony atak, biblioteka \verb+libc.so+ jest załadowana pod~adresem 
 \verb+0x40002000+.
-\item Ustalenie adresu procedury \verb+system+ w bibliotece \verb+libc.so+. Można w tym celu użyć narzędzia \verb+gdb+:
+\item Ustalenie adresu procedury \verb+system+ w bibliotece \verb+libc.so+. Można w tym celu użyć narzędzia GDB:
 \begin{verbatim}
-(gdb) x/x system
-0x1a3a4 <system>:	0xb5704b2b
+(gdb) info address system
+Symbol "system" is a function at address 0x1a3a4.
 \end{verbatim}
 Wartość \verb+0x1a3a4+ należy zwiększyć o offset, pod którym załadowana jest biblioteka \verb+libc.so+ w przestrzeni adresowej procesu.
 Ponieważ biblioteka \verb+libc.so+ jest skompilowana w trybie Thumb, do licznika instrukcji musi być zapisana wartość powiększona jeszcze o 1.
@@ -1331,7 +1331,6 @@ instrukcji (0xaa00c14a) do rejestru R3 zapisana zostanie wartość spod pobraneg
 
 Podobnie jak w punkcie \ref{subsection:cve-2010-1119}, wykorzystując technikę \textit{heap spray} możliwa jest zmiana przepływu sterowania w programie 
 w taki sposób, aby wykonany został dostarczony kod maszynowy. Osoba, która wykryła omawiany błąd, przedstawiła w serwisie \cite{exploitdb} 
-%fixme poprawic cytowanie
 przykład strony HTML (wydruk \ref{print:parse-float-exploit}), która w ten sposób zmienia zachowanie biblioteki WebKit.
 Ciało strony HTML (linie 25~--~29) składa się z jednego znacznika \verb+<script>+, w którym wykonywana jest funkcja \verb+exploit+ zdefiniowana 
 w liniach 9~--~23. W liniach 10~--~13 na zmienną \verb+nop+ przypisywana jest wielokrotnie powtórzona wartość 0x005733bc, która zostanie użyta 
@@ -1645,7 +1644,7 @@ należy skopiować dostarczone pliki z zachowaniem struktury katalogów do folde
 \addcontentsline{toc}{chapter}{Bibliografia}
 \bibitem[1]{Abadi} M. Abadi, M. Budiu, Ú. Erlingsson, J. Ligatti. \textit{Control-flow integrity: Principles, implementations, and applications}. ACM Press, 2005, \url{http://www.informatik.tu-darmstadt.de} \ %
 \bibitem[2]{Acri} E. Acri. \textit{Exploiting Arm Linux Systems}. \url{http://packetstormsecurity.com} \ %
-\bibitem[3]{avraham} I. Avraham. \textit{Non-Executable Stack ARM Exploitation}. Black Hat DC, 2011, \url{http://www.blackhat.com} \ %
+\bibitem[3]{Avraham} I. Avraham. \textit{Non-Executable Stack ARM Exploitation}. Black Hat DC, 2011, \url{http://www.blackhat.com} \ %
 \bibitem[4]{Buchanan} E. Buchanan, R. Roemer, H. Shacham, and S. Savage. \textit{When good instructions go bad: Generalizing return-oriented programming to RISC}. ACM Press, 2008, \url{http://cseweb.ucsd.edu/~hovav} \ %
 \bibitem[5]{Chen} P. Chen, H. Xiao, X. Shen, X. Yin, B. Mao, L. Xie. \textit{DROP: Detecting return-oriented programming malicious code}. Springer, 2009, \url{http://www.researchgate.net} \ %
 \bibitem[6]{Davi} L. Davi, A. Dmitrienko, A.-R. Sadeghi, M. Winandy. \textit{Return-Oriented Programming without Returns on ARM}. 2010 \url{http://www.trust.informatik.tu-darmstadt.de} \ %
