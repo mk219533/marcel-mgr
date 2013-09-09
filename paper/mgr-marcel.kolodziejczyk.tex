@@ -107,7 +107,7 @@
 %tu idzie streszczenie na strone poczatkowa
 \begin{abstract}
 W pracy omówiono wybrane aspekty bezpieczeństwa telefonów komórkowych wyposażonych w system operacyjny Android. 
-Opisano popularne techniki przeprowadzania ataku oraz mechanizmy przed nimi chroniące.
+Opisano popularne techniki przeprowadzania ataków oraz mechanizmy przed nimi chroniące.
 Przedstawiono wybrane podatności w bibliotece WebKit, które pozwalają na uzyskanie zdalnego dostępu do urządzenia.
 Ataki korzystające z tych podatności zostały zaimplementowane w postaci modułów frameworku Metasploit.
 \end{abstract}
@@ -143,9 +143,9 @@ framework Metasploit. Następnie zaimplementowałem różnego typu shellcode'y d
 było we frameworku. Dostosowałem także istniejące moduły typu exploit, które implementują konkretne znane ataki, do systemu Android. W raporcie 
 końcowym opisałem wykonane zmiany oraz wyniki przeprowadzonych testów.
 
-W rozdziale \ref{chapter:platforma} przedstawiony został zarys architektury procesorów ARM, w które jest wyposażonych większość urządzeń przenośnych. 
-Rozdział ten opisuje także podstawowe komponenty, z których składa się system Android oraz model bezpieczeństwa. Omówione zostały także narzędzia 
-udostępnione dla programistów aplikacji.
+Niniejsza praca składa się z trzech rozdziałów. W rozdziale \ref{chapter:platforma} przedstawiony został zarys architektury procesorów ARM, w które 
+jest wyposażonych większość urządzeń przenośnych. Rozdział ten opisuje także podstawowe komponenty, z których składa się system Android oraz model 
+bezpieczeństwa. Omówione zostały także narzędzia udostępnione dla programistów aplikacji.
 
 Rozdział \ref{chapter:techniki} omawia podstawowe techniki ataków, które umożliwiają wykonanie dostarczonego kodu, czyli przepełnienie bufora
 oraz technika \textit{return-oriented programming}. Tego typu ataki są szczególnie niebezpieczne, ponieważ umożliwiają wykonanie dowolnych 
@@ -155,7 +155,7 @@ Zaprezentowany jest też bogaty zbiór publikacji naukowych dotyczących bezpiec
 
 Rozdział \ref{chapter:przyklady} zawiera praktyczne przykłady ataków i ich implementację. Opisano wybrane podatności w bibliotece WebKit, 
 która jest silnikiem domyślnej przeglądarki internetowej w systemie Android. Przedstawiono analizę działania programu, który wczytuje odpowiednio 
-spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisano proces tworzenia \textit{shellcode'u}, czyli 
+spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisano proces tworzenia shellcode'u, czyli 
 krótkiego fragmentu kodu maszynowego, który może być użyty do uzyskania dostępu do linii poleceń na urządzeniu. Przedstawione ataki oraz shellcode
 zostały zaimplementowane w postaci modułów frameworku Metasploit.
 
@@ -165,6 +165,8 @@ podstawą do dalszych modyfikacji. Framework Metasploit jest jednym z najpopular
 dysponuje ponad 1100 atakami, wykorzystującymi znane podatności. Jednak tylko nieliczne są przeznaczone do wykonywania testów na telefonach 
 wyposażonych w system operacyjny Android. Stworzone moduły frameworku Metasploit rozszerzają jego bazę danych w tym zakresie. Dzięki modularności 
 frameworku możliwe jest też wykorzystanie stworzonego shellcode'u w wielu innych, istniejących już atakach.
+
+Omówione w pracy przykładowe programy oraz moduły frameworku Metasploit znajdują się także na załączonej płycie CD.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -791,7 +793,7 @@ Technologia bitu NX jest wspierana przez system Android od wersji 2.3.
 \section{Return-oriented programming}
 
 \textit{Return-oriented programming} (ROP) jest to technika ataku, która pozwala na zmianę zachowania programu na dowolną, zamierzoną przez atakującego.
-Technikę tą opisał Hovav Shacham w 2007 roku \cite{Shacham} na architekturze x86. Następnie została rozwinięta na architektury SPARC \cite{Buchanan}, 
+Technikę tę opisał Hovav Shacham w 2007 roku \cite{Shacham} na architekturze x86. Następnie została rozwinięta na architektury SPARC \cite{Buchanan}, 
 AVR \cite{Francillon}, PowerPC \cite{Lidner} oraz ARM \cite{Kornau}.
 
 W trakcie ataku z wykorzystaniem techniki ROP program wykonuje serię starannie dobranych drobnych fragmentów kodu, tzw. gadżetów (ang. \textit{gadget}, 
@@ -932,10 +934,10 @@ w jądrze systemu została zaimplementowana randomizacja sterty oraz segmentów 
 sterty nie podlegało randomizacji. Opcja ta została wyłączona dopiero w wersji 4.0.3. W systemie Android w wersjach 4.0.x także kod maszynowy programów 
 systemowych nie był niezależny od pozycji i z tego powodu nie podlegał randomizacji. Zostało to naprawione dopiero w wersji 4.1.
 
-W systemach, które nie nie posiadają randomizacji przestrzeni adresowej procesu wykrywanie ataków typu ROP jest możliwe poprzez monitorowanie
+W systemach, które nie posiadają randomizacji przestrzeni adresowej procesu, wykrywanie ataków typu ROP jest możliwe poprzez monitorowanie
 instrukcji wykonywanych przez procesor i dopasowywanie ich do określonych wzorców \cite{Abadi, Erlingsson, Davi2, Chen}. Inne podejście polega na 
-kompilowaniu programów w taki sposób, aby  zestaw instrukcji, z których się składają uniemożliwiał wykonanie ataku ROP \cite{Li}. Jednak tego typu metody 
-są mało wydajne i powodują znaczący narzut na działanie systemu.
+kompilowaniu programów w taki sposób, aby  zestaw instrukcji, z których się składają, uniemożliwiał wykonanie ataku ROP \cite{Li}. Jednak tego typu 
+metody są mało wydajne i powodują znaczący narzut na działanie systemu.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -1311,7 +1313,7 @@ w którym wykonywana jest funkcja \verb+trigger+. Funkcja ta została zdefiniowa
 nowy element dokumentu. W linii 6 jest on ustawiany jako element potomny węzła o identyfikatorze \verb+BodyID+. W linii 7 ustawiana jest treść 
 stworzonego elementu. Przypisywany jest wynik jednoargumentowej operacji minus na liczbie zmiennoprzecinkowej powstałej w wyniku sparsowania 
 przekazanego napisu, który jest opisaną powyżej niestandardową notacją wartości NaN. Przekazany argument, tj. \verb+ffffedddddddd+, powoduje, że 
-najstarszy bit mantysy jest równy 1, a więc powstała w wyniku parsowania wartość NaN jest sygnalizująca. Pozostałe bitu mogą być ustawione dowolnie. 
+najstarszy bit mantysy jest równy 1, a więc powstała w wyniku parsowania wartość NaN jest sygnalizująca. Pozostałe bity mogą być ustawione dowolnie. 
 
 Otwarcie w domyślnej przeglądarce systemu Android strony HTML z wydruku \ref{print:parse-float-simple} powoduje nieoczekiwane zakończenie programu 
 błędem. Do logu systemowego zapisywany jest zrzut stanu zakończonego procesu. Istotne wpisy z tego zrzutu zostały przedstawione na wydruku 
@@ -1594,7 +1596,7 @@ pierwszej pozycji tablicy \verb+args+.
 \item W liniach 42~--~46 umieszczone są dane struktury \verb+sockaddr_in+. Pierwsze dwa bajty są wartością pola \verb+sin_family+. Na kolejnych dwóch
 bajtach zaszyty jest numer portu (4444), na który będzie wykonane połączenie. Następne 4 bajty zawierają adres IP. Po~nich następuje 8 zerowych bajtów
 zarezerwowanych na tablicę \verb+sin_zero+.
-\item Dane umieszczone w liniach 45,46 są także użyte jako miejsce, w którym zapisana jest tablica \verb+args+, przekazywana do wywołania systemowego 
+\item Dane umieszczone w liniach 45, 46 są także użyte jako miejsce, w którym zapisana jest tablica \verb+args+, przekazywana do wywołania systemowego 
 \verb+execve+.
 \item W linii 47 znajduje się napis \verb+/system/bin/sh+.
 \end{itemize}
@@ -1612,15 +1614,15 @@ w bardzo modularny sposób, dzięki czemu w prosty sposób można wykorzystać i
 któremu można przygotowywać własne moduły, korzystając z gotowych komponentów.
 
 Wraz z frameworkiem Metasploit jest dostarczona bogata baza ponad 1100 modułów typu exploit implementujących znane ataki. Dostępny jest także szereg 
-modułów pomocniczych, na przykład:
+modułów pomocniczych, które m.in.:
 \begin{itemize}
-\item shellcode'y na różne architektury procesorów, 
-\item wykrywających wersję zainstalowanego oprogramowania na docelowym serwerze,
-\item implementujących komunikację wybranymi protokołami, np. HTTP, FTP, SNMP, SMB, NTP,
-\item moduły, które generują sekwencję danych wejściowych podczas ataków typu \textit{brute-force},
-\item wykonujących popularne ataki typu DoS (ang. \textit{Denial of Service}), 
-\item symulujących działanie serwerów m.in. MySQL, HTTP, DNS, POP3, SSH, IMAP, VNC,
-\item narzędzi do obsługi komunikacji radiowej, np. Bluetooth, Wi-Fi.
+\item generują shellcode'y na różne architektury procesorów, 
+\item wykrywają wersję zainstalowanego oprogramowania na docelowym serwerze,
+\item implementują komunikację wybranymi protokołami, np. HTTP, FTP, SNMP, SMB, NTP,
+\item generują sekwencję danych wejściowych podczas ataków typu \textit{brute-force},
+\item wykonują popularne ataki typu DoS (ang. \textit{Denial of Service}), 
+\item symulują działanie serwerów m.in. MySQL, HTTP, DNS, POP3, SSH, IMAP, VNC,
+\item obsługują komunikację radiową, np. Bluetooth, Wi-Fi.
 \end{itemize}
 
 Większość z tych narzędzi jest jednak dedykowana do wykonywania testów penetracyjnych klasycznych komputerów stacjonarnych oraz infrastruktury 
@@ -1630,7 +1632,7 @@ iOS (system operacyjny urządzeń marki iPhone).
 
 Ataki opisane w punktach \ref{subsection:cve-2010-1119} i \ref{subsection:cve-2010-1807} zostały zaimplementowane jako moduły typu exploit i znajdują 
 się na dołączonej płycie w katalogu \verb+msf3/modules/exploits/linux/browser+. Na podstawie shellcode'u zaprezentowanego w punkcie \ref{section:shellcode} 
-powstał moduł typu payload i znajduje się w katalogu \verb+msf3/modules/payloads/singles/linux/armle+. Aby dodać powyższe moduły do frameworku 
+powstał moduł typu payload, który znajduje się w katalogu \verb+msf3/modules/payloads/singles/linux/armle+. Aby dodać powyższe moduły do frameworku,
 należy skopiować dostarczone pliki z zachowaniem struktury katalogów do folderu, w którym został zainstalowany Metasploit.
 
 \chapter{Podsumowanie}
@@ -1647,14 +1649,14 @@ Przejęcie kontroli nad urządzeniem może być wykorzystane w celu osiągnięci
 przeprowadzenia ataków DDoS (ang. \textit{Distributed Denial of Service}). Jest to atak na system komputerowy lub usługę sieciową w celu uniemożliwienia 
 działania poprzez zajęcie wszystkich wolnych zasobów, przeprowadzany równocześnie z wielu komputerów, tzw. zombie. Tego typu ataki często są 
 wykorzystywane w celu szantażowania właścicieli dużych portali internetowych \cite{Niebezpiecznik}. Zablokowanie dostępu do serwisu internetowego 
-powoduje istotne straty finansowe dla jego właściciela, dlatego często są oni skłonni zapłacić przestępcy okup, ani uniknąć ataku.
+powoduje istotne straty finansowe dla jego właściciela, dlatego często są oni skłonni zapłacić przestępcy okup, aby uniknąć ataku.
 
 Ataki elektroniczne są także wykorzystywane jako narzędzie walki militarnej i politycznej. Najgłośniejszym tego typu atakiem jest robak komputerowy 
 Stuxnet, który został wycelowany w ściśle określoną instalację komputerową -- sterowniki PLC firmy Siemens wykorzystywane w wirówkach do wzbogacania 
 uranu. Szacuje się, że pozwoliło to opóźnić irański program nuklearny o kilka lat \cite{Farwell}.
 
 Bardzo ciekawe są wyniki badań przedstawionych na konferencji Black Hat w 2013 roku. Kyle Wilhoit wystawił do internetu w 8 różnych krajach 12 
-honeypotów\cite{Wilhoit}, czyli serwerów udających prawdziwe usługi, udostępnionych w celu analizy metod i narzędzi atakującego. Wszystkie serwery 
+honeypotów \cite{Wilhoit}, czyli serwerów udających prawdziwe usługi, udostępnionych w celu analizy metod i narzędzi atakującego. Wszystkie serwery 
 swoją charakterystyką łudząco przypominały przemysłowe systemy SCADA odpowiedzialne za sterowanie m.in. elektrowniami, przepompowniami wody lub 
 oczyszczalniami ścieków. Odnotowano aż 74 ataki, z których 10 pozwalało przejąć całkowitą kontrolę nad oprogramowaniem elektrowni wodnej. Większość 
 zaawansowanych ataków była przeprowadzana z Chin. Podejrzewa się, że włamania te zostały wykonane przez tajną jednostkę militarną wojska chińskiego.
@@ -1672,51 +1674,51 @@ stworzony shellcode może być wykorzystany w wielu istniejących już testach f
 \begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Bibliografia}
 \bibitem[1]{Abadi} M. Abadi, M. Budiu, Ú. Erlingsson, J. Ligatti. \textit{Control-flow integrity: Principles, implementations, and applications}. ACM Press, 2005, \url{http://www.informatik.tu-darmstadt.de} \ %
-\bibitem[2]{Acri} E. Acri. \textit{Exploiting Arm Linux Systems}. \url{http://packetstormsecurity.com} \ %
+\bibitem[2]{Acri} E. Acri. \textit{Exploiting Arm Linux Systems}. 2011, \url{http://packetstormsecurity.com} \ %
 \bibitem[3]{Avraham} I. Avraham. \textit{Non-Executable Stack ARM Exploitation}. Black Hat DC, 2011, \url{http://www.blackhat.com} \ %
-\bibitem[4]{Buchanan} E. Buchanan, R. Roemer, H. Shacham, and S. Savage. \textit{When good instructions go bad: Generalizing return-oriented programming to RISC}. ACM Press, 2008, \url{http://cseweb.ucsd.edu/~hovav} \ %
+\bibitem[4]{Buchanan} E. Buchanan, R. Roemer, H. Shacham, S. Savage. \textit{When good instructions go bad: Generalizing return-oriented programming to RISC}. ACM Press, 2008, \url{http://cseweb.ucsd.edu/~hovav} \ %
 \bibitem[5]{Chen} P. Chen, H. Xiao, X. Shen, X. Yin, B. Mao, L. Xie. \textit{DROP: Detecting return-oriented programming malicious code}. Springer, 2009, \url{http://www.researchgate.net} \ %
-\bibitem[6]{Davi} L. Davi, A. Dmitrienko, A.-R. Sadeghi, M. Winandy. \textit{Return-Oriented Programming without Returns on ARM}. 2010 \url{http://www.trust.informatik.tu-darmstadt.de} \ %
-\bibitem[7]{Davi2} L. Davi, A.-R. Sadeghi, M. Winandy. \textit{Dynamic integrity measurement and attestation: Towards defense against return-oriented programming attacks}. ACM Press, 2009. \url{http://www.trust.informatik.tu-darmstadt.de} \ %
-\bibitem[8]{desnos} A. Desnos, G. Gueguen. \textit{Android: From Reversing to Decompilation}. Black Hat, Abu Dhabi, 2011, \url{http://www.blackhat.com} \
-\bibitem[9]{Erlingsson} Ú. Erlingsson, M. Abadi, M. Vrable, M. Budiu, G. Necula. \textit{XFI: Software guards for system address spaces}. USENIX, 2006. \url{https://www.usenix.org} \ %
-\bibitem[10]{Francillon} A. Francillon and C. Castelluccia. \textit{Code injection attacks on Harvard-architecture devices}. ACM Press, 2008, \url{http://arxiv.org} \ %
-\bibitem[11]{Farwell} J.P. Farwell, R. Rohozinski \textit{Stuxnet and the Future of Cyber War}. Survival, 2011, \url{http://www.cs.duke.edu} \ %
-\bibitem[12]{Iozzo} V. Iozzo and R.P. Weinmann, \textit{CVE-2010-1119}, 2010, \url{http://packetstormsecurity.com} \ %
-\bibitem[13]{janic} P. Janic. \textit{Kompilator ROP}. praca magisterska, Uniwersytet Warszawski, 2012 \ %
+\bibitem[6]{Davi} L. Davi, A. Dmitrienko, A.-R. Sadeghi, M. Winandy. \textit{Return-Oriented Programming without Returns on ARM}. ACM Press, 2010, \url{http://www.trust.informatik.tu-darmstadt.de} \ %
+\bibitem[7]{Davi2} L. Davi, A.-R. Sadeghi, M. Winandy. \textit{Dynamic integrity measurement and attestation: Towards defense against return-oriented programming attacks}. ACM Press, 2009, \url{http://www.trust.informatik.tu-darmstadt.de} \ %
+\bibitem[8]{desnos} A. Desnos, G. Gueguen. \textit{Android: From Reversing to Decompilation}. Black Hat Abu Dhabi, 2011, \url{http://www.blackhat.com} \
+\bibitem[9]{Erlingsson} Ú. Erlingsson, M. Abadi, M. Vrable, M. Budiu, G. Necula. \textit{XFI: Software guards for system address spaces}. USENIX, 2006, \url{https://www.usenix.org} \ %
+\bibitem[10]{Francillon} A. Francillon, C. Castelluccia. \textit{Code injection attacks on Harvard-architecture devices}. ACM Press, 2008, \url{http://arxiv.org} \ %
+\bibitem[11]{Farwell} J.P. Farwell, R. Rohozinski. \textit{Stuxnet and the Future of Cyber War}. Survival, 2011, \url{http://www.cs.duke.edu} \ %
+\bibitem[12]{Iozzo} V. Iozzo, R.P. Weinmann, \textit{CVE-2010-1119}. 2010, \url{http://packetstormsecurity.com} \ %
+\bibitem[13]{janic} P. Janic. \textit{Kompilator ROP}. Praca magisterska, Uniwersytet Warszawski, 2012 \ %
 \bibitem[14]{soldierx} jip@soldierx.com. \textit{Stack Smashing On A Modern Linux System}. \url{http://www.soldierx.com/tutorials/Stack-Smashing-Modern-Linux-System} \ %
-\bibitem[15]{Hobarth} S. Höbarth, R. Mayrhofer. \textit{A framework for on-device privilege escalation exploit execution on android}, 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive, 2011, \url{http://www.medien.ifi.lmu.de/iwssi2011/} \ %
-\bibitem[16]{Hulse} J. Hulse. \textit{Buffer Overflows: Anatomy of an Exploit}. \url{http://packetstormsecurity.com} \ %
-\bibitem[17]{Hund} R. Hund, T. Holz, and F. Freiling. \textit{Return-oriented rootkits: Bypassing kernel code integrity protection mechanisms}. USENIX, 2009, \url{https://www.usenix.org} \ %
-\bibitem[18]{Keith} MJ Keith, \textit{Android 2.0-2.1 Reverse Shell Exploit}, 2010, \url{http://www.exploit-db.com} \ %
-\bibitem[19]{Kornau} T. Kornau. \textit{Return oriented programming for the ARM architecture}. praca magisterska, Ruhr-Universität Bochum, 2010, \url{http://zynamics.com/downloads/kornau-tim--diplomarbeit--rop.pdf} \ %
-\bibitem[20]{Krahmer} S. Krahmer. \textit{x86-64 buffer overflow exploits and the borrowed code chunks exploitation technique}, 2005. \url{http://www.suse.de/~krahmer} \ %
-\bibitem[21]{Kumar} G. Kumar, A. Gupta. \textit{A Short Guide on ARM Exploitation}. \url{http://www.exploit-db.com} \ %
-\bibitem[22]{Larochelle} D. Larochelle, D. Evans \textit{Statically Detecting Likely Buffer Overflow Vulnerabilities}. USENIX, 2001, \url{http://www.usenix.org} \ %
+\bibitem[15]{Hobarth} S. Höbarth, R. Mayrhofer. \textit{A framework for on-device privilege escalation exploit execution on android}. 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive, 2011, \url{http://www.medien.ifi.lmu.de/iwssi2011/} \ %
+\bibitem[16]{Hulse} J. Hulse. \textit{Buffer Overflows: Anatomy of an Exploit}. 2012, \url{http://packetstormsecurity.com} \ %
+\bibitem[17]{Hund} R. Hund, T. Holz, F. Freiling. \textit{Return-oriented rootkits: Bypassing kernel code integrity protection mechanisms}. USENIX, 2009, \url{https://www.usenix.org} \ %
+\bibitem[18]{Keith} MJ Keith, \textit{Android 2.0-2.1 Reverse Shell Exploit}. 2010, \url{http://www.exploit-db.com} \ %
+\bibitem[19]{Kornau} T. Kornau. \textit{Return oriented programming for the ARM architecture}. Praca magisterska, Ruhr-Universität Bochum, 2010, \url{http://zynamics.com/downloads/kornau-tim--diplomarbeit--rop.pdf} \ %
+\bibitem[20]{Krahmer} S. Krahmer. \textit{x86-64 buffer overflow exploits and the borrowed code chunks exploitation technique}. 2005, \url{http://www.suse.de/~krahmer} \ %
+\bibitem[21]{Kumar} G. Kumar, A. Gupta. \textit{A Short Guide on ARM Exploitation}. 2013, \url{http://www.exploit-db.com} \ %
+\bibitem[22]{Larochelle} D. Larochelle, D. Evans. \textit{Statically Detecting Likely Buffer Overflow Vulnerabilities}. USENIX, 2001, \url{http://www.usenix.org} \ %
 \bibitem[23]{Lhee} K. Lhee, S.J. Chapin. \textit{Type-Assisted Dynamic Buffer Overflow Detection}. USENIX, 2002, \url{http://www.usenix.org} \ %
 \bibitem[24]{Li} J. Li, Z. Wang, X. Jiang, M. Grace, S. Bahram. \textit{Defeating return-oriented rootkits with “return-less” kernels}. ACM Press, 2010, \url{http://www.researchgate.net} \ %
-\bibitem[25]{Lidner} F. Lidner. \textit{Developments in Cisco IOS forensics}. CONFidence 2.0, 2009. \url{http://www.recurity-labs.com} \ %
+\bibitem[25]{Lidner} F. Lidner. \textit{Developments in Cisco IOS forensics}. CONFidence 2.0, 2009, \url{http://www.recurity-labs.com} \ %
 \bibitem[26]{McDonald} J. McDonald. \textit{Defeating Solaris/SPARC non-executable stack protection}. Bugtraq, 1999, \url{http://seclists.org} \ %
 \bibitem[27]{Mulliner} C. Mulliner, Ch. Miller. \textit{Fuzzing the Phone in your Phone}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
 \bibitem[28]{Nergal} Nergal. \textit{The advanced return-into-lib(c) exploits: PaX case study}. Phrack Magazine, 58(4), 2001, \url{http://www.phrack.org} \ %
-\bibitem[29]{Roglia} G F. Roglia, L. Martignoni, R. Paleari, D. Bruschi. \textit{Surgically returning to randomized lib(c)}. Computer Security Applications Conference, 2009, \url{http://air.unimi.it} \ %
-\bibitem[30]{Roemer} R. Roemer. \textit{Finding the bad in good code: Automated return-oriented programming exploit discovery}. praca magisterska, UC San Diego, 2009, \url{https://cseweb.ucsd.edu/~rroemer} \ %
-\bibitem[31]{Salwan} J. Salwan. \textit{How to Create a Shellcode on ARM Architecture}. \url{http://www.exploit-db.com/papers/15652/} \ %
+\bibitem[29]{Roglia} G. F. Roglia, L. Martignoni, R. Paleari, D. Bruschi. \textit{Surgically returning to randomized lib(c)}. Computer Security Applications Conference, 2009, \url{http://air.unimi.it} \ %
+\bibitem[30]{Roemer} R. Roemer. \textit{Finding the bad in good code: Automated return-oriented programming exploit discovery}. Praca magisterska, UC San Diego, 2009, \url{https://cseweb.ucsd.edu/~rroemer} \ %
+\bibitem[31]{Salwan} J. Salwan. \textit{How to Create a Shellcode on ARM Architecture}. 2010, \url{http://www.exploit-db.com/papers/15652/} \ %
 \bibitem[32]{Shacham} H. Shacham. \textit{The geometry of innocent flesh on the bone Return-into-libc without function calls (on the x86)}. ACM Press, 2007, \url{http://cseweb.ucsd.edu/~hovav} \ %
-\bibitem[33]{Toth} T. Toth, C. Kruegel \textit{Accurate buffer overflow detection via abstract pay load execution}. Springer, 2002, \url{http://www.auto.tuwien.ac.at} \ %
+\bibitem[33]{Toth} T. Toth, C. Kruegel. \textit{Accurate buffer overflow detection via abstract pay load execution}. Springer, 2002, \url{http://www.auto.tuwien.ac.at} \ %
 \bibitem[34]{Trammel} D. ,,I)ruid'' Trammel. \textit{Metasploit Framework Telephony}. Black Hat USA, 2009, \url{http://www.blackhat.com} \ %
-\bibitem[35]{Wagner} D. Wagner, J.S. Foster, E.A. Brewer, A. Aiken \textit{A First Step Towards Automated Detection of Buffer Overrun Vulnerabilities}. NDSS, 2000, \url{www.cs.berkeley.edu/~daw} \ %
+\bibitem[35]{Wagner} D. Wagner, J.S. Foster, E.A. Brewer, A. Aiken. \textit{A First Step Towards Automated Detection of Buffer Overrun Vulnerabilities}. NDSS, 2000, \url{www.cs.berkeley.edu/~daw} \ %
 \bibitem[36]{Wilhoit} K. Wilhoit. \textit{SCADA That Didn’t Cry Wolf}. Black Hat, 2013, \url{http://www.blackhat.com} \ %
 \bibitem[37]{Younan} Y. Younan, P. Philippaerts. \textit{Alphanumeric RISC ARM shellcode}. Phrack, 66, 2009, \url{http://www.phrack.org} \ %
-\bibitem[38]{android} -. Android project. \url{http://developer.android.com} \ %
-\bibitem[39]{armman} -. ARM Ltd. \textit{Arm architecture reference manual.}, \url{http://www.arm.com} \ %
-\bibitem[40]{armcall} -. ARM Ltd. \textit{Procedure call standard for the arm architecture.}, \url{http://www.arm.com} \ %
-\bibitem[41]{cve} -. Common Vulnerabilities and Exposures (CVE). \url{http://cve.mitre.org} \ %
-\bibitem[42]{exploitdb} -. Exploit Database. \url{http://www.exploit-db.com} \ %
-\bibitem[43]{metasploit} -. Metasploit framework. \url{http://www.metasploit.com} \ %
-\bibitem[44]{Niebezpiecznik} -. Niebezpiecznik o bezpieczeństwie i nie... \url{http://niebezpiecznik.pl} \ %
-\bibitem[45]{packetstorm} -. Packet Storm. \url{http://packetstormsecurity.com} \ %
-\bibitem[46]{webkit} -. WebKit Open Source Project. \url{http://www.webkit.org} \ %
+\bibitem[38]{android} --. Android project. \url{http://developer.android.com} \ %
+\bibitem[39]{armman} --. ARM Ltd. \textit{Arm architecture reference manual}. \url{http://www.arm.com} \ %
+\bibitem[40]{armcall} --. ARM Ltd. \textit{Procedure call standard for the arm architecture}. \url{http://www.arm.com} \ %
+\bibitem[41]{cve} --. Common Vulnerabilities and Exposures (CVE). \url{http://cve.mitre.org} \ %
+\bibitem[42]{exploitdb} --. Exploit Database. \url{http://www.exploit-db.com} \ %
+\bibitem[43]{metasploit} --. Metasploit framework. \url{http://www.metasploit.com} \ %
+\bibitem[44]{Niebezpiecznik} --. Niebezpiecznik o bezpieczeństwie i nie\dots \url{http://niebezpiecznik.pl} \ %
+\bibitem[45]{packetstorm} --. Packet Storm. \url{http://packetstormsecurity.com} \ %
+\bibitem[46]{webkit} --. WebKit Open Source Project. \url{http://www.webkit.org} \ %
 \end{thebibliography}
 
 \end{document}
