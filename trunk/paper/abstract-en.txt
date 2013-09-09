@@ -1,0 +1,4 @@
+The paper discusses significant security problems of mobile phones with Android operating system.
+It explores common exploitation techniques and corresponding mechanisms to defeat them.
+It presents selected WebKit library vulnerabilities, which allow to gain remote access to the device.
+Based on these weaknesses, Metasploit framework modules were implemented.
