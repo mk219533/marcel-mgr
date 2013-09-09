@@ -140,7 +140,7 @@ Przed wykonaniem prac implementacyjnych został przygotowany raport opisujący b
 Bluetooth, GSM, luki w jądrze systemu lub dostępnych aplikacjach. Każda osoba biorąca udział w przedsięwzięciu była odpowiedzialna za osobne elementy 
 projektu. Mój udział polegał na przeprowadzeniu analizy istniejących narzędzi do wykonywania testów penetracyjnych, w wyniku której wybrany został 
 framework Metasploit. Następnie zaimplementowałem różnego typu shellcode'y dla architektury ARM i systemu operacyjnego Android, których wcześniej nie 
-było we frameworku. Dostosowałem także istniejące moduły typu exploit, które implementują konkretne znane ataki, do systemu Android. W raporcie 
+było we frameworku. Dostosowałem także istniejące moduły typu exploit, które implementują konkretne, znane ataki, do systemu Android. W raporcie 
 końcowym opisałem wykonane zmiany oraz wyniki przeprowadzonych testów.
 
 Niniejsza praca składa się z trzech rozdziałów. W rozdziale \ref{chapter:platforma} przedstawiony został zarys architektury procesorów ARM, w które 
@@ -154,7 +154,7 @@ wprowadzane w kolejnych wydaniach systemu operacyjnego Android, które znacząco
 Zaprezentowany jest też bogaty zbiór publikacji naukowych dotyczących bezpieczeństwa systemów informatycznych.
 
 Rozdział \ref{chapter:przyklady} zawiera praktyczne przykłady ataków i ich implementację. Opisano wybrane podatności w bibliotece WebKit, 
-która jest silnikiem domyślnej przeglądarki internetowej w systemie Android. Przedstawiono analizę działania programu, który wczytuje odpowiednio 
+która jest silnikiem domyślnej przeglądarki internetowej w~systemie Android. Przedstawiono analizę działania programu, który wczytuje odpowiednio 
 spreparowane strony HTML, które pozwalają na zdalne przejęcie kontroli nad telefonem. Opisano proces tworzenia shellcode'u, czyli 
 krótkiego fragmentu kodu maszynowego, który może być użyty do uzyskania dostępu do linii poleceń na urządzeniu. Przedstawione ataki oraz shellcode
 zostały zaimplementowane w postaci modułów frameworku Metasploit.
@@ -177,10 +177,10 @@ Omówione w pracy przykładowe programy oraz moduły frameworku Metasploit znajd
 \chapter{Platforma sprzętowa i programowa}\label{chapter:platforma}
 
 Android jest systemem operacyjnym i zestawem aplikacji dedykowanym przede wszystkim dla urządzeń przenośnych z ekranami dotykowymi, takimi jak 
-np. smartfon, tablet. Jądro systemu zostało oparte na jądrze Linuksa. System ten został zaprojektowany i stworzony głównie z myślą o urządzeniach
+np. smartfon, tablet. Jądro systemu zostało oparte na jądrze Linuksa. System ten jest zaprojektowany i stworzony głównie z myślą o urządzeniach
 wyposażonych w procesor o architekturze ARM, aczkolwiek podejmowane są prace nad dostosowaniem Androida do innych architektur, np. x86.
 
-W rozdziale tym zostaną opisane podstawy architektury procesorów ARM. Następnie zostanie omówiona architektura oraz model bezpieczeństwa systemu Android.
+W rozdziale tym opisano podstawy architektury procesorów ARM. Następnie omówiono architektura oraz model bezpieczeństwa systemu Android.
 
 \section{Architektura procesorów ARM}
 
@@ -506,10 +506,9 @@ informacje decydujące o przepływie sterowania w wykonywanym programie \cite{Ku
 
 Na przykładzie programu przedstawionego na wydruku \ref{print:overflow}, w którym występuje błąd umożliwiający przepełnienie bufora na stosie, zostanie 
 omówiona technika ataku pozwalająca na zmianę zachowania programu. Program ten znajduje się także na dołączonej płycie CD w katalogu
-\verb+examples/2.1-buffer-overflow+. Program może być skompilowany poprzez wydanie poleceń:
+\verb+examples/2.1-buffer-overflow+. Program może być skompilowany poprzez wydanie polecenia:
 \begin{verbatim}
-$ cd examples/2.1-buffer-overflow
-$ <ndk_root>/ndk-build
+$ <ndk_root>/ndk-build -C examples/2.1-buffer-overflow
 Compile thumb  : buffer-overflow <= buffer-overflow.c
 Executable     : buffer-overflow
 Install        : buffer-overflow => libs/armeabi/buffer-overflow
@@ -1690,7 +1689,7 @@ stworzony shellcode może być wykorzystany w wielu istniejących już testach f
 \bibitem[15]{Hobarth} S. Höbarth, R. Mayrhofer. \textit{A framework for on-device privilege escalation exploit execution on android}. 3rd International Workshop on Security and Privacy in Spontaneous Interaction and Mobile Phone Use, colocated with Pervasive, 2011, \url{http://www.medien.ifi.lmu.de/iwssi2011/} \ %
 \bibitem[16]{Hulse} J. Hulse. \textit{Buffer Overflows: Anatomy of an Exploit}. 2012, \url{http://packetstormsecurity.com} \ %
 \bibitem[17]{Hund} R. Hund, T. Holz, F. Freiling. \textit{Return-oriented rootkits: Bypassing kernel code integrity protection mechanisms}. USENIX, 2009, \url{https://www.usenix.org} \ %
-\bibitem[18]{Keith} MJ Keith, \textit{Android 2.0-2.1 Reverse Shell Exploit}. 2010, \url{http://www.exploit-db.com} \ %
+\bibitem[18]{Keith} M.J. Keith, \textit{Android 2.0-2.1 Reverse Shell Exploit}. 2010, \url{http://www.exploit-db.com} \ %
 \bibitem[19]{Kornau} T. Kornau. \textit{Return oriented programming for the ARM architecture}. Praca magisterska, Ruhr-Universität Bochum, 2010, \url{http://zynamics.com/downloads/kornau-tim--diplomarbeit--rop.pdf} \ %
 \bibitem[20]{Krahmer} S. Krahmer. \textit{x86-64 buffer overflow exploits and the borrowed code chunks exploitation technique}. 2005, \url{http://www.suse.de/~krahmer} \ %
 \bibitem[21]{Kumar} G. Kumar, A. Gupta. \textit{A Short Guide on ARM Exploitation}. 2013, \url{http://www.exploit-db.com} \ %
