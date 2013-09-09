@@ -1,0 +1,4 @@
+To build selected example:
+1. install Android NDK from http://developer.android.com
+2. run command:
+  $ <ndk-root>/ndk-build -C <dir>
