@@ -39,3 +39,7 @@ http://cve.mitre.org
 framework do testów security androida: 
 https://github.com/mwrlabs/mercury
 
+http://www.win.tue.nl/~aeb/linux/hh/hh.html#toc12
+http://www.cgsecurity.org/exploit/heaptut.txt
+integer overflow: http://www.phrack.org/issues.html?issue=60&id=10
+
